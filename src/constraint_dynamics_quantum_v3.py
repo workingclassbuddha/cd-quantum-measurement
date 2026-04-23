@@ -1,0 +1,1032 @@
+#!/usr/bin/env python3
+"""Constraint Dynamics quantum-measurement test scaffold, V3.
+
+This script is an effective research scaffold. It does not derive collapse
+from first principles and it does not replace standard decoherence theory.
+It asks a narrower question: whether the apparatus dependence of
+measurement-induced loss of visibility is better parameterized by separable
+Constraint Dynamics factors.
+"""
+
+from __future__ import annotations
+
+import argparse
+import html
+import json
+import math
+from dataclasses import asdict, dataclass, replace
+from pathlib import Path
+from typing import Iterable
+
+import numpy as np
+import pandas as pd
+
+
+EPS = 1e-12
+
+
+@dataclass(frozen=True)
+class ApparatusSettings:
+    """Physical knobs mapped into the effective Lambda/Gamma/Theta factors."""
+
+    path_separation: float = 1.0
+    detector_spatial_resolution: float = 0.72
+    coherence_time: float = 1.0
+    detector_response_time: float = 0.62
+    record_entropy_bits: float = 1.25
+    record_survival_probability: float = 0.72
+    environment_coupling: float = 0.82
+    marker_angle: float = 1.20
+    relative_phase: float = 0.0
+    measurement_duration: float = 1.0
+    record_onset_time: float = 0.24
+    record_growth_time: float = 0.24
+    eraser_time: float = 0.18
+    eraser_phase: float = 0.0
+    kappa0: float = 1.35
+    background_kappa: float = 0.0
+
+
+def _as_array(x):
+    return np.asarray(x, dtype=float)
+
+
+def clip01(x):
+    return np.clip(_as_array(x), 0.0, 1.0)
+
+
+def spatial_constraint(path_separation, detector_spatial_resolution):
+    """Map path separation and spatial detector resolution to Lambda.
+
+    Lambda is close to 0 when the detector point-spread function is too broad
+    to distinguish the paths, and close to 1 when path separation is large
+    compared with detector resolution.
+    """
+
+    d = np.maximum(_as_array(path_separation), 0.0)
+    sigma = np.maximum(_as_array(detector_spatial_resolution), EPS)
+    return clip01(1.0 - np.exp(-0.5 * (d / sigma) ** 2))
+
+
+def temporal_constraint(coherence_time, detector_response_time):
+    """Map detector response time to Gamma.
+
+    Gamma is high when the detector responds faster than the coherence time
+    of the path superposition and low when it temporally blurs path events.
+    """
+
+    tau_coh = np.maximum(_as_array(coherence_time), EPS)
+    tau_det = np.maximum(_as_array(detector_response_time), EPS)
+    return clip01(1.0 - np.exp(-((tau_coh / tau_det) ** 2)))
+
+
+def energetic_constraint(
+    record_entropy_bits,
+    record_survival_probability=1.0,
+    environment_coupling=1.0,
+):
+    """Map irreversible record load to Theta.
+
+    Theta is modeled as a saturating function of entropy exported into a
+    durable detector/environment record. Reversible marker storage can make
+    paths distinguishable without creating large Theta.
+    """
+
+    bits = np.maximum(_as_array(record_entropy_bits), 0.0)
+    survival = clip01(record_survival_probability)
+    coupling = clip01(environment_coupling)
+    entropy_nats = bits * math.log(2.0)
+    return clip01(1.0 - np.exp(-(entropy_nats * survival * coupling)))
+
+
+def marker_visibility_from_angle(marker_angle):
+    """Reversible marker overlap contribution to raw path visibility."""
+
+    return np.abs(np.cos(_as_array(marker_angle)))
+
+
+def constraints_from_apparatus(settings: ApparatusSettings) -> dict[str, float]:
+    lam = float(
+        spatial_constraint(
+            settings.path_separation,
+            settings.detector_spatial_resolution,
+        )
+    )
+    gam = float(
+        temporal_constraint(
+            settings.coherence_time,
+            settings.detector_response_time,
+        )
+    )
+    the = float(
+        energetic_constraint(
+            settings.record_entropy_bits,
+            settings.record_survival_probability,
+            settings.environment_coupling,
+        )
+    )
+    marker = float(marker_visibility_from_angle(settings.marker_angle))
+    return {
+        "Lambda": lam,
+        "Gamma": gam,
+        "Theta": the,
+        "marker_visibility": marker,
+    }
+
+
+def effective_kappa_cd(kappa0, Lambda, Gamma, Theta, background_kappa=0.0):
+    """Product-law dephasing rate used as the V3 CD hypothesis."""
+
+    return np.maximum(
+        _as_array(background_kappa)
+        + _as_array(kappa0) * _as_array(Lambda) * _as_array(Gamma) * _as_array(Theta),
+        0.0,
+    )
+
+
+def lock_fraction(t, onset, growth_time):
+    """Smooth fraction of the irreversible record that has locked in by time t."""
+
+    elapsed = np.maximum(_as_array(t) - onset, 0.0)
+    growth = max(float(growth_time), EPS)
+    return clip01(1.0 - np.exp(-elapsed / growth))
+
+
+def lock_integral(stop_time, onset, growth_time):
+    """Integral of lock_fraction from 0 to stop_time."""
+
+    elapsed = max(float(stop_time) - float(onset), 0.0)
+    growth = max(float(growth_time), EPS)
+    return elapsed - growth * (1.0 - math.exp(-elapsed / growth))
+
+
+def irreversible_exposure(settings: ApparatusSettings, eraser_time: float | None = None):
+    """Effective irreversible exposure time.
+
+    If eraser_time is supplied, the eraser is assumed to prevent later
+    amplification of the marker into an irreversible path record. Earlier
+    irreversible exposure is not undone.
+    """
+
+    stop = settings.measurement_duration if eraser_time is None else eraser_time
+    stop = max(0.0, min(float(stop), settings.measurement_duration))
+    return lock_integral(
+        stop,
+        onset=settings.record_onset_time,
+        growth_time=settings.record_growth_time,
+    )
+
+
+def dephasing_eta(
+    settings: ApparatusSettings,
+    eraser_time: float | None = None,
+    overrides: dict[str, float] | None = None,
+):
+    constraints = constraints_from_apparatus(settings)
+    if overrides:
+        constraints.update(overrides)
+    kappa = float(
+        effective_kappa_cd(
+            settings.kappa0,
+            constraints["Lambda"],
+            constraints["Gamma"],
+            constraints["Theta"],
+            settings.background_kappa,
+        )
+    )
+    exposure = irreversible_exposure(settings, eraser_time=eraser_time)
+    return float(math.exp(-2.0 * kappa * exposure)), kappa, exposure
+
+
+def ket(v):
+    return np.asarray(v, dtype=complex).reshape(-1, 1)
+
+
+def dm_from_state(state):
+    state = ket(state)
+    return state @ state.conj().T
+
+
+def marker_states(alpha):
+    m_left = np.array([1.0, 0.0], dtype=complex)
+    m_right = np.array([math.cos(alpha), math.sin(alpha)], dtype=complex)
+    return m_left, m_right
+
+
+def joint_state_path_marker(alpha, rel_phase=0.0):
+    m_left, m_right = marker_states(alpha)
+    path_left = np.array([1.0, 0.0], dtype=complex)
+    path_right = np.array([0.0, 1.0], dtype=complex)
+    psi = (
+        np.kron(path_left, m_left)
+        + np.exp(1j * rel_phase) * np.kron(path_right, m_right)
+    ) / math.sqrt(2.0)
+    return psi / np.linalg.norm(psi)
+
+
+def apply_path_dephasing(rho, eta):
+    rho = np.asarray(rho, dtype=complex).copy()
+    path_labels = np.array([0, 0, 1, 1])
+    mask = path_labels[:, None] != path_labels[None, :]
+    rho[mask] *= eta
+    return rho
+
+
+def partial_trace_marker(rho_joint):
+    rho_joint = np.asarray(rho_joint, dtype=complex).reshape(2, 2, 2, 2)
+    return np.trace(rho_joint, axis1=1, axis2=3)
+
+
+def condition_on_marker_basis(rho_joint, basis_vec):
+    basis_vec = ket(basis_vec)
+    projector_marker = basis_vec @ basis_vec.conj().T
+    projector_joint = np.kron(np.eye(2, dtype=complex), projector_marker)
+    rho_post = projector_joint @ rho_joint @ projector_joint.conj().T
+    prob = float(np.real_if_close(np.trace(rho_post)))
+    if prob <= EPS:
+        return 0.0, np.zeros((2, 2), dtype=complex)
+    return prob, partial_trace_marker(rho_post / prob)
+
+
+def eraser_basis(phase=0.0):
+    plus = np.array([1.0, np.exp(1j * phase)], dtype=complex) / math.sqrt(2.0)
+    minus = np.array([1.0, -np.exp(1j * phase)], dtype=complex) / math.sqrt(2.0)
+    return plus, minus
+
+
+def path_visibility_from_rho(rho_path):
+    rho_path = np.asarray(rho_path, dtype=complex)
+    return float(np.clip(2.0 * abs(rho_path[0, 1]), 0.0, 1.0))
+
+
+def screen_intensity_from_rho(x, rho_path, fringe_freq=14.0, width=0.72):
+    x = np.asarray(x, dtype=float)
+    rho = np.asarray(rho_path, dtype=complex)
+    envelope = np.exp(-0.5 * (x / width) ** 2)
+    phase = np.exp(1j * fringe_freq * x)
+    base = float(np.real(rho[0, 0] + rho[1, 1]))
+    cross = 2.0 * np.real(rho[0, 1] * phase)
+    intensity = np.clip(envelope * (base + cross), 0.0, None)
+    integrate = getattr(np, "trapezoid", np.trapz)
+    norm = float(integrate(intensity, x))
+    return intensity if norm <= EPS else intensity / norm
+
+
+def build_joint_density(
+    settings: ApparatusSettings,
+    eraser_time: float | None = None,
+    theta_override: float | None = None,
+):
+    psi0 = joint_state_path_marker(settings.marker_angle, settings.relative_phase)
+    overrides = {} if theta_override is None else {"Theta": theta_override}
+    eta, kappa, exposure = dephasing_eta(settings, eraser_time, overrides)
+    rho = apply_path_dephasing(dm_from_state(psi0), eta)
+    return rho, {"eta": eta, "kappa_eff": kappa, "exposure": exposure}
+
+
+def quantum_eraser_observables(
+    settings: ApparatusSettings,
+    eraser_time: float | None = None,
+    theta_override: float | None = None,
+):
+    rho_joint, meta = build_joint_density(settings, eraser_time, theta_override)
+    constraints = constraints_from_apparatus(settings)
+    if theta_override is not None:
+        constraints["Theta"] = float(theta_override)
+    rho_path = partial_trace_marker(rho_joint)
+    plus, minus = eraser_basis(settings.eraser_phase)
+    p_plus, rho_plus = condition_on_marker_basis(rho_joint, plus)
+    p_minus, rho_minus = condition_on_marker_basis(rho_joint, minus)
+    return {
+        **meta,
+        **constraints,
+        "visibility_unconditioned": path_visibility_from_rho(rho_path),
+        "visibility_eraser_plus": path_visibility_from_rho(rho_plus),
+        "visibility_eraser_minus": path_visibility_from_rho(rho_minus),
+        "prob_eraser_plus": p_plus,
+        "prob_eraser_minus": p_minus,
+    }
+
+
+def kappa_at_time(settings: ApparatusSettings, t):
+    c = constraints_from_apparatus(settings)
+    base = float(
+        effective_kappa_cd(
+            settings.kappa0,
+            c["Lambda"],
+            c["Gamma"],
+            c["Theta"],
+            settings.background_kappa,
+        )
+    )
+    return base * lock_fraction(t, settings.record_onset_time, settings.record_growth_time)
+
+
+def simulate_phase_flip_trajectories(
+    settings: ApparatusSettings,
+    n_trajectories=2500,
+    dt=0.004,
+    sample_every=8,
+    seed=23,
+):
+    """Stochastic phase-flip unraveling of the dephasing master equation.
+
+    Each trajectory remains pure. Random Z flips on the path degree of freedom
+    occur with a time-dependent Poisson rate kappa(t). The ensemble average
+    reproduces off-diagonal decay exp[-2 integral kappa(t) dt].
+    """
+
+    rng = np.random.default_rng(seed)
+    psi0 = joint_state_path_marker(settings.marker_angle, settings.relative_phase)
+    states = np.repeat(psi0.reshape(1, 4), n_trajectories, axis=0)
+    z_path = np.array([1.0, 1.0, -1.0, -1.0], dtype=complex)
+    n_steps = int(math.ceil(settings.measurement_duration / dt))
+    rows = []
+    integral = 0.0
+
+    def append_row(t_now, integral_now):
+        rho_avg = states.T @ states.conj() / n_trajectories
+        rho_path = partial_trace_marker(rho_avg)
+        c = constraints_from_apparatus(settings)
+        rows.append(
+            {
+                "time": t_now,
+                "visibility_trajectory_mean": path_visibility_from_rho(rho_path),
+                "visibility_exact": c["marker_visibility"]
+                * math.exp(-2.0 * integral_now),
+                "integrated_kappa": integral_now,
+            }
+        )
+
+    append_row(0.0, integral)
+    for step in range(1, n_steps + 1):
+        t_mid = min((step - 0.5) * dt, settings.measurement_duration)
+        rate = float(kappa_at_time(settings, t_mid))
+        p_jump = min(rate * dt, 0.25)
+        jumps = rng.random(n_trajectories) < p_jump
+        states[jumps] *= z_path
+        integral += rate * dt
+        if step % sample_every == 0 or step == n_steps:
+            append_row(min(step * dt, settings.measurement_duration), integral)
+
+    return pd.DataFrame(rows)
+
+
+def target_from_visibility(visibility, marker_visibility, t_meas):
+    v = np.asarray(visibility, dtype=float)
+    m = np.maximum(np.asarray(marker_visibility, dtype=float), EPS)
+    t = np.maximum(np.asarray(t_meas, dtype=float), EPS)
+    ratio = np.clip(v / m, 1e-9, 0.999999)
+    return -np.log(ratio) / (2.0 * t)
+
+
+def ensure_constraint_columns(df: pd.DataFrame) -> pd.DataFrame:
+    data = df.copy()
+    required = {"Lambda", "Gamma", "Theta"}
+    if required.issubset(data.columns):
+        return data
+    apparatus_cols = {
+        "path_separation",
+        "detector_spatial_resolution",
+        "coherence_time",
+        "detector_response_time",
+        "record_entropy_bits",
+        "record_survival_probability",
+        "environment_coupling",
+    }
+    if not apparatus_cols.issubset(data.columns):
+        missing = ", ".join(sorted(required - set(data.columns)))
+        raise ValueError(
+            f"Missing {missing}; provide Lambda/Gamma/Theta or apparatus columns."
+        )
+    data["Lambda"] = spatial_constraint(
+        data["path_separation"], data["detector_spatial_resolution"]
+    )
+    data["Gamma"] = temporal_constraint(
+        data["coherence_time"], data["detector_response_time"]
+    )
+    data["Theta"] = energetic_constraint(
+        data["record_entropy_bits"],
+        data["record_survival_probability"],
+        data["environment_coupling"],
+    )
+    return data
+
+
+def model_designs(data: pd.DataFrame) -> dict[str, tuple[np.ndarray, list[str]]]:
+    L = data["Lambda"].to_numpy(dtype=float)
+    G = data["Gamma"].to_numpy(dtype=float)
+    T = data["Theta"].to_numpy(dtype=float)
+    ones = np.ones_like(L)
+    return {
+        "constant": (ones[:, None], ["background"]),
+        "product": ((L * G * T)[:, None], ["LGT"]),
+        "product_plus_background": (
+            np.column_stack([ones, L * G * T]),
+            ["background", "LGT"],
+        ),
+        "additive": (np.column_stack([L, G, T]), ["L", "G", "T"]),
+        "additive_plus_background": (
+            np.column_stack([ones, L, G, T]),
+            ["background", "L", "G", "T"],
+        ),
+        "pairwise": (
+            np.column_stack([L * G, L * T, G * T]),
+            ["LG", "LT", "GT"],
+        ),
+        "pairwise_plus_product": (
+            np.column_stack([L * G, L * T, G * T, L * G * T]),
+            ["LG", "LT", "GT", "LGT"],
+        ),
+        "full_second_order": (
+            np.column_stack([L, G, T, L * G, L * T, G * T, L * G * T]),
+            ["L", "G", "T", "LG", "LT", "GT", "LGT"],
+        ),
+    }
+
+
+def weighted_lstsq(X, y, weights=None):
+    if weights is None:
+        beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+        return beta
+    w = np.sqrt(np.asarray(weights, dtype=float))
+    beta, *_ = np.linalg.lstsq(X * w[:, None], y * w, rcond=None)
+    return beta
+
+
+def _aicc(n, rss, k):
+    sigma2 = max(rss / max(n, 1), 1e-12)
+    aic = n * math.log(sigma2) + 2 * k
+    if n <= k + 1:
+        return aic
+    return aic + (2 * k * (k + 1)) / (n - k - 1)
+
+
+def _kfold_slices(n, k=5, seed=13):
+    rng = np.random.default_rng(seed)
+    indices = rng.permutation(n)
+    return np.array_split(indices, min(k, n))
+
+
+def fit_visibility_models(
+    df: pd.DataFrame,
+    visibility_col="visibility_obs",
+    marker_col="marker_visibility",
+    time_col="t_meas",
+    cv_folds=5,
+    seed=13,
+):
+    data = ensure_constraint_columns(df)
+    if marker_col not in data.columns:
+        if "marker_angle" in data.columns:
+            data[marker_col] = marker_visibility_from_angle(data["marker_angle"])
+        else:
+            data[marker_col] = 1.0
+    if time_col not in data.columns:
+        data[time_col] = 1.0
+
+    y = target_from_visibility(
+        data[visibility_col].to_numpy(dtype=float),
+        data[marker_col].to_numpy(dtype=float),
+        data[time_col].to_numpy(dtype=float),
+    )
+    weights = None
+    if "visibility_se" in data.columns:
+        se = np.maximum(data["visibility_se"].to_numpy(dtype=float), EPS)
+        v = np.maximum(data[visibility_col].to_numpy(dtype=float), EPS)
+        sigma_y = se / (2.0 * np.maximum(data[time_col].to_numpy(dtype=float), EPS) * v)
+        weights = 1.0 / np.maximum(sigma_y, EPS) ** 2
+
+    n = len(data)
+    designs = model_designs(data)
+    rows = []
+    pred = pd.DataFrame({"row_id": np.arange(n)})
+    if "condition_id" in data.columns:
+        pred.insert(0, "condition_id", data["condition_id"].to_numpy())
+    pred["target_kappa"] = y
+    y_mean = float(np.average(y, weights=weights)) if weights is not None else float(np.mean(y))
+    sst = float(np.sum((y - y_mean) ** 2))
+    folds = _kfold_slices(n, cv_folds, seed)
+
+    for name, (X, labels) in designs.items():
+        beta = weighted_lstsq(X, y, weights)
+        yhat = np.clip(X @ beta, 0.0, None)
+        residual = y - yhat
+        rss = float(np.sum(residual**2))
+        k = X.shape[1]
+        pred_vis = data[marker_col].to_numpy(dtype=float) * np.exp(
+            -2.0 * yhat * data[time_col].to_numpy(dtype=float)
+        )
+        vis_resid = data[visibility_col].to_numpy(dtype=float) - pred_vis
+        cv_target = []
+        cv_vis = []
+        for test_idx in folds:
+            train_mask = np.ones(n, dtype=bool)
+            train_mask[test_idx] = False
+            train_weights = weights[train_mask] if weights is not None else None
+            beta_cv = weighted_lstsq(X[train_mask], y[train_mask], train_weights)
+            y_cv = np.clip(X[test_idx] @ beta_cv, 0.0, None)
+            v_cv = data[marker_col].to_numpy(dtype=float)[test_idx] * np.exp(
+                -2.0 * y_cv * data[time_col].to_numpy(dtype=float)[test_idx]
+            )
+            cv_target.append(np.mean((y[test_idx] - y_cv) ** 2))
+            cv_vis.append(
+                np.mean((data[visibility_col].to_numpy(dtype=float)[test_idx] - v_cv) ** 2)
+            )
+        rows.append(
+            {
+                "model": name,
+                "n_params": k,
+                "rmse_target": math.sqrt(rss / n),
+                "mae_visibility": float(np.mean(np.abs(vis_resid))),
+                "rmse_visibility": math.sqrt(float(np.mean(vis_resid**2))),
+                "cv_rmse_target": math.sqrt(float(np.mean(cv_target))),
+                "cv_rmse_visibility": math.sqrt(float(np.mean(cv_vis))),
+                "r2_target": 1.0 - rss / sst if sst > EPS else np.nan,
+                "aicc": _aicc(n, rss, k),
+                "bic": n * math.log(max(rss / n, 1e-12)) + k * math.log(max(n, 2)),
+                "parameter_labels_json": json.dumps(labels),
+                "parameters_json": json.dumps([float(v) for v in beta]),
+            }
+        )
+        pred[f"pred_kappa_{name}"] = yhat
+        pred[f"pred_visibility_{name}"] = np.clip(pred_vis, 0.0, 1.0)
+
+    fit = pd.DataFrame(rows).sort_values("aicc", ascending=True).reset_index(drop=True)
+    fit["delta_aicc"] = fit["aicc"] - fit["aicc"].min()
+    rel = np.exp(-0.5 * fit["delta_aicc"].to_numpy(dtype=float))
+    fit["akaike_weight"] = rel / np.maximum(rel.sum(), EPS)
+    return fit, pred, data
+
+
+def build_synthetic_visibility_dataset(
+    n_space=6,
+    n_time=6,
+    n_entropy=6,
+    seed=7,
+    noise_sd=0.002,
+):
+    rng = np.random.default_rng(seed)
+    settings = ApparatusSettings()
+    sigma_values = np.linspace(0.35, 2.2, n_space)
+    response_values = np.linspace(0.25, 2.3, n_time)
+    entropy_values = np.linspace(0.0, 3.2, n_entropy)
+    rows = []
+    condition_id = 0
+    for sigma in sigma_values:
+        for response in response_values:
+            for entropy_bits in entropy_values:
+                s = replace(
+                    settings,
+                    detector_spatial_resolution=float(sigma),
+                    detector_response_time=float(response),
+                    record_entropy_bits=float(entropy_bits),
+                )
+                c = constraints_from_apparatus(s)
+                eta, kappa, exposure = dephasing_eta(s, eraser_time=None)
+                visibility_true = c["marker_visibility"] * eta
+                visibility_obs = float(
+                    np.clip(visibility_true + rng.normal(0.0, noise_sd), 1e-4, 0.999)
+                )
+                rows.append(
+                    {
+                        "condition_id": condition_id,
+                        "path_separation": s.path_separation,
+                        "detector_spatial_resolution": s.detector_spatial_resolution,
+                        "coherence_time": s.coherence_time,
+                        "detector_response_time": s.detector_response_time,
+                        "record_entropy_bits": s.record_entropy_bits,
+                        "record_survival_probability": s.record_survival_probability,
+                        "environment_coupling": s.environment_coupling,
+                        "Lambda": c["Lambda"],
+                        "Gamma": c["Gamma"],
+                        "Theta": c["Theta"],
+                        "marker_angle": s.marker_angle,
+                        "marker_visibility": c["marker_visibility"],
+                        "t_meas": exposure,
+                        "kappa_eff_true": kappa,
+                        "visibility_true": visibility_true,
+                        "visibility_obs": visibility_obs,
+                        "visibility_se": noise_sd,
+                    }
+                )
+                condition_id += 1
+    return pd.DataFrame(rows)
+
+
+def _svg_text(x, y, text, size=13, anchor="middle", color="#263238", rotate=None):
+    safe = html.escape(str(text))
+    transform = "" if rotate is None else f' transform="rotate({rotate} {x:.2f} {y:.2f})"'
+    return (
+        f'<text x="{x:.2f}" y="{y:.2f}" font-size="{size}" '
+        f'font-family="Arial, Helvetica, sans-serif" text-anchor="{anchor}" '
+        f'fill="{color}"{transform}>{safe}</text>'
+    )
+
+
+def _svg_page(width, height, body):
+    return "\n".join(
+        [
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+            '<rect width="100%" height="100%" fill="#ffffff"/>',
+            *body,
+            "</svg>",
+            "",
+        ]
+    )
+
+
+def _range_with_pad(values, pad=0.05):
+    vals = np.asarray(values, dtype=float)
+    low = float(np.nanmin(vals))
+    high = float(np.nanmax(vals))
+    if not math.isfinite(low) or not math.isfinite(high):
+        low, high = 0.0, 1.0
+    if abs(high - low) < EPS:
+        high = low + 1.0
+    span = high - low
+    return low - pad * span, high + pad * span
+
+
+def _scale(value, src_min, src_max, dst_min, dst_max):
+    return dst_min + (np.asarray(value) - src_min) * (dst_max - dst_min) / (
+        src_max - src_min + EPS
+    )
+
+
+def write_line_svg(
+    path: Path,
+    x,
+    series,
+    title,
+    xlabel,
+    ylabel,
+    xlim=None,
+    ylim=None,
+    vlines: Iterable[tuple[float, str, str]] | None = None,
+):
+    width, height = 920, 520
+    left, right, top, bottom = 82, 28, 54, 82
+    plot_w = width - left - right
+    plot_h = height - top - bottom
+    x = np.asarray(x, dtype=float)
+    all_y = np.concatenate([np.asarray(s["y"], dtype=float) for s in series])
+    x_min, x_max = xlim if xlim else _range_with_pad(x, 0.02)
+    y_min, y_max = ylim if ylim else _range_with_pad(all_y, 0.08)
+    body = [
+        _svg_text(width / 2, 28, title, size=20, color="#17212b"),
+        f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="#fafafa" stroke="#cfd8dc"/>',
+    ]
+    for tick in np.linspace(x_min, x_max, 6):
+        px = float(_scale(tick, x_min, x_max, left, left + plot_w))
+        body.append(f'<line x1="{px:.2f}" y1="{top}" x2="{px:.2f}" y2="{top + plot_h}" stroke="#eceff1"/>')
+        body.append(_svg_text(px, top + plot_h + 24, f"{tick:.2g}", size=11))
+    for tick in np.linspace(y_min, y_max, 6):
+        py = float(_scale(tick, y_min, y_max, top + plot_h, top))
+        body.append(f'<line x1="{left}" y1="{py:.2f}" x2="{left + plot_w}" y2="{py:.2f}" stroke="#eceff1"/>')
+        body.append(_svg_text(left - 10, py + 4, f"{tick:.2g}", size=11, anchor="end"))
+    if vlines:
+        for xv, label, color in vlines:
+            px = float(_scale(xv, x_min, x_max, left, left + plot_w))
+            body.append(f'<line x1="{px:.2f}" y1="{top}" x2="{px:.2f}" y2="{top + plot_h}" stroke="{color}" stroke-width="1.8" stroke-dasharray="6 5"/>')
+            body.append(_svg_text(px + 6, top + 16, label, size=11, anchor="start", color=color))
+    for s in series:
+        y = np.asarray(s["y"], dtype=float)
+        px = _scale(x, x_min, x_max, left, left + plot_w)
+        py = _scale(y, y_min, y_max, top + plot_h, top)
+        points = " ".join(f"{a:.2f},{b:.2f}" for a, b in zip(px, py))
+        dash = ' stroke-dasharray="7 5"' if s.get("dash") else ""
+        body.append(
+            f'<polyline fill="none" stroke="{s["color"]}" stroke-width="2.5"{dash} points="{points}"/>'
+        )
+    legend_x = left + 12
+    legend_y = top + 18
+    for idx, s in enumerate(series):
+        y0 = legend_y + idx * 22
+        dash = ' stroke-dasharray="7 5"' if s.get("dash") else ""
+        body.append(f'<line x1="{legend_x}" y1="{y0}" x2="{legend_x + 28}" y2="{y0}" stroke="{s["color"]}" stroke-width="3"{dash}/>')
+        body.append(_svg_text(legend_x + 36, y0 + 4, s["label"], size=12, anchor="start"))
+    body.append(_svg_text(left + plot_w / 2, height - 28, xlabel, size=14))
+    body.append(_svg_text(22, top + plot_h / 2, ylabel, size=14, rotate=-90))
+    path.write_text(_svg_page(width, height, body), encoding="utf-8")
+
+
+def write_scatter_svg(
+    path: Path,
+    x,
+    y,
+    title,
+    xlabel,
+    ylabel,
+    color="#2962ff",
+    line_x=None,
+    line_y=None,
+    line_label=None,
+    diagonal=False,
+):
+    width, height = 720, 560
+    left, right, top, bottom = 82, 32, 54, 82
+    plot_w = width - left - right
+    plot_h = height - top - bottom
+    x = np.asarray(x, dtype=float)
+    y = np.asarray(y, dtype=float)
+    x_min, x_max = _range_with_pad(x, 0.06)
+    y_min, y_max = _range_with_pad(y, 0.06)
+    if diagonal:
+        low = min(x_min, y_min)
+        high = max(x_max, y_max)
+        x_min = y_min = low
+        x_max = y_max = high
+    body = [
+        _svg_text(width / 2, 28, title, size=20, color="#17212b"),
+        f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="#fafafa" stroke="#cfd8dc"/>',
+    ]
+    for tick in np.linspace(x_min, x_max, 6):
+        px = float(_scale(tick, x_min, x_max, left, left + plot_w))
+        body.append(f'<line x1="{px:.2f}" y1="{top}" x2="{px:.2f}" y2="{top + plot_h}" stroke="#eceff1"/>')
+        body.append(_svg_text(px, top + plot_h + 24, f"{tick:.2g}", size=11))
+    for tick in np.linspace(y_min, y_max, 6):
+        py = float(_scale(tick, y_min, y_max, top + plot_h, top))
+        body.append(f'<line x1="{left}" y1="{py:.2f}" x2="{left + plot_w}" y2="{py:.2f}" stroke="#eceff1"/>')
+        body.append(_svg_text(left - 10, py + 4, f"{tick:.2g}", size=11, anchor="end"))
+    px = _scale(x, x_min, x_max, left, left + plot_w)
+    py = _scale(y, y_min, y_max, top + plot_h, top)
+    for a, b in zip(px, py):
+        body.append(f'<circle cx="{a:.2f}" cy="{b:.2f}" r="3.4" fill="{color}" fill-opacity="0.62"/>')
+    if diagonal:
+        body.append(
+            f'<line x1="{left}" y1="{top + plot_h}" x2="{left + plot_w}" y2="{top}" stroke="#455a64" stroke-width="2"/>'
+        )
+    if line_x is not None and line_y is not None:
+        lx = _scale(line_x, x_min, x_max, left, left + plot_w)
+        ly = _scale(line_y, y_min, y_max, top + plot_h, top)
+        points = " ".join(f"{a:.2f},{b:.2f}" for a, b in zip(lx, ly))
+        body.append(f'<polyline fill="none" stroke="#d84315" stroke-width="2.5" points="{points}"/>')
+        if line_label:
+            body.append(_svg_text(left + 18, top + 20, line_label, size=12, anchor="start", color="#d84315"))
+    body.append(_svg_text(left + plot_w / 2, height - 28, xlabel, size=14))
+    body.append(_svg_text(22, top + plot_h / 2, ylabel, size=14, rotate=-90))
+    path.write_text(_svg_page(width, height, body), encoding="utf-8")
+
+
+def write_bar_svg(path: Path, labels, values, title, ylabel):
+    width, height = 820, 500
+    left, right, top, bottom = 86, 24, 54, 128
+    plot_w = width - left - right
+    plot_h = height - top - bottom
+    labels = list(labels)
+    values = np.asarray(values, dtype=float)
+    y_min, y_max = 0.0, max(1.0, float(np.max(values)) * 1.12)
+    body = [
+        _svg_text(width / 2, 28, title, size=20, color="#17212b"),
+        f'<rect x="{left}" y="{top}" width="{plot_w}" height="{plot_h}" fill="#fafafa" stroke="#cfd8dc"/>',
+    ]
+    for tick in np.linspace(y_min, y_max, 6):
+        py = float(_scale(tick, y_min, y_max, top + plot_h, top))
+        body.append(f'<line x1="{left}" y1="{py:.2f}" x2="{left + plot_w}" y2="{py:.2f}" stroke="#eceff1"/>')
+        body.append(_svg_text(left - 10, py + 4, f"{tick:.2g}", size=11, anchor="end"))
+    slot = plot_w / max(len(labels), 1)
+    bar_w = slot * 0.64
+    palette = ["#2962ff", "#00897b", "#d84315", "#6a1b9a", "#f9a825", "#455a64", "#c2185b", "#2e7d32"]
+    for idx, (label, value) in enumerate(zip(labels, values)):
+        x0 = left + idx * slot + (slot - bar_w) / 2
+        y0 = float(_scale(value, y_min, y_max, top + plot_h, top))
+        h = top + plot_h - y0
+        body.append(f'<rect x="{x0:.2f}" y="{y0:.2f}" width="{bar_w:.2f}" height="{h:.2f}" fill="{palette[idx % len(palette)]}" fill-opacity="0.82"/>')
+        body.append(_svg_text(x0 + bar_w / 2, top + plot_h + 18, label, size=10, rotate=-28))
+    body.append(_svg_text(22, top + plot_h / 2, ylabel, size=14, rotate=-90))
+    path.write_text(_svg_page(width, height, body), encoding="utf-8")
+
+
+def make_quantum_eraser_outputs(settings: ApparatusSettings, output_dir: Path):
+    x = np.linspace(-1.5, 1.5, 1200)
+    rho_joint, _ = build_joint_density(settings, eraser_time=None)
+    rho_path = partial_trace_marker(rho_joint)
+    plus, minus = eraser_basis(settings.eraser_phase)
+    _, rho_plus = condition_on_marker_basis(rho_joint, plus)
+    _, rho_minus = condition_on_marker_basis(rho_joint, minus)
+    raw = screen_intensity_from_rho(x, rho_path)
+    erased_plus = screen_intensity_from_rho(x, rho_plus)
+    erased_minus = screen_intensity_from_rho(x, rho_minus)
+    write_line_svg(
+        output_dir / "figures" / "figure_quantum_eraser_patterns.svg",
+        x,
+        [
+            {"label": f"raw V={path_visibility_from_rho(rho_path):.2f}", "y": raw, "color": "#2962ff"},
+            {"label": f"eraser + V={path_visibility_from_rho(rho_plus):.2f}", "y": erased_plus, "color": "#00897b"},
+            {"label": f"eraser - V={path_visibility_from_rho(rho_minus):.2f}", "y": erased_minus, "color": "#d84315", "dash": True},
+        ],
+        "Raw and Conditioned Eraser Patterns",
+        "screen position",
+        "normalized intensity",
+    )
+    summary = quantum_eraser_observables(settings, eraser_time=None)
+    pd.DataFrame([summary]).to_csv(output_dir / "quantum_eraser_summary.csv", index=False)
+
+
+def make_timing_outputs(settings: ApparatusSettings, output_dir: Path):
+    eraser_times = np.linspace(0.0, settings.measurement_duration * 1.25, 140)
+    low_theta = 0.18
+    high_theta = constraints_from_apparatus(settings)["Theta"]
+    rows = []
+    for theta in [low_theta, high_theta]:
+        for t in eraser_times:
+            obs = quantum_eraser_observables(settings, eraser_time=float(t), theta_override=theta)
+            rows.append(
+                {
+                    "theta_used": theta,
+                    "eraser_time": float(t),
+                    **obs,
+                }
+            )
+    timing = pd.DataFrame(rows)
+    timing.to_csv(output_dir / "delayed_choice_timing_summary.csv", index=False)
+    series = []
+    for theta, color, label in [
+        (low_theta, "#00897b", "weak irreversible record"),
+        (high_theta, "#d84315", "strong irreversible record"),
+    ]:
+        subset = timing[timing["theta_used"] == theta]
+        series.append(
+            {
+                "label": label,
+                "y": subset["visibility_eraser_plus"].to_numpy(),
+                "color": color,
+            }
+        )
+    write_line_svg(
+        output_dir / "figures" / "figure_delayed_choice_timing.svg",
+        eraser_times,
+        series,
+        "Delayed-Choice Eraser: Timing Matters Only Through Irreversibility",
+        "eraser time",
+        "conditioned visibility",
+        ylim=(0.0, 1.05),
+        vlines=[
+            (settings.record_onset_time, "record onset", "#455a64"),
+            (settings.measurement_duration, "screen", "#6a1b9a"),
+        ],
+    )
+
+
+def make_trajectory_outputs(settings: ApparatusSettings, output_dir: Path):
+    traj = simulate_phase_flip_trajectories(settings)
+    traj.to_csv(output_dir / "trajectory_summary.csv", index=False)
+    write_line_svg(
+        output_dir / "figures" / "figure_trajectory_convergence.svg",
+        traj["time"].to_numpy(),
+        [
+            {
+                "label": "stochastic trajectory ensemble",
+                "y": traj["visibility_trajectory_mean"].to_numpy(),
+                "color": "#2962ff",
+            },
+            {
+                "label": "master-equation expectation",
+                "y": traj["visibility_exact"].to_numpy(),
+                "color": "#d84315",
+                "dash": True,
+            },
+        ],
+        "Quantum Trajectory Ensemble Reproduces Dephasing",
+        "time",
+        "raw visibility",
+        ylim=(0.0, 1.05),
+        vlines=[(settings.record_onset_time, "record onset", "#455a64")],
+    )
+
+
+def make_fit_outputs(df: pd.DataFrame, output_dir: Path, prefix="demo"):
+    fit, pred, data = fit_visibility_models(df)
+    fit.to_csv(output_dir / f"{prefix}_fit_summary.csv", index=False)
+    pred.to_csv(output_dir / f"{prefix}_fit_predictions.csv", index=False)
+    best_model = str(fit.iloc[0]["model"])
+    merged = data.reset_index(drop=True).join(pred.drop(columns=["condition_id"], errors="ignore"))
+    write_bar_svg(
+        output_dir / "figures" / "figure_model_comparison.svg",
+        fit["model"].to_list(),
+        fit["delta_aicc"].to_numpy(),
+        "Model Comparison on Visibility Dataset",
+        "delta AICc",
+    )
+    obs = data["visibility_obs"].to_numpy(dtype=float)
+    pred_best = pred[f"pred_visibility_{best_model}"].to_numpy(dtype=float)
+    write_scatter_svg(
+        output_dir / "figures" / "figure_best_fit_scatter.svg",
+        obs,
+        pred_best,
+        f"Observed vs Predicted Visibility ({best_model})",
+        "observed visibility",
+        "predicted visibility",
+        diagonal=True,
+    )
+    product = (
+        data["Lambda"].to_numpy(dtype=float)
+        * data["Gamma"].to_numpy(dtype=float)
+        * data["Theta"].to_numpy(dtype=float)
+    )
+    order = np.argsort(product)
+    write_scatter_svg(
+        output_dir / "figures" / "figure_master_curve.svg",
+        product,
+        obs,
+        "Product-Law Master Curve",
+        "Lambda * Gamma * Theta",
+        "visibility",
+        line_x=product[order],
+        line_y=pred["pred_visibility_product"].to_numpy(dtype=float)[order],
+        line_label="product fit",
+    )
+    return fit, pred, merged
+
+
+def write_template_csv(data_dir: Path):
+    template = build_synthetic_visibility_dataset(n_space=2, n_time=2, n_entropy=2, noise_sd=0.0)
+    cols = [
+        "condition_id",
+        "path_separation",
+        "detector_spatial_resolution",
+        "coherence_time",
+        "detector_response_time",
+        "record_entropy_bits",
+        "record_survival_probability",
+        "environment_coupling",
+        "Lambda",
+        "Gamma",
+        "Theta",
+        "marker_angle",
+        "marker_visibility",
+        "t_meas",
+        "visibility_obs",
+        "visibility_se",
+    ]
+    template[cols].to_csv(data_dir / "visibility_fit_template.csv", index=False)
+
+
+def run_demo(output_dir: Path, data_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    settings = ApparatusSettings()
+    make_quantum_eraser_outputs(settings, output_dir)
+    make_timing_outputs(settings, output_dir)
+    make_trajectory_outputs(settings, output_dir)
+    synthetic = build_synthetic_visibility_dataset()
+    synthetic.to_csv(output_dir / "synthetic_visibility_dataset.csv", index=False)
+    fit, _, _ = make_fit_outputs(synthetic, output_dir, prefix="demo")
+    write_template_csv(data_dir)
+    run_summary = {
+        "settings": asdict(settings),
+        "constraints": constraints_from_apparatus(settings),
+        "best_fit_model": str(fit.iloc[0]["model"]),
+        "best_delta_aicc": float(fit.iloc[0]["delta_aicc"]),
+    }
+    (output_dir / "demo_run_summary.json").write_text(
+        json.dumps(run_summary, indent=2),
+        encoding="utf-8",
+    )
+
+
+def run_fit(input_csv: Path, output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_csv)
+    make_fit_outputs(df, output_dir, prefix="fit")
+
+
+def build_parser():
+    parser = argparse.ArgumentParser(
+        description="Constraint Dynamics quantum-measurement V3 scaffold"
+    )
+    sub = parser.add_subparsers(dest="command")
+    demo = sub.add_parser("demo", help="generate demo data, fits, and figures")
+    demo.add_argument("--output-dir", default="outputs")
+    demo.add_argument("--data-dir", default="data")
+    fit = sub.add_parser("fit", help="fit visibility models to a CSV")
+    fit.add_argument("--input", required=True)
+    fit.add_argument("--output-dir", default="outputs")
+    template = sub.add_parser("template", help="write a visibility CSV template")
+    template.add_argument("--data-dir", default="data")
+    return parser
+
+
+def main(argv=None):
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    command = args.command or "demo"
+    if command == "demo":
+        output_dir = Path(getattr(args, "output_dir", "outputs"))
+        data_dir = Path(getattr(args, "data_dir", "data"))
+        run_demo(output_dir, data_dir)
+    elif command == "fit":
+        run_fit(Path(args.input), Path(args.output_dir))
+    elif command == "template":
+        data_dir = Path(args.data_dir)
+        data_dir.mkdir(parents=True, exist_ok=True)
+        write_template_csv(data_dir)
+    else:
+        parser.error(f"Unknown command {command}")
+
+
+if __name__ == "__main__":
+    main()

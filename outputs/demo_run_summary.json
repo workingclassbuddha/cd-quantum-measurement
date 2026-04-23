@@ -1,0 +1,28 @@
+{
+  "settings": {
+    "path_separation": 1.0,
+    "detector_spatial_resolution": 0.72,
+    "coherence_time": 1.0,
+    "detector_response_time": 0.62,
+    "record_entropy_bits": 1.25,
+    "record_survival_probability": 0.72,
+    "environment_coupling": 0.82,
+    "marker_angle": 1.2,
+    "relative_phase": 0.0,
+    "measurement_duration": 1.0,
+    "record_onset_time": 0.24,
+    "record_growth_time": 0.24,
+    "eraser_time": 0.18,
+    "eraser_phase": 0.0,
+    "kappa0": 1.35,
+    "background_kappa": 0.0
+  },
+  "constraints": {
+    "Lambda": 0.6188286139470075,
+    "Gamma": 0.9258345459315777,
+    "Theta": 0.40043004310444363,
+    "marker_visibility": 0.3623577544766736
+  },
+  "best_fit_model": "product",
+  "best_delta_aicc": 0.0
+}
