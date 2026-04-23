@@ -105,3 +105,7 @@ These are rules of thumb, not hard laws:
 - `VIF > 5`: factor-level interpretation is fragile.
 
 The scaffold should prefer failed clean tests over impressive ambiguous fits. A falsifiable model earns its keep by showing where it can be wrong.
+
+## Literature-Derived Data
+
+Candidate real-data sources and extraction priorities are tracked in [literature_data_plan.md](literature_data_plan.md) and `data/literature_study_register.csv`. The first extraction target should be Chapman et al. 1995 because it is the cleanest spatial distinguishability sweep and includes a recovery branch.

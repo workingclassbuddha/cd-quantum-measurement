@@ -61,9 +61,11 @@ theory_notes.md
 methods_note.md
 docs/literature_review.md
 docs/experimental_design.md
+docs/literature_data_plan.md
 docs/v2_audit.md
 src/constraint_dynamics_quantum_v3.py
 data/visibility_fit_template.csv
+data/literature_study_register.csv
 outputs/figures/
 outputs/demo_fit_summary.csv
 ```
