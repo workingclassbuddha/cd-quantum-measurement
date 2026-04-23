@@ -80,6 +80,12 @@ y = -log(visibility_obs / marker_visibility) / (2 * t_meas)
 
 It then compares constant, product, product-plus-background, additive, additive-plus-background, pairwise, pairwise-plus-product, and full second-order laws. Reported metrics include RMSE, visibility MAE, AICc, BIC, Akaike weight, and k-fold cross-validation RMSE.
 
+## Identifiability Diagnostics
+
+The `design` command checks whether a dataset can actually distinguish the three proposed factors. It reports factor correlations, variance inflation factors, factor ranges, and the condition number of the full second-order feature matrix. The benchmark command compares a balanced factorial synthetic design with a confounded latent-load design where Lambda, Gamma, and Theta rise together.
+
+The intended interpretation is conservative: a product-law win in a confounded design is not strong evidence for the theory. It only becomes meaningful when the same law predicts held-out data in designs where spatial selectivity, timing resolution, and record irreversibility have been varied independently.
+
 ## Limitations
 
 The model is deliberately effective. It does not derive the Born rule, does not solve the measurement problem, and does not supersede environmental decoherence. Its intended scientific use is narrower: fit apparatus-parameterized visibility data and ask whether the Constraint Dynamics product factorization is empirically useful.

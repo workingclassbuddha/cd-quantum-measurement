@@ -1,0 +1,7 @@
+design,factor,r2_from_other_factors,vif
+balanced_factorial,Lambda,2.220446049250313e-16,1.0000000000000002
+balanced_factorial,Gamma,1.1102230246251565e-16,1.0000000000000002
+balanced_factorial,Theta,0.0,1.0
+confounded_latent_load,Lambda,0.9496814087382975,19.87337035727193
+confounded_latent_load,Gamma,0.9759605164384779,41.598231402966306
+confounded_latent_load,Theta,0.9068154010915024,10.731387071611989

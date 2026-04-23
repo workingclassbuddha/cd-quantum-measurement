@@ -614,6 +614,116 @@ def build_synthetic_visibility_dataset(
     return pd.DataFrame(rows)
 
 
+def build_confounded_visibility_dataset(n=216, seed=11, noise_sd=0.002):
+    """Synthetic dataset where Lambda/Gamma/Theta are intentionally correlated."""
+
+    rng = np.random.default_rng(seed)
+    settings = ApparatusSettings()
+    q_values = np.linspace(0.0, 1.0, n)
+    rows = []
+    for condition_id, q in enumerate(q_values):
+        q_jitter = float(np.clip(q + rng.normal(0.0, 0.025), 0.0, 1.0))
+        s = replace(
+            settings,
+            detector_spatial_resolution=float(2.2 - 1.85 * q_jitter),
+            detector_response_time=float(2.3 - 2.05 * q_jitter),
+            record_entropy_bits=float(3.2 * q_jitter),
+        )
+        c = constraints_from_apparatus(s)
+        eta, kappa, exposure = dephasing_eta(s, eraser_time=None)
+        visibility_true = c["marker_visibility"] * eta
+        visibility_obs = float(
+            np.clip(visibility_true + rng.normal(0.0, noise_sd), 1e-4, 0.999)
+        )
+        rows.append(
+            {
+                "condition_id": condition_id,
+                "latent_detector_load": q_jitter,
+                "path_separation": s.path_separation,
+                "detector_spatial_resolution": s.detector_spatial_resolution,
+                "coherence_time": s.coherence_time,
+                "detector_response_time": s.detector_response_time,
+                "record_entropy_bits": s.record_entropy_bits,
+                "record_survival_probability": s.record_survival_probability,
+                "environment_coupling": s.environment_coupling,
+                "Lambda": c["Lambda"],
+                "Gamma": c["Gamma"],
+                "Theta": c["Theta"],
+                "marker_angle": s.marker_angle,
+                "marker_visibility": c["marker_visibility"],
+                "t_meas": exposure,
+                "kappa_eff_true": kappa,
+                "visibility_true": visibility_true,
+                "visibility_obs": visibility_obs,
+                "visibility_se": noise_sd,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def variance_inflation_factors(frame: pd.DataFrame, columns: list[str]):
+    """Return VIF values for the requested columns."""
+
+    rows = []
+    values = frame[columns].to_numpy(dtype=float)
+    for idx, name in enumerate(columns):
+        y = values[:, idx]
+        X = np.delete(values, idx, axis=1)
+        X = np.column_stack([np.ones(len(X)), X])
+        beta, *_ = np.linalg.lstsq(X, y, rcond=None)
+        residual = y - X @ beta
+        sst = float(np.sum((y - np.mean(y)) ** 2))
+        r2 = 1.0 - float(np.sum(residual**2)) / sst if sst > EPS else 0.0
+        vif = 1.0 / max(1.0 - r2, EPS)
+        rows.append({"factor": name, "r2_from_other_factors": r2, "vif": vif})
+    return pd.DataFrame(rows)
+
+
+def design_diagnostics(df: pd.DataFrame, name="dataset"):
+    """Assess whether Lambda/Gamma/Theta are separable in a dataset."""
+
+    data = ensure_constraint_columns(df)
+    factors = ["Lambda", "Gamma", "Theta"]
+    corr = data[factors].corr().fillna(0.0)
+    off_diag = corr.to_numpy(dtype=float)[np.triu_indices(3, k=1)]
+    _, full_labels = model_designs(data)["full_second_order"]
+    full_X, _ = model_designs(data)["full_second_order"]
+    centered = full_X - np.mean(full_X, axis=0)
+    scales = np.std(centered, axis=0)
+    keep = scales > EPS
+    standardized = centered[:, keep] / scales[keep]
+    condition = float(np.linalg.cond(standardized)) if standardized.shape[1] else np.nan
+    vif = variance_inflation_factors(data, factors)
+    ranges = {
+        f"{factor}_range": float(data[factor].max() - data[factor].min())
+        for factor in factors
+    }
+    summary = pd.DataFrame(
+        [
+            {
+                "design": name,
+                "n": len(data),
+                "max_abs_factor_correlation": float(np.max(np.abs(off_diag))),
+                "mean_abs_factor_correlation": float(np.mean(np.abs(off_diag))),
+                "full_second_order_condition_number": condition,
+                "max_vif": float(vif["vif"].max()),
+                **ranges,
+            }
+        ]
+    )
+    corr_rows = corr.reset_index().rename(columns={"index": "factor"})
+    corr_rows.insert(0, "design", name)
+    vif.insert(0, "design", name)
+    feature_rows = pd.DataFrame(
+        {
+            "design": name,
+            "feature": [label for label, ok in zip(full_labels, keep) if ok],
+            "standardized_scale": scales[keep],
+        }
+    )
+    return summary, corr_rows, vif, feature_rows
+
+
 def _svg_text(x, y, text, size=13, anchor="middle", color="#263238", rotate=None):
     safe = html.escape(str(text))
     transform = "" if rotate is None else f' transform="rotate({rotate} {x:.2f} {y:.2f})"'
@@ -798,6 +908,30 @@ def write_bar_svg(path: Path, labels, values, title, ylabel):
     path.write_text(_svg_page(width, height, body), encoding="utf-8")
 
 
+def write_matrix_heatmap_svg(path: Path, matrix_df: pd.DataFrame, title: str):
+    factors = ["Lambda", "Gamma", "Theta"]
+    width, height = 520, 470
+    left, top = 120, 70
+    cell = 86
+    body = [_svg_text(width / 2, 30, title, size=20, color="#17212b")]
+    for i, row_factor in enumerate(factors):
+        body.append(_svg_text(left - 16, top + i * cell + cell / 2 + 5, row_factor, size=13, anchor="end"))
+        body.append(_svg_text(left + i * cell + cell / 2, top - 18, row_factor, size=13))
+        for j, col_factor in enumerate(factors):
+            value = float(matrix_df.loc[matrix_df["factor"] == row_factor, col_factor].iloc[0])
+            intensity = int(245 - 120 * abs(value))
+            if value >= 0:
+                color = f"rgb({intensity},{min(255, intensity + 32)},255)"
+            else:
+                color = f"rgb(255,{min(255, intensity + 18)},{intensity})"
+            x0 = left + j * cell
+            y0 = top + i * cell
+            body.append(f'<rect x="{x0}" y="{y0}" width="{cell}" height="{cell}" fill="{color}" stroke="#ffffff" stroke-width="2"/>')
+            body.append(_svg_text(x0 + cell / 2, y0 + cell / 2 + 5, f"{value:.2f}", size=16, color="#17212b"))
+    body.append(_svg_text(width / 2, height - 42, "factor correlation matrix", size=13, color="#455a64"))
+    path.write_text(_svg_page(width, height, body), encoding="utf-8")
+
+
 def make_quantum_eraser_outputs(settings: ApparatusSettings, output_dir: Path):
     x = np.linspace(-1.5, 1.5, 1200)
     rho_joint, _ = build_joint_density(settings, eraser_time=None)
@@ -940,6 +1074,67 @@ def make_fit_outputs(df: pd.DataFrame, output_dir: Path, prefix="demo"):
     return fit, pred, merged
 
 
+def make_identifiability_outputs(output_dir: Path):
+    balanced = build_synthetic_visibility_dataset()
+    confounded = build_confounded_visibility_dataset()
+    design_frames = {"balanced_factorial": balanced, "confounded_latent_load": confounded}
+    summary_frames = []
+    corr_frames = []
+    vif_frames = []
+    feature_frames = []
+    fit_frames = []
+
+    for name, df in design_frames.items():
+        summary, corr, vif, features = design_diagnostics(df, name=name)
+        fit, _, _ = fit_visibility_models(df)
+        summary_frames.append(summary)
+        corr_frames.append(corr)
+        vif_frames.append(vif)
+        feature_frames.append(features)
+        fit_with_name = fit.copy()
+        fit_with_name.insert(0, "design", name)
+        fit_frames.append(fit_with_name)
+
+    summary = pd.concat(summary_frames, ignore_index=True)
+    corr = pd.concat(corr_frames, ignore_index=True)
+    vif = pd.concat(vif_frames, ignore_index=True)
+    features = pd.concat(feature_frames, ignore_index=True)
+    fits = pd.concat(fit_frames, ignore_index=True)
+    summary.to_csv(output_dir / "identifiability_design_summary.csv", index=False)
+    corr.to_csv(output_dir / "identifiability_factor_correlations.csv", index=False)
+    vif.to_csv(output_dir / "identifiability_vif.csv", index=False)
+    features.to_csv(output_dir / "identifiability_feature_scales.csv", index=False)
+    fits.to_csv(output_dir / "identifiability_model_comparison.csv", index=False)
+
+    product_weights = []
+    labels = []
+    for name in design_frames:
+        row = fits[(fits["design"] == name) & (fits["model"] == "product")].iloc[0]
+        product_weights.append(float(row["akaike_weight"]))
+        labels.append(name.replace("_", " "))
+    write_bar_svg(
+        output_dir / "figures" / "figure_identifiability_product_weight.svg",
+        labels,
+        product_weights,
+        "Product-Law Evidence Depends on Design Separability",
+        "product Akaike weight",
+    )
+    write_bar_svg(
+        output_dir / "figures" / "figure_identifiability_conditioning.svg",
+        labels,
+        np.log10(summary["full_second_order_condition_number"].to_numpy(dtype=float)),
+        "Design Conditioning",
+        "log10 condition number",
+    )
+    for name in design_frames:
+        subset = corr[corr["design"] == name]
+        write_matrix_heatmap_svg(
+            output_dir / "figures" / f"figure_{name}_factor_correlation.svg",
+            subset,
+            f"{name.replace('_', ' ').title()} Factor Correlations",
+        )
+
+
 def write_template_csv(data_dir: Path):
     template = build_synthetic_visibility_dataset(n_space=2, n_time=2, n_entropy=2, noise_sd=0.0)
     cols = [
@@ -974,6 +1169,7 @@ def run_demo(output_dir: Path, data_dir: Path):
     synthetic = build_synthetic_visibility_dataset()
     synthetic.to_csv(output_dir / "synthetic_visibility_dataset.csv", index=False)
     fit, _, _ = make_fit_outputs(synthetic, output_dir, prefix="demo")
+    make_identifiability_outputs(output_dir)
     write_template_csv(data_dir)
     run_summary = {
         "settings": asdict(settings),
@@ -994,6 +1190,28 @@ def run_fit(input_csv: Path, output_dir: Path):
     make_fit_outputs(df, output_dir, prefix="fit")
 
 
+def run_design(input_csv: Path, output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_csv)
+    summary, corr, vif, features = design_diagnostics(df, name=input_csv.stem)
+    summary.to_csv(output_dir / "design_summary.csv", index=False)
+    corr.to_csv(output_dir / "design_factor_correlations.csv", index=False)
+    vif.to_csv(output_dir / "design_vif.csv", index=False)
+    features.to_csv(output_dir / "design_feature_scales.csv", index=False)
+    write_matrix_heatmap_svg(
+        output_dir / "figures" / "figure_design_factor_correlation.svg",
+        corr,
+        "Factor Correlations",
+    )
+
+
+def run_identifiability_benchmark(output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    make_identifiability_outputs(output_dir)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Constraint Dynamics quantum-measurement V3 scaffold"
@@ -1005,6 +1223,11 @@ def build_parser():
     fit = sub.add_parser("fit", help="fit visibility models to a CSV")
     fit.add_argument("--input", required=True)
     fit.add_argument("--output-dir", default="outputs")
+    design = sub.add_parser("design", help="diagnose factor separability for a CSV")
+    design.add_argument("--input", required=True)
+    design.add_argument("--output-dir", default="outputs/design_diagnostics")
+    bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
+    bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
     template.add_argument("--data-dir", default="data")
     return parser
@@ -1020,6 +1243,10 @@ def main(argv=None):
         run_demo(output_dir, data_dir)
     elif command == "fit":
         run_fit(Path(args.input), Path(args.output_dir))
+    elif command == "design":
+        run_design(Path(args.input), Path(args.output_dir))
+    elif command == "benchmark-designs":
+        run_identifiability_benchmark(Path(args.output_dir))
     elif command == "template":
         data_dir = Path(args.data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)

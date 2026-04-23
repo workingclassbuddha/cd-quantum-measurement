@@ -1,0 +1,15 @@
+design,feature,standardized_scale
+balanced_factorial,L,0.31276689793094037
+balanced_factorial,G,0.31497471590749515
+balanced_factorial,T,0.2504380172209796
+balanced_factorial,LG,0.23329615437597118
+balanced_factorial,LT,0.18420078349475164
+balanced_factorial,GT,0.20706439649255037
+balanced_factorial,LGT,0.12761074579153525
+confounded_latent_load,L,0.2672047727242969
+confounded_latent_load,G,0.2909697661641411
+confounded_latent_load,T,0.20867247423723434
+confounded_latent_load,LG,0.3044499036284358
+confounded_latent_load,LT,0.21166586532940612
+confounded_latent_load,GT,0.24422744844654315
+confounded_latent_load,LGT,0.22011485705628742

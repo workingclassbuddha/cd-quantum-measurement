@@ -19,6 +19,7 @@ This is not a derivation of wavefunction collapse. It is not a replacement for s
 - Stochastic phase-flip trajectory simulation whose ensemble reproduces the master-equation dephasing curve.
 - Apparatus-to-constraint mappings for Lambda, Gamma, and Theta.
 - Model comparison across constant, product, additive, pairwise, and extended interaction laws using AICc, BIC, Akaike weights, and k-fold cross-validation.
+- Identifiability diagnostics for deciding whether a dataset actually separates Lambda, Gamma, and Theta.
 
 ## Quick Start
 
@@ -40,12 +41,26 @@ Fit your own visibility dataset:
 python src/constraint_dynamics_quantum_v3.py fit --input data/visibility_fit_template.csv --output-dir outputs
 ```
 
+Diagnose whether a dataset is separable enough to interpret:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py design --input data/visibility_fit_template.csv --output-dir outputs/design_diagnostics
+```
+
+Generate the balanced-vs-confounded benchmark:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py benchmark-designs --output-dir outputs
+```
+
 ## Repository Layout
 
 ```text
 README.md
 theory_notes.md
 methods_note.md
+docs/literature_review.md
+docs/experimental_design.md
 docs/v2_audit.md
 src/constraint_dynamics_quantum_v3.py
 data/visibility_fit_template.csv
@@ -62,6 +77,8 @@ outputs/demo_fit_summary.csv
 ![Trajectory convergence](outputs/figures/figure_trajectory_convergence.svg)
 
 ![Model comparison](outputs/figures/figure_model_comparison.svg)
+
+![Identifiability conditioning](outputs/figures/figure_identifiability_conditioning.svg)
 
 ## Minimal Data Schema
 
@@ -85,3 +102,5 @@ marker_angle,t_meas,visibility_obs
 ## Limits
 
 The model respects standard quantum eraser behavior: reversible path marking can suppress raw interference, conditioned eraser data can recover it, and irreversible dephasing cannot be recovered by changing the marker basis later. The claims here remain effective and phenomenological until real apparatus datasets can discriminate the product law from alternatives.
+
+Use [docs/experimental_design.md](docs/experimental_design.md) before taking a product-law fit seriously. The scaffold now treats high factor correlation and poor design conditioning as first-class warnings rather than afterthoughts.
