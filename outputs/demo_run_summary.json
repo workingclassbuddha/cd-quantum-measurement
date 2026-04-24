@@ -7,6 +7,7 @@
     "record_entropy_bits": 1.25,
     "record_survival_probability": 0.72,
     "environment_coupling": 0.82,
+    "record_accessibility": 0.0,
     "marker_angle": 1.2,
     "relative_phase": 0.0,
     "measurement_duration": 1.0,

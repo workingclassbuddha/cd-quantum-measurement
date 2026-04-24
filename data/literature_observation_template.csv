@@ -1,5 +1,5 @@
-study_id,source_figure,source_panel,extraction_method,extracted_by,extraction_date,x_name,x_value,x_units,visibility_obs,visibility_se,visibility_type,marker_visibility,t_meas,Lambda,Gamma,Theta,path_separation,detector_spatial_resolution,coherence_time,detector_response_time,record_entropy_bits,record_survival_probability,environment_coupling,conditioned_on,notes
-CHAPMAN_1995_SCATTER,Fig.2,contrast,digitized_manual,,,,d_over_lambda,,,,raw,,,,,,,,,,,,,Unconditioned contrast ratio C(laser on)/C(laser off)
-CHAPMAN_1995_SCATTER,Fig.3,case_I,digitized_manual,,,,d_over_lambda,,,,conditioned,,,,,,,,,,,,forward_scattered_acceptance,Postselected restricted photon direction branch
-HACKERMUELLER_2004_THERMAL,Fig.4,decoherence_curve,digitized_manual,,,,heating_power_or_temperature,,,,raw,,,,,,,,,,,,,Thermal emission record-load sweep
-HORNBERGER_2003_COLLISION,Fig.2_or_3,visibility_vs_pressure,digitized_manual,,,,gas_pressure,,,,raw,,,,,,,,,,,,,Collisional decoherence record-load sweep
+study_id,source_figure,source_panel,extraction_method,extracted_by,extraction_date,x_name,x_value,x_units,visibility_obs,visibility_se,visibility_type,marker_visibility,t_meas,Lambda,Gamma,Theta,path_separation,detector_spatial_resolution,coherence_time,detector_response_time,record_entropy_bits,record_survival_probability,environment_coupling,record_accessibility,conditioned_on,notes
+CHAPMAN_1995_SCATTER,Fig.2,contrast,digitized_manual,,,d_over_lambda,,,,,raw,,,,,,,,,,,,,,,Unconditioned contrast ratio C(laser on)/C(laser off)
+CHAPMAN_1995_SCATTER,Fig.3,case_I,digitized_manual,,,d_over_lambda,,,,,conditioned,,,,,,,,,,,,,,forward_scattered_acceptance,Postselected restricted photon direction branch
+HACKERMUELLER_2004_THERMAL,Fig.4,decoherence_curve,digitized_manual,,,heating_power_or_temperature,,,,,raw,,,,,,,,,,,,,,,Thermal emission record-load sweep
+HORNBERGER_2003_COLLISION,Fig.2_or_3,visibility_vs_pressure,digitized_manual,,,gas_pressure,,,,,raw,,,,,,,,,,,,,,,Collisional decoherence record-load sweep

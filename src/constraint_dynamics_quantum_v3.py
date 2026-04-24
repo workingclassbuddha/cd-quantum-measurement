@@ -36,6 +36,7 @@ class ApparatusSettings:
     record_entropy_bits: float = 1.25
     record_survival_probability: float = 0.72
     environment_coupling: float = 0.82
+    record_accessibility: float = 0.0
     marker_angle: float = 1.20
     relative_phase: float = 0.0
     measurement_duration: float = 1.0
@@ -84,19 +85,22 @@ def energetic_constraint(
     record_entropy_bits,
     record_survival_probability=1.0,
     environment_coupling=1.0,
+    record_accessibility=0.0,
 ):
     """Map irreversible record load to Theta.
 
     Theta is modeled as a saturating function of entropy exported into a
-    durable detector/environment record. Reversible marker storage can make
-    paths distinguishable without creating large Theta.
+    durable detector/environment record that is inaccessible to later
+    conditioning. Reversible or selectively accessible marker storage can make
+    paths distinguishable without creating large effective Theta.
     """
 
     bits = np.maximum(_as_array(record_entropy_bits), 0.0)
     survival = clip01(record_survival_probability)
     coupling = clip01(environment_coupling)
+    inaccessible = 1.0 - clip01(record_accessibility)
     entropy_nats = bits * math.log(2.0)
-    return clip01(1.0 - np.exp(-(entropy_nats * survival * coupling)))
+    return clip01(1.0 - np.exp(-(entropy_nats * survival * coupling * inaccessible)))
 
 
 def marker_visibility_from_angle(marker_angle):
@@ -123,6 +127,7 @@ def constraints_from_apparatus(settings: ApparatusSettings) -> dict[str, float]:
             settings.record_entropy_bits,
             settings.record_survival_probability,
             settings.environment_coupling,
+            settings.record_accessibility,
         )
     )
     marker = float(marker_visibility_from_angle(settings.marker_angle))
@@ -453,6 +458,12 @@ def ensure_constraint_columns(df: pd.DataFrame) -> pd.DataFrame:
             "Constraint columns contain missing values and apparatus columns are "
             "incomplete; provide complete Lambda/Gamma/Theta or apparatus settings."
         )
+    if "record_accessibility" in data.columns:
+        data["record_accessibility"] = pd.to_numeric(
+            data["record_accessibility"], errors="coerce"
+        ).fillna(0.0)
+    else:
+        data["record_accessibility"] = 0.0
     data["Lambda"] = spatial_constraint(
         data["path_separation"], data["detector_spatial_resolution"]
     )
@@ -463,6 +474,7 @@ def ensure_constraint_columns(df: pd.DataFrame) -> pd.DataFrame:
         data["record_entropy_bits"],
         data["record_survival_probability"],
         data["environment_coupling"],
+        data["record_accessibility"],
     )
     return data
 
@@ -656,6 +668,7 @@ def build_synthetic_visibility_dataset(
                         "record_entropy_bits": s.record_entropy_bits,
                         "record_survival_probability": s.record_survival_probability,
                         "environment_coupling": s.environment_coupling,
+                        "record_accessibility": s.record_accessibility,
                         "Lambda": c["Lambda"],
                         "Gamma": c["Gamma"],
                         "Theta": c["Theta"],
@@ -704,6 +717,7 @@ def build_confounded_visibility_dataset(n=216, seed=11, noise_sd=0.002):
                 "record_entropy_bits": s.record_entropy_bits,
                 "record_survival_probability": s.record_survival_probability,
                 "environment_coupling": s.environment_coupling,
+                "record_accessibility": s.record_accessibility,
                 "Lambda": c["Lambda"],
                 "Gamma": c["Gamma"],
                 "Theta": c["Theta"],
@@ -1388,6 +1402,7 @@ def write_template_csv(data_dir: Path):
         "record_entropy_bits",
         "record_survival_probability",
         "environment_coupling",
+        "record_accessibility",
         "Lambda",
         "Gamma",
         "Theta",

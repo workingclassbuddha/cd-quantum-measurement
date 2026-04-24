@@ -69,6 +69,7 @@ methods_note.md
 docs/literature_review.md
 docs/experimental_design.md
 docs/literature_data_plan.md
+docs/breakthrough_hunt.md
 docs/v2_audit.md
 src/constraint_dynamics_quantum_v3.py
 data/visibility_fit_template.csv
@@ -105,6 +106,7 @@ or apparatus columns that V3 maps into constraints:
 path_separation,detector_spatial_resolution,coherence_time,
 detector_response_time,record_entropy_bits,
 record_survival_probability,environment_coupling,
+record_accessibility,
 marker_angle,t_meas,visibility_obs
 ```
 

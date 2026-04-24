@@ -14,6 +14,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     build_synthetic_visibility_dataset,
     decompose_eraser_dataset,
     design_diagnostics,
+    energetic_constraint,
     fit_visibility_models,
     partial_trace_marker,
     path_visibility_from_rho,
@@ -42,6 +43,29 @@ def test_fixed_eraser_can_be_below_eta():
     assert obs["visibility_eraser_plus"] <= obs["eta"] + 1e-12
     assert obs["visibility_eraser_minus"] <= obs["eta"] + 1e-12
     assert obs["visibility_eraser_plus"] < obs["eta"]
+
+
+def test_record_accessibility_reduces_effective_theta():
+    inaccessible = energetic_constraint(
+        record_entropy_bits=2.0,
+        record_survival_probability=1.0,
+        environment_coupling=1.0,
+        record_accessibility=0.0,
+    )
+    accessible = energetic_constraint(
+        record_entropy_bits=2.0,
+        record_survival_probability=1.0,
+        environment_coupling=1.0,
+        record_accessibility=1.0,
+    )
+    partial = energetic_constraint(
+        record_entropy_bits=2.0,
+        record_survival_probability=1.0,
+        environment_coupling=1.0,
+        record_accessibility=0.5,
+    )
+    assert inaccessible > partial > accessible
+    assert np.isclose(accessible, 0.0)
 
 
 def test_decompose_eraser_recovers_known_synthetic_values():

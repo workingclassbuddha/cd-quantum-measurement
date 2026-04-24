@@ -30,10 +30,10 @@ V3 uses these practical mappings:
 
 - Lambda = spatial path distinguishability, computed from path separation relative to detector spatial resolution.
 - Gamma = temporal distinguishability, computed from coherence time relative to detector response time or bandwidth.
-- Theta = irreversible record load, computed from entropy exported into a durable detector/environment record.
+- Theta = inaccessible durable record load, computed from entropy exported into a detector/environment record after accounting for whether that record remains available for conditioning.
 - marker_visibility = reversible marker overlap, separate from irreversible dephasing.
 
-This separation is essential. A reversible marker can reduce raw visibility by entangling path with a marker degree of freedom. A conditioned eraser basis can recover that reversible coherence. By contrast, high Theta dephasing is a durable record and remains unrecoverable in the conditioned branch.
+This separation is essential. A reversible marker can reduce raw visibility by entangling path with a marker degree of freedom. A conditioned eraser basis can recover that reversible coherence. By contrast, high Theta dephasing is a durable inaccessible record and remains unrecoverable in the conditioned branch.
 
 ## Testable Question
 

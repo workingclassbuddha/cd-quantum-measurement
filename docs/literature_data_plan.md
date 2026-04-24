@@ -52,7 +52,7 @@ Initial mapping:
 ```text
 Lambda = f(path separation / photon wavelength)
 Gamma  = fixed or weakly varying
-Theta  = low-to-moderate, because postselection can recover coherence
+Theta  = high for traced-out photon directions, lower for accessible/postselected records
 marker_visibility = 1 unless a separate reversible marker is modeled
 ```
 

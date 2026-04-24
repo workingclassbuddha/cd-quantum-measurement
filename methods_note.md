@@ -37,10 +37,12 @@ The default maps are saturating and dimensionless:
 ```text
 Lambda = 1 - exp[-0.5 * (path_separation / detector_spatial_resolution)^2]
 Gamma  = 1 - exp[-(coherence_time / detector_response_time)^2]
-Theta  = 1 - exp[-entropy_nats * record_survival_probability * environment_coupling]
+Theta  = 1 - exp[-entropy_nats * record_survival_probability * environment_coupling * (1 - record_accessibility)]
 ```
 
 These are intentionally simple and replaceable. Their role is to make the scaffold fit-ready, not to assert final apparatus physics.
+
+`record_accessibility` captures the Chapman-style lesson that a record can be entangling without being operationally irreversible. A traced-out photon direction or detector reservoir contributes strongly to Theta; a record still available for postselection or erasure contributes less.
 
 ## Quantum Eraser Branch
 
