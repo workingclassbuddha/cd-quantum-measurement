@@ -44,15 +44,15 @@ These are intentionally simple and replaceable. Their role is to make the scaffo
 
 ## Quantum Eraser Branch
 
-Unconditioned visibility is suppressed by both reversible marker entanglement and irreversible dephasing. Conditioning on the eraser basis removes the reversible marker factor, but leaves the irreversible dephasing factor:
+Unconditioned visibility is suppressed by both reversible marker entanglement and irreversible dephasing. Conditioning on a suitable eraser basis can remove the reversible marker factor, but leaves the irreversible dephasing factor:
 
 ```text
-V_raw       = marker_visibility * eta
-V_erased    = eta
-eta         = exp(-2 * integral kappa(t) dt)
+V_raw            = marker_visibility * eta
+V_erased_optimal = eta
+eta              = exp(-2 * integral kappa(t) dt)
 ```
 
-This reproduces the qualitative quantum eraser distinction: reversible which-path information can be erased; irreversible dephasing cannot.
+The fixed plus/minus eraser basis included in the demo is intentionally not guaranteed to be optimal for every marker angle; it can recover less than `eta`. The optimal branch is the bound used to check physical consistency. This reproduces the qualitative quantum eraser distinction: reversible which-path information can be erased; irreversible dephasing cannot.
 
 ## Delayed Choice
 
@@ -79,6 +79,19 @@ y = -log(visibility_obs / marker_visibility) / (2 * t_meas)
 ```
 
 It then compares constant, product, product-plus-background, additive, additive-plus-background, pairwise, pairwise-plus-product, and full second-order laws. Reported metrics include RMSE, visibility MAE, AICc, BIC, Akaike weight, and k-fold cross-validation RMSE.
+
+## Eraser Decomposition
+
+The `decompose-eraser` command accepts paired raw and conditioned visibility rows. For each matched x-value, it treats the best conditioned branch as a first-pass estimate of the irreversible visibility bound:
+
+```text
+eta_irreversible_hat = max(V_raw, best V_conditioned)
+marker_visibility_hat = V_raw / eta_irreversible_hat
+recoverable_loss = eta_irreversible_hat - V_raw
+unrecoverable_loss = 1 - eta_irreversible_hat
+```
+
+This is bookkeeping, not a derivation. Its purpose is to separate "visibility hidden in correlations" from "visibility lost to durable dephasing" before attempting a Lambda/Gamma/Theta fit.
 
 ## Identifiability Diagnostics
 

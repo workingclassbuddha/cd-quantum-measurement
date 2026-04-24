@@ -23,11 +23,11 @@ The Scully-Druehl proposal and later delayed-choice demonstrations make a strong
 V3 encodes this as:
 
 ```text
-V_raw    = marker_visibility * eta
-V_erased = eta
+V_raw            = marker_visibility * eta
+V_erased_optimal = eta
 ```
 
-The eraser branch removes the reversible marker-overlap penalty. It does not remove the irreversible dephasing penalty.
+The optimal eraser branch removes the reversible marker-overlap penalty. A fixed analyzer basis can recover less, which is why V3 reports fixed and optimal conditioned branches separately. Neither branch removes the irreversible dephasing penalty.
 
 Primary references:
 

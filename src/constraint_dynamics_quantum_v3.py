@@ -254,6 +254,26 @@ def eraser_basis(phase=0.0):
     return plus, minus
 
 
+def optimal_eraser_basis(alpha: float):
+    """Marker basis whose nonzero branches balance the two path amplitudes.
+
+    For the two marker states used here, projecting onto the sum/difference
+    marker basis erases reversible marker distinguishability. Nonzero branches
+    recover path visibility up to the irreversible dephasing bound eta.
+    """
+
+    m_left, m_right = marker_states(alpha)
+    raw_basis = [m_left + m_right, m_left - m_right]
+    basis = []
+    for vec in raw_basis:
+        norm = float(np.linalg.norm(vec))
+        if norm <= EPS:
+            basis.append(np.array([0.0, 1.0], dtype=complex))
+        else:
+            basis.append(vec / norm)
+    return basis[0], basis[1]
+
+
 def path_visibility_from_rho(rho_path):
     rho_path = np.asarray(rho_path, dtype=complex)
     return float(np.clip(2.0 * abs(rho_path[0, 1]), 0.0, 1.0))
@@ -267,7 +287,7 @@ def screen_intensity_from_rho(x, rho_path, fringe_freq=14.0, width=0.72):
     base = float(np.real(rho[0, 0] + rho[1, 1]))
     cross = 2.0 * np.real(rho[0, 1] * phase)
     intensity = np.clip(envelope * (base + cross), 0.0, None)
-    integrate = getattr(np, "trapezoid", np.trapz)
+    integrate = np.trapezoid if hasattr(np, "trapezoid") else np.trapz
     norm = float(integrate(intensity, x))
     return intensity if norm <= EPS else intensity / norm
 
@@ -297,14 +317,32 @@ def quantum_eraser_observables(
     plus, minus = eraser_basis(settings.eraser_phase)
     p_plus, rho_plus = condition_on_marker_basis(rho_joint, plus)
     p_minus, rho_minus = condition_on_marker_basis(rho_joint, minus)
+    optimal_plus, optimal_minus = optimal_eraser_basis(settings.marker_angle)
+    p_opt_plus, rho_opt_plus = condition_on_marker_basis(rho_joint, optimal_plus)
+    p_opt_minus, rho_opt_minus = condition_on_marker_basis(rho_joint, optimal_minus)
+    v_opt_plus = path_visibility_from_rho(rho_opt_plus)
+    v_opt_minus = path_visibility_from_rho(rho_opt_minus)
+    optimal_visibilities = [
+        visibility
+        for probability, visibility in [
+            (p_opt_plus, v_opt_plus),
+            (p_opt_minus, v_opt_minus),
+        ]
+        if probability > EPS
+    ]
     return {
         **meta,
         **constraints,
         "visibility_unconditioned": path_visibility_from_rho(rho_path),
         "visibility_eraser_plus": path_visibility_from_rho(rho_plus),
         "visibility_eraser_minus": path_visibility_from_rho(rho_minus),
+        "visibility_eraser_optimal_plus": v_opt_plus,
+        "visibility_eraser_optimal_minus": v_opt_minus,
+        "visibility_eraser_optimal_best": max(optimal_visibilities, default=0.0),
         "prob_eraser_plus": p_plus,
         "prob_eraser_minus": p_minus,
+        "prob_eraser_optimal_plus": p_opt_plus,
+        "prob_eraser_optimal_minus": p_opt_minus,
     }
 
 
@@ -383,8 +421,12 @@ def target_from_visibility(visibility, marker_visibility, t_meas):
 def ensure_constraint_columns(df: pd.DataFrame) -> pd.DataFrame:
     data = df.copy()
     required = {"Lambda", "Gamma", "Theta"}
-    if required.issubset(data.columns):
-        return data
+    has_direct_constraints = required.issubset(data.columns)
+    if has_direct_constraints:
+        for column in sorted(required):
+            data[column] = pd.to_numeric(data[column], errors="coerce")
+        if not data[list(required)].isna().any().any():
+            return data
     apparatus_cols = {
         "path_separation",
         "detector_spatial_resolution",
@@ -395,9 +437,21 @@ def ensure_constraint_columns(df: pd.DataFrame) -> pd.DataFrame:
         "environment_coupling",
     }
     if not apparatus_cols.issubset(data.columns):
+        if has_direct_constraints:
+            raise ValueError(
+                "Constraint columns contain missing values; provide complete "
+                "Lambda/Gamma/Theta or apparatus columns."
+            )
         missing = ", ".join(sorted(required - set(data.columns)))
         raise ValueError(
             f"Missing {missing}; provide Lambda/Gamma/Theta or apparatus columns."
+        )
+    for column in sorted(apparatus_cols):
+        data[column] = pd.to_numeric(data[column], errors="coerce")
+    if data[list(apparatus_cols)].isna().any().any():
+        raise ValueError(
+            "Constraint columns contain missing values and apparatus columns are "
+            "incomplete; provide complete Lambda/Gamma/Theta or apparatus settings."
         )
     data["Lambda"] = spatial_constraint(
         data["path_separation"], data["detector_spatial_resolution"]
@@ -482,8 +536,12 @@ def fit_visibility_models(
             data[marker_col] = marker_visibility_from_angle(data["marker_angle"])
         else:
             data[marker_col] = 1.0
+    else:
+        data[marker_col] = pd.to_numeric(data[marker_col], errors="coerce").fillna(1.0)
     if time_col not in data.columns:
         data[time_col] = 1.0
+    else:
+        data[time_col] = pd.to_numeric(data[time_col], errors="coerce").fillna(1.0)
 
     y = target_from_visibility(
         data[visibility_col].to_numpy(dtype=float),
@@ -659,6 +717,99 @@ def build_confounded_visibility_dataset(n=216, seed=11, noise_sd=0.002):
             }
         )
     return pd.DataFrame(rows)
+
+
+def decompose_eraser_dataset(df: pd.DataFrame):
+    """Decompose paired raw/conditioned visibility into reversible and durable loss.
+
+    This is an empirical bookkeeping utility. It treats the best conditioned
+    branch at each x-value as a first-pass estimate of the irreversible
+    dephasing bound, then assigns the gap between raw and conditioned
+    visibility to recoverable marker/path information.
+    """
+
+    required = {"study_id", "x_name", "x_value", "visibility_type", "visibility_obs"}
+    missing = sorted(required - set(df.columns))
+    if missing:
+        raise ValueError(
+            f"Missing required eraser decomposition columns: {', '.join(missing)}"
+        )
+
+    data = df.copy()
+    type_aliases = {
+        "erased": "conditioned",
+        "conditional": "conditioned",
+        "postselected": "conditioned",
+    }
+    data["visibility_type"] = (
+        data["visibility_type"].astype(str).str.lower().replace(type_aliases)
+    )
+    data["visibility_obs"] = pd.to_numeric(data["visibility_obs"], errors="coerce")
+    data["x_value"] = pd.to_numeric(data["x_value"], errors="coerce")
+    data = data.dropna(subset=["visibility_obs", "x_value"])
+    group_cols = ["study_id", "x_name", "x_value"]
+    output_columns = [
+        "study_id",
+        "x_name",
+        "x_value",
+        "raw_visibility",
+        "best_conditioned_visibility",
+        "eta_irreversible_hat",
+        "marker_visibility_hat",
+        "recoverable_loss",
+        "unrecoverable_loss",
+        "total_loss",
+        "recovery_fraction",
+        "n_raw",
+        "n_conditioned",
+        "best_conditioned_on",
+        "source_figure",
+        "extraction_method",
+    ]
+    rows = []
+
+    for group_key, group in data.groupby(group_cols, dropna=False):
+        raw = group[group["visibility_type"] == "raw"]
+        conditioned = group[group["visibility_type"] == "conditioned"]
+        if raw.empty or conditioned.empty:
+            continue
+        raw_visibility = float(raw["visibility_obs"].mean())
+        best_idx = conditioned["visibility_obs"].idxmax()
+        best = conditioned.loc[best_idx]
+        best_conditioned = float(best["visibility_obs"])
+        eta_hat = float(np.clip(max(raw_visibility, best_conditioned), 0.0, 1.0))
+        marker_hat = float(np.clip(raw_visibility / max(eta_hat, EPS), 0.0, 1.0))
+        total_loss = max(0.0, 1.0 - raw_visibility)
+        recoverable_loss = max(0.0, eta_hat - raw_visibility)
+        unrecoverable_loss = max(0.0, 1.0 - eta_hat)
+        recovery_fraction = recoverable_loss / total_loss if total_loss > EPS else 0.0
+        rows.append(
+            {
+                "study_id": group_key[0],
+                "x_name": group_key[1],
+                "x_value": float(group_key[2]),
+                "raw_visibility": raw_visibility,
+                "best_conditioned_visibility": best_conditioned,
+                "eta_irreversible_hat": eta_hat,
+                "marker_visibility_hat": marker_hat,
+                "recoverable_loss": recoverable_loss,
+                "unrecoverable_loss": unrecoverable_loss,
+                "total_loss": total_loss,
+                "recovery_fraction": float(np.clip(recovery_fraction, 0.0, 1.0)),
+                "n_raw": int(len(raw)),
+                "n_conditioned": int(len(conditioned)),
+                "best_conditioned_on": best.get("conditioned_on", ""),
+                "source_figure": best.get("source_figure", ""),
+                "extraction_method": best.get("extraction_method", ""),
+            }
+        )
+
+    if not rows:
+        return pd.DataFrame(columns=output_columns)
+    result = pd.DataFrame(rows, columns=output_columns).sort_values(
+        ["study_id", "x_name", "x_value"]
+    )
+    return result.reset_index(drop=True)
 
 
 def variance_inflation_factors(frame: pd.DataFrame, columns: list[str]):
@@ -939,16 +1090,20 @@ def make_quantum_eraser_outputs(settings: ApparatusSettings, output_dir: Path):
     plus, minus = eraser_basis(settings.eraser_phase)
     _, rho_plus = condition_on_marker_basis(rho_joint, plus)
     _, rho_minus = condition_on_marker_basis(rho_joint, minus)
+    optimal_plus, _ = optimal_eraser_basis(settings.marker_angle)
+    _, rho_opt_plus = condition_on_marker_basis(rho_joint, optimal_plus)
     raw = screen_intensity_from_rho(x, rho_path)
     erased_plus = screen_intensity_from_rho(x, rho_plus)
     erased_minus = screen_intensity_from_rho(x, rho_minus)
+    erased_optimal = screen_intensity_from_rho(x, rho_opt_plus)
     write_line_svg(
         output_dir / "figures" / "figure_quantum_eraser_patterns.svg",
         x,
         [
             {"label": f"raw V={path_visibility_from_rho(rho_path):.2f}", "y": raw, "color": "#2962ff"},
-            {"label": f"eraser + V={path_visibility_from_rho(rho_plus):.2f}", "y": erased_plus, "color": "#00897b"},
-            {"label": f"eraser - V={path_visibility_from_rho(rho_minus):.2f}", "y": erased_minus, "color": "#d84315", "dash": True},
+            {"label": f"fixed eraser + V={path_visibility_from_rho(rho_plus):.2f}", "y": erased_plus, "color": "#00897b"},
+            {"label": f"fixed eraser - V={path_visibility_from_rho(rho_minus):.2f}", "y": erased_minus, "color": "#d84315", "dash": True},
+            {"label": f"optimal eraser V={path_visibility_from_rho(rho_opt_plus):.2f}", "y": erased_optimal, "color": "#6a1b9a"},
         ],
         "Raw and Conditioned Eraser Patterns",
         "screen position",
@@ -984,7 +1139,7 @@ def make_timing_outputs(settings: ApparatusSettings, output_dir: Path):
         series.append(
             {
                 "label": label,
-                "y": subset["visibility_eraser_plus"].to_numpy(),
+                "y": subset["visibility_eraser_optimal_best"].to_numpy(),
                 "color": color,
             }
         )
@@ -994,7 +1149,7 @@ def make_timing_outputs(settings: ApparatusSettings, output_dir: Path):
         series,
         "Delayed-Choice Eraser: Timing Matters Only Through Irreversibility",
         "eraser time",
-        "conditioned visibility",
+        "optimal conditioned visibility",
         ylim=(0.0, 1.05),
         vlines=[
             (settings.record_onset_time, "record onset", "#455a64"),
@@ -1032,8 +1187,10 @@ def make_trajectory_outputs(settings: ApparatusSettings, output_dir: Path):
 
 def make_fit_outputs(df: pd.DataFrame, output_dir: Path, prefix="demo"):
     fit, pred, data = fit_visibility_models(df)
-    fit.to_csv(output_dir / f"{prefix}_fit_summary.csv", index=False)
-    pred.to_csv(output_dir / f"{prefix}_fit_predictions.csv", index=False)
+    summary_name = f"{prefix}_fit_summary.csv" if prefix else "fit_summary.csv"
+    pred_name = f"{prefix}_fit_predictions.csv" if prefix else "fit_predictions.csv"
+    fit.to_csv(output_dir / summary_name, index=False)
+    pred.to_csv(output_dir / pred_name, index=False)
     best_model = str(fit.iloc[0]["model"])
     merged = data.reset_index(drop=True).join(pred.drop(columns=["condition_id"], errors="ignore"))
     write_bar_svg(
@@ -1072,6 +1229,91 @@ def make_fit_outputs(df: pd.DataFrame, output_dir: Path, prefix="demo"):
         line_label="product fit",
     )
     return fit, pred, merged
+
+
+def make_eraser_decomposition_outputs(df: pd.DataFrame, output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    decomposition = decompose_eraser_dataset(df)
+    decomposition.to_csv(output_dir / "eraser_decomposition.csv", index=False)
+    if decomposition.empty:
+        (output_dir / "chapman_interpretation.md").write_text(
+            "# Eraser Decomposition\n\nNo paired raw/conditioned rows were available.\n",
+            encoding="utf-8",
+        )
+        return decomposition
+
+    x = decomposition["x_value"].to_numpy(dtype=float)
+    order = np.argsort(x)
+    x_sorted = x[order]
+    write_line_svg(
+        output_dir / "figures" / "figure_raw_vs_conditioned_visibility.svg",
+        x_sorted,
+        [
+            {
+                "label": "raw visibility",
+                "y": decomposition["raw_visibility"].to_numpy(dtype=float)[order],
+                "color": "#2962ff",
+            },
+            {
+                "label": "best conditioned visibility",
+                "y": decomposition["best_conditioned_visibility"].to_numpy(dtype=float)[order],
+                "color": "#00897b",
+            },
+            {
+                "label": "eta irreversible estimate",
+                "y": decomposition["eta_irreversible_hat"].to_numpy(dtype=float)[order],
+                "color": "#d84315",
+                "dash": True,
+            },
+        ],
+        "Chapman First-Pass Raw vs Conditioned Visibility",
+        str(decomposition["x_name"].iloc[0]),
+        "relative visibility",
+        ylim=(0.0, 1.05),
+    )
+    write_line_svg(
+        output_dir / "figures" / "figure_recoverable_unrecoverable_loss.svg",
+        x_sorted,
+        [
+            {
+                "label": "recoverable loss",
+                "y": decomposition["recoverable_loss"].to_numpy(dtype=float)[order],
+                "color": "#00897b",
+            },
+            {
+                "label": "unrecoverable loss",
+                "y": decomposition["unrecoverable_loss"].to_numpy(dtype=float)[order],
+                "color": "#d84315",
+            },
+        ],
+        "Chapman First-Pass Loss Decomposition",
+        str(decomposition["x_name"].iloc[0]),
+        "visibility loss",
+        ylim=(0.0, 1.05),
+    )
+    mean_recovery = float(decomposition["recovery_fraction"].mean())
+    peak_recovery = float(decomposition["recovery_fraction"].max())
+    best_row = decomposition.loc[decomposition["recovery_fraction"].idxmax()]
+    status = (
+        "CD-compatible exploratory signal"
+        if peak_recovery >= 0.5
+        else "inconclusive first-pass signal"
+    )
+    interpretation = f"""# Chapman First-Pass Interpretation
+
+Status: {status}
+
+This analysis uses first-pass visually digitized points, not publication-grade data. The best conditioned branch is treated as an empirical estimate of the irreversible dephasing bound, while the gap between raw and conditioned visibility is treated as recoverable marker/path information.
+
+- Mean recovery fraction: {mean_recovery:.3f}
+- Peak recovery fraction: {peak_recovery:.3f} at {best_row['x_name']} = {best_row['x_value']:.3f}
+- Best branch at peak: {best_row['best_conditioned_on']}
+
+Interpretation: a large conditioned/raw gap supports the scaffold's key separation between reversible which-path entanglement and durable dephasing. It does not by itself validate the Lambda/Gamma/Theta product law; it establishes the first empirical target the product law must later explain.
+"""
+    (output_dir / "chapman_interpretation.md").write_text(interpretation, encoding="utf-8")
+    return decomposition
 
 
 def make_identifiability_outputs(output_dir: Path):
@@ -1187,7 +1429,7 @@ def run_fit(input_csv: Path, output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "figures").mkdir(parents=True, exist_ok=True)
     df = pd.read_csv(input_csv)
-    make_fit_outputs(df, output_dir, prefix="fit")
+    make_fit_outputs(df, output_dir, prefix="")
 
 
 def run_design(input_csv: Path, output_dir: Path):
@@ -1212,6 +1454,11 @@ def run_identifiability_benchmark(output_dir: Path):
     make_identifiability_outputs(output_dir)
 
 
+def run_decompose_eraser(input_csv: Path, output_dir: Path):
+    df = pd.read_csv(input_csv)
+    make_eraser_decomposition_outputs(df, output_dir)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Constraint Dynamics quantum-measurement V3 scaffold"
@@ -1226,6 +1473,12 @@ def build_parser():
     design = sub.add_parser("design", help="diagnose factor separability for a CSV")
     design.add_argument("--input", required=True)
     design.add_argument("--output-dir", default="outputs/design_diagnostics")
+    decompose = sub.add_parser(
+        "decompose-eraser",
+        help="decompose paired raw/conditioned eraser visibility",
+    )
+    decompose.add_argument("--input", required=True)
+    decompose.add_argument("--output-dir", default="outputs/eraser_decomposition")
     bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
     bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
@@ -1237,22 +1490,27 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     command = args.command or "demo"
-    if command == "demo":
-        output_dir = Path(getattr(args, "output_dir", "outputs"))
-        data_dir = Path(getattr(args, "data_dir", "data"))
-        run_demo(output_dir, data_dir)
-    elif command == "fit":
-        run_fit(Path(args.input), Path(args.output_dir))
-    elif command == "design":
-        run_design(Path(args.input), Path(args.output_dir))
-    elif command == "benchmark-designs":
-        run_identifiability_benchmark(Path(args.output_dir))
-    elif command == "template":
-        data_dir = Path(args.data_dir)
-        data_dir.mkdir(parents=True, exist_ok=True)
-        write_template_csv(data_dir)
-    else:
-        parser.error(f"Unknown command {command}")
+    try:
+        if command == "demo":
+            output_dir = Path(getattr(args, "output_dir", "outputs"))
+            data_dir = Path(getattr(args, "data_dir", "data"))
+            run_demo(output_dir, data_dir)
+        elif command == "fit":
+            run_fit(Path(args.input), Path(args.output_dir))
+        elif command == "design":
+            run_design(Path(args.input), Path(args.output_dir))
+        elif command == "decompose-eraser":
+            run_decompose_eraser(Path(args.input), Path(args.output_dir))
+        elif command == "benchmark-designs":
+            run_identifiability_benchmark(Path(args.output_dir))
+        elif command == "template":
+            data_dir = Path(args.data_dir)
+            data_dir.mkdir(parents=True, exist_ok=True)
+            write_template_csv(data_dir)
+        else:
+            parser.error(f"Unknown command {command}")
+    except ValueError as exc:
+        parser.error(str(exc))
 
 
 if __name__ == "__main__":

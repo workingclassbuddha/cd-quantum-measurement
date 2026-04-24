@@ -18,6 +18,14 @@ data/literature_observation_template.csv
 
 No numeric literature points are treated as real data until they have a `study_id`, figure/panel provenance, extraction method, and notes.
 
+First-pass extracted points currently live at:
+
+```text
+data/extracted/CHAPMAN_1995_SCATTER.csv
+```
+
+Those points are visual estimates from a rendered PDF and are workflow-grade, not publication-grade.
+
 ## Highest-Priority Sources
 
 ### 1. Chapman et al. 1995: photon scattering in an atom interferometer
@@ -37,6 +45,7 @@ Extraction target:
 
 - Fig. 2: relative contrast versus path separation.
 - Fig. 3: recovered contrast under restricted momentum acceptance.
+- Current status: first-pass visual digitization complete for Fig. 2 and two Fig. 3 conditioned branches.
 
 Initial mapping:
 
@@ -127,11 +136,13 @@ Lambda/Gamma = fixed
 4. Run:
 
 ```bash
+python src/constraint_dynamics_quantum_v3.py decompose-eraser --input data/extracted/<study>.csv --output-dir outputs/<study>_eraser
 python src/constraint_dynamics_quantum_v3.py design --input data/extracted/<study>.csv --output-dir outputs/<study>_design
 python src/constraint_dynamics_quantum_v3.py fit --input data/extracted/<study>.csv --output-dir outputs/<study>_fit
 ```
 
-5. Do not combine studies until each single-study mapping has been documented.
+5. Run `design` and `fit` only after the extracted file has complete `Lambda`/`Gamma`/`Theta` columns or complete apparatus columns. The first-pass Chapman CSV is currently ready for eraser decomposition, not product-law fitting.
+6. Do not combine studies until each single-study mapping has been documented.
 
 ## Interpretation Rules
 

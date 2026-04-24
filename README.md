@@ -20,6 +20,7 @@ This is not a derivation of wavefunction collapse. It is not a replacement for s
 - Apparatus-to-constraint mappings for Lambda, Gamma, and Theta.
 - Model comparison across constant, product, additive, pairwise, and extended interaction laws using AICc, BIC, Akaike weights, and k-fold cross-validation.
 - Identifiability diagnostics for deciding whether a dataset actually separates Lambda, Gamma, and Theta.
+- Eraser decomposition utility for paired raw/conditioned literature visibility data.
 
 ## Quick Start
 
@@ -47,6 +48,12 @@ Diagnose whether a dataset is separable enough to interpret:
 python src/constraint_dynamics_quantum_v3.py design --input data/visibility_fit_template.csv --output-dir outputs/design_diagnostics
 ```
 
+Decompose paired raw/conditioned quantum eraser visibility data:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py decompose-eraser --input data/extracted/CHAPMAN_1995_SCATTER.csv --output-dir outputs/chapman
+```
+
 Generate the balanced-vs-confounded benchmark:
 
 ```bash
@@ -66,7 +73,9 @@ docs/v2_audit.md
 src/constraint_dynamics_quantum_v3.py
 data/visibility_fit_template.csv
 data/literature_study_register.csv
+data/extracted/CHAPMAN_1995_SCATTER.csv
 outputs/figures/
+outputs/chapman/
 outputs/demo_fit_summary.csv
 ```
 
@@ -106,3 +115,5 @@ marker_angle,t_meas,visibility_obs
 The model respects standard quantum eraser behavior: reversible path marking can suppress raw interference, conditioned eraser data can recover it, and irreversible dephasing cannot be recovered by changing the marker basis later. The claims here remain effective and phenomenological until real apparatus datasets can discriminate the product law from alternatives.
 
 Use [docs/experimental_design.md](docs/experimental_design.md) before taking a product-law fit seriously. The scaffold now treats high factor correlation and poor design conditioning as first-class warnings rather than afterthoughts.
+
+The included Chapman extraction is a first-pass visual digitization from the paper PDF, intended to exercise the workflow and identify promising signals. It should be replaced by publication-grade digitization before making quantitative claims.

@@ -1,0 +1,13 @@
+study_id,x_name,x_value,raw_visibility,best_conditioned_visibility,eta_irreversible_hat,marker_visibility_hat,recoverable_loss,unrecoverable_loss,total_loss,recovery_fraction,n_raw,n_conditioned,best_conditioned_on,source_figure,extraction_method
+CHAPMAN_1995_SCATTER,d_over_lambda,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,0.2,0.8,0.88,0.88,0.9090909090909092,0.07999999999999996,0.12,0.19999999999999996,0.3999999999999999,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,0.4,0.22,0.7,0.7,0.31428571428571433,0.48,0.30000000000000004,0.78,0.6153846153846153,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,0.5,0.04,0.64,0.64,0.0625,0.6,0.36,0.96,0.625,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,0.6,0.18,0.55,0.55,0.3272727272727272,0.37000000000000005,0.44999999999999996,0.8200000000000001,0.45121951219512196,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,0.8,0.27,0.36,0.36,0.7500000000000001,0.08999999999999997,0.64,0.73,0.12328767123287668,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,1.0,0.06,0.23,0.23,0.2608695652173913,0.17,0.77,0.94,0.18085106382978725,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,1.2,0.16,0.22,0.22,0.7272727272727273,0.06,0.78,0.84,0.07142857142857142,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,1.4,0.14,0.22,0.22,0.6363636363636365,0.07999999999999999,0.78,0.86,0.09302325581395347,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,1.6,0.05,0.21,0.21,0.2380952380952381,0.15999999999999998,0.79,0.95,0.16842105263157892,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,1.8,0.12,0.2,0.2,0.6,0.08000000000000002,0.8,0.88,0.09090909090909093,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
+CHAPMAN_1995_SCATTER,d_over_lambda,2.0,0.07,0.19,0.19,0.368421052631579,0.12,0.81,0.9299999999999999,0.12903225806451613,1,2,case_I_forward,Fig.3,first_pass_visual_digitization
