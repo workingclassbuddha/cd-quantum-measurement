@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="500" viewBox="0 0 820 500">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="410.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Accessibility Benchmark Model Comparison</text>
+<rect x="86" y="54" width="710" height="318" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="86" y1="372.00" x2="796" y2="372.00" stroke="#eceff1"/>
+<text x="76.00" y="376.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0</text>
+<line x1="86" y1="308.40" x2="796" y2="308.40" stroke="#eceff1"/>
+<text x="76.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.3e+02</text>
+<line x1="86" y1="244.80" x2="796" y2="244.80" stroke="#eceff1"/>
+<text x="76.00" y="248.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">2.7e+02</text>
+<line x1="86" y1="181.20" x2="796" y2="181.20" stroke="#eceff1"/>
+<text x="76.00" y="185.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">4e+02</text>
+<line x1="86" y1="117.60" x2="796" y2="117.60" stroke="#eceff1"/>
+<text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">5.4e+02</text>
+<line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
+<text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">6.7e+02</text>
+<rect x="111.56" y="372.00" width="90.88" height="0.00" fill="#2962ff" fill-opacity="0.82"/>
+<text x="157.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 157.00 390.00)">aware_record_product</text>
+<rect x="253.56" y="202.34" width="90.88" height="169.66" fill="#00897b" fill-opacity="0.82"/>
+<text x="299.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 299.00 390.00)">naive_plus_accessibility</text>
+<rect x="395.56" y="202.34" width="90.88" height="169.66" fill="#d84315" fill-opacity="0.82"/>
+<text x="441.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 441.00 390.00)">naive_plus_inaccessibility</text>
+<rect x="537.56" y="105.80" width="90.88" height="266.20" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="583.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 583.00 390.00)">naive_record_product</text>
+<rect x="679.56" y="88.07" width="90.88" height="283.93" fill="#f9a825" fill-opacity="0.82"/>
+<text x="725.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 725.00 390.00)">constant</text>
+<text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">delta AICc</text>
+</svg>

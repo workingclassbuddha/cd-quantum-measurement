@@ -10,11 +10,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from constraint_dynamics_quantum_v3 import (  # noqa: E402
     ApparatusSettings,
     build_confounded_visibility_dataset,
+    build_accessibility_benchmark_dataset,
     build_joint_density,
     build_synthetic_visibility_dataset,
     decompose_eraser_dataset,
     design_diagnostics,
     energetic_constraint,
+    fit_accessibility_hypotheses,
     fit_visibility_models,
     partial_trace_marker,
     path_visibility_from_rho,
@@ -66,6 +68,15 @@ def test_record_accessibility_reduces_effective_theta():
     )
     assert inaccessible > partial > accessible
     assert np.isclose(accessible, 0.0)
+
+
+def test_accessibility_benchmark_ranks_aware_product_first():
+    df = build_accessibility_benchmark_dataset(noise_sd=0.0)
+    summary, *_ = fit_accessibility_hypotheses(df)
+    assert summary.iloc[0]["model"] == "aware_record_product"
+    naive = summary[summary["model"] == "naive_record_product"].iloc[0]
+    aware = summary[summary["model"] == "aware_record_product"].iloc[0]
+    assert naive["aicc"] - aware["aicc"] > 10.0
 
 
 def test_decompose_eraser_recovers_known_synthetic_values():

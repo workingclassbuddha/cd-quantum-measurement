@@ -733,6 +733,179 @@ def build_confounded_visibility_dataset(n=216, seed=11, noise_sd=0.002):
     return pd.DataFrame(rows)
 
 
+def build_accessibility_benchmark_dataset(
+    n_space=9,
+    n_access=7,
+    seed=29,
+    noise_sd=0.0015,
+):
+    """Synthetic two-axis test for inaccessible-record Theta.
+
+    The generated data vary spatial distinguishability and record
+    accessibility independently. The true visibility uses the V3
+    accessibility-aware Theta, while `Theta_naive` records what Theta would
+    have been if all records were treated as inaccessible.
+    """
+
+    rng = np.random.default_rng(seed)
+    base = ApparatusSettings(
+        marker_angle=0.0,
+        detector_spatial_resolution=0.55,
+        detector_response_time=0.42,
+        record_entropy_bits=2.4,
+        record_survival_probability=0.92,
+        environment_coupling=0.9,
+        kappa0=1.15,
+    )
+    path_values = np.linspace(0.0, 2.0, n_space)
+    accessibility_values = np.linspace(0.0, 1.0, n_access)
+    rows = []
+    condition_id = 0
+    for path in path_values:
+        for accessibility in accessibility_values:
+            s = replace(
+                base,
+                path_separation=float(path),
+                record_accessibility=float(accessibility),
+            )
+            c = constraints_from_apparatus(s)
+            theta_naive = float(
+                energetic_constraint(
+                    s.record_entropy_bits,
+                    s.record_survival_probability,
+                    s.environment_coupling,
+                    record_accessibility=0.0,
+                )
+            )
+            eta, kappa, exposure = dephasing_eta(s, eraser_time=None)
+            visibility_true = c["marker_visibility"] * eta
+            visibility_obs = float(
+                np.clip(visibility_true + rng.normal(0.0, noise_sd), 1e-5, 0.99999)
+            )
+            rows.append(
+                {
+                    "condition_id": condition_id,
+                    "path_separation": s.path_separation,
+                    "detector_spatial_resolution": s.detector_spatial_resolution,
+                    "coherence_time": s.coherence_time,
+                    "detector_response_time": s.detector_response_time,
+                    "record_entropy_bits": s.record_entropy_bits,
+                    "record_survival_probability": s.record_survival_probability,
+                    "environment_coupling": s.environment_coupling,
+                    "record_accessibility": s.record_accessibility,
+                    "inaccessible_record_fraction": 1.0 - s.record_accessibility,
+                    "Lambda": c["Lambda"],
+                    "Gamma": c["Gamma"],
+                    "Theta": c["Theta"],
+                    "Theta_naive": theta_naive,
+                    "marker_angle": s.marker_angle,
+                    "marker_visibility": c["marker_visibility"],
+                    "t_meas": exposure,
+                    "kappa_eff_true": kappa,
+                    "visibility_true": visibility_true,
+                    "visibility_obs": visibility_obs,
+                    "visibility_se": noise_sd,
+                }
+            )
+            condition_id += 1
+    return pd.DataFrame(rows)
+
+
+def _theta_naive_from_data(data: pd.DataFrame):
+    if "Theta_naive" in data.columns:
+        return pd.to_numeric(data["Theta_naive"], errors="coerce").to_numpy(dtype=float)
+    needed = {
+        "record_entropy_bits",
+        "record_survival_probability",
+        "environment_coupling",
+    }
+    if not needed.issubset(data.columns):
+        return np.ones(len(data), dtype=float)
+    return energetic_constraint(
+        data["record_entropy_bits"],
+        data["record_survival_probability"],
+        data["environment_coupling"],
+        record_accessibility=0.0,
+    )
+
+
+def fit_accessibility_hypotheses(df: pd.DataFrame):
+    """Compare accessibility-aware and naive record-load hypotheses."""
+
+    data = ensure_constraint_columns(df)
+    if "marker_visibility" not in data.columns:
+        data["marker_visibility"] = 1.0
+    if "t_meas" not in data.columns:
+        data["t_meas"] = 1.0
+    y = target_from_visibility(
+        data["visibility_obs"].to_numpy(dtype=float),
+        data["marker_visibility"].to_numpy(dtype=float),
+        data["t_meas"].to_numpy(dtype=float),
+    )
+    L = data["Lambda"].to_numpy(dtype=float)
+    G = data["Gamma"].to_numpy(dtype=float)
+    T = data["Theta"].to_numpy(dtype=float)
+    T_naive = _theta_naive_from_data(data)
+    if "record_accessibility" in data.columns:
+        access = (
+            pd.to_numeric(data["record_accessibility"], errors="coerce")
+            .fillna(0.0)
+            .to_numpy(dtype=float)
+        )
+    else:
+        access = np.zeros(len(data), dtype=float)
+    ones = np.ones_like(L)
+    naive_product = L * G * T_naive
+    aware_product = L * G * T
+    designs = {
+        "constant": (ones[:, None], ["background"]),
+        "naive_record_product": (naive_product[:, None], ["LGT_naive"]),
+        "aware_record_product": (aware_product[:, None], ["LGT_access"]),
+        "naive_plus_accessibility": (
+            np.column_stack([naive_product, naive_product * access]),
+            ["LGT_naive", "LGT_naive_x_accessibility"],
+        ),
+        "naive_plus_inaccessibility": (
+            np.column_stack([naive_product, naive_product * (1.0 - access)]),
+            ["LGT_naive", "LGT_naive_x_inaccessible"],
+        ),
+    }
+    rows = []
+    pred = pd.DataFrame({"condition_id": data.get("condition_id", np.arange(len(data)))})
+    pred["target_kappa"] = y
+    for name, (X, labels) in designs.items():
+        beta = weighted_lstsq(X, y)
+        yhat = np.clip(X @ beta, 0.0, None)
+        residual = y - yhat
+        rss = float(np.sum(residual**2))
+        pred_visibility = data["marker_visibility"].to_numpy(dtype=float) * np.exp(
+            -2.0 * yhat * data["t_meas"].to_numpy(dtype=float)
+        )
+        visibility_residual = data["visibility_obs"].to_numpy(dtype=float) - pred_visibility
+        rows.append(
+            {
+                "model": name,
+                "n_params": X.shape[1],
+                "rmse_target": math.sqrt(rss / len(data)),
+                "rmse_visibility": math.sqrt(float(np.mean(visibility_residual**2))),
+                "mae_visibility": float(np.mean(np.abs(visibility_residual))),
+                "aicc": _aicc(len(data), rss, X.shape[1]),
+                "bic": len(data) * math.log(max(rss / len(data), 1e-12))
+                + X.shape[1] * math.log(max(len(data), 2)),
+                "parameter_labels_json": json.dumps(labels),
+                "parameters_json": json.dumps([float(v) for v in beta]),
+            }
+        )
+        pred[f"pred_kappa_{name}"] = yhat
+        pred[f"pred_visibility_{name}"] = np.clip(pred_visibility, 0.0, 1.0)
+
+    summary = pd.DataFrame(rows).sort_values("aicc", ascending=True).reset_index(drop=True)
+    summary["delta_aicc"] = summary["aicc"] - summary["aicc"].min()
+    rel = np.exp(-0.5 * summary["delta_aicc"].to_numpy(dtype=float))
+    summary["akaike_weight"] = rel / np.maximum(rel.sum(), EPS)
+    return summary, pred, data
+
+
 def decompose_eraser_dataset(df: pd.DataFrame):
     """Decompose paired raw/conditioned visibility into reversible and durable loss.
 
@@ -1330,6 +1503,75 @@ Interpretation: a large conditioned/raw gap supports the scaffold's key separati
     return decomposition
 
 
+def make_accessibility_benchmark_outputs(output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    data = build_accessibility_benchmark_dataset()
+    summary, pred, data = fit_accessibility_hypotheses(data)
+    data.to_csv(output_dir / "accessibility_benchmark_dataset.csv", index=False)
+    summary.to_csv(output_dir / "accessibility_model_comparison.csv", index=False)
+    pred.to_csv(output_dir / "accessibility_model_predictions.csv", index=False)
+
+    access_values = sorted(data["record_accessibility"].unique())
+    path_values = np.sort(data["path_separation"].unique())
+    series = []
+    palette = ["#d84315", "#f9a825", "#00897b", "#2962ff", "#6a1b9a", "#455a64", "#c2185b"]
+    for idx, access in enumerate(access_values):
+        subset = data[data["record_accessibility"] == access].sort_values("path_separation")
+        series.append(
+            {
+                "label": f"access={access:.2g}",
+                "y": subset["visibility_obs"].to_numpy(dtype=float),
+                "color": palette[idx % len(palette)],
+                "dash": idx % 2 == 1,
+            }
+        )
+    write_line_svg(
+        output_dir / "figures" / "figure_accessibility_visibility_family.svg",
+        path_values,
+        series,
+        "Visibility Depends on Spatial Distinguishability and Record Accessibility",
+        "path separation",
+        "visibility",
+        ylim=(0.0, 1.05),
+    )
+    write_bar_svg(
+        output_dir / "figures" / "figure_accessibility_model_comparison.svg",
+        summary["model"].to_list(),
+        summary["delta_aicc"].to_numpy(dtype=float),
+        "Accessibility Benchmark Model Comparison",
+        "delta AICc",
+    )
+
+    best = summary.iloc[0]
+    aware = summary[summary["model"] == "aware_record_product"].iloc[0]
+    naive = summary[summary["model"] == "naive_record_product"].iloc[0]
+    delta_naive = float(naive["aicc"] - aware["aicc"])
+    verdict = (
+        "passes synthetic discrimination"
+        if best["model"] == "aware_record_product" and delta_naive > 10.0
+        else "does not yet discriminate cleanly"
+    )
+    report = f"""# Accessibility Benchmark Report
+
+Status: {verdict}
+
+This synthetic benchmark varies path separation and record accessibility independently. The generated data use the V3 accessibility-aware Theta definition, then compare whether a naive record-load product can recover the same visibility surface.
+
+- Best model: {best['model']}
+- Delta AICc, naive record product versus aware product: {delta_naive:.3f}
+- Aware product RMSE visibility: {float(aware['rmse_visibility']):.5f}
+- Naive product RMSE visibility: {float(naive['rmse_visibility']):.5f}
+
+Interpretation: this is not empirical evidence. It is a discrimination target. If real data show this two-axis pattern, the accessibility-aware Theta parameter is doing nontrivial explanatory work. If a naive record-strength model fits equally well, the refinement is only vocabulary.
+"""
+    (output_dir / "accessibility_benchmark_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, pred, data
+
+
 def make_identifiability_outputs(output_dir: Path):
     balanced = build_synthetic_visibility_dataset()
     confounded = build_confounded_visibility_dataset()
@@ -1474,6 +1716,10 @@ def run_decompose_eraser(input_csv: Path, output_dir: Path):
     make_eraser_decomposition_outputs(df, output_dir)
 
 
+def run_accessibility_benchmark(output_dir: Path):
+    make_accessibility_benchmark_outputs(output_dir)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Constraint Dynamics quantum-measurement V3 scaffold"
@@ -1494,6 +1740,11 @@ def build_parser():
     )
     decompose.add_argument("--input", required=True)
     decompose.add_argument("--output-dir", default="outputs/eraser_decomposition")
+    access = sub.add_parser(
+        "benchmark-accessibility",
+        help="generate record-accessibility discrimination benchmark",
+    )
+    access.add_argument("--output-dir", default="outputs/accessibility_benchmark")
     bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
     bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
@@ -1516,6 +1767,8 @@ def main(argv=None):
             run_design(Path(args.input), Path(args.output_dir))
         elif command == "decompose-eraser":
             run_decompose_eraser(Path(args.input), Path(args.output_dir))
+        elif command == "benchmark-accessibility":
+            run_accessibility_benchmark(Path(args.output_dir))
         elif command == "benchmark-designs":
             run_identifiability_benchmark(Path(args.output_dir))
         elif command == "template":

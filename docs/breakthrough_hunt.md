@@ -40,6 +40,14 @@ A serious test needs two axes at once:
 
 If the same apparatus can move visibility between raw loss, recoverable loss, and unrecoverable loss while the product-law parameterization predicts held-out branches, that would be the first genuinely interesting Constraint Dynamics result.
 
+The scaffold now includes a synthetic version of this test:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py benchmark-accessibility --output-dir outputs/accessibility_benchmark
+```
+
+This benchmark intentionally generates data from the accessibility-aware Theta definition, then asks whether a naive record-load product can fit it. Passing the benchmark is not evidence for the theory; it defines the empirical pattern that would matter.
+
 ## Current Verdict
 
 We have a promising target and a sharper theory variable. We do not yet have a breakthrough.

@@ -21,6 +21,7 @@ This is not a derivation of wavefunction collapse. It is not a replacement for s
 - Model comparison across constant, product, additive, pairwise, and extended interaction laws using AICc, BIC, Akaike weights, and k-fold cross-validation.
 - Identifiability diagnostics for deciding whether a dataset actually separates Lambda, Gamma, and Theta.
 - Eraser decomposition utility for paired raw/conditioned literature visibility data.
+- Accessibility benchmark for testing whether "inaccessible record load" makes a discriminating prediction.
 
 ## Quick Start
 
@@ -60,6 +61,12 @@ Generate the balanced-vs-confounded benchmark:
 python src/constraint_dynamics_quantum_v3.py benchmark-designs --output-dir outputs
 ```
 
+Generate the record-accessibility benchmark:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py benchmark-accessibility --output-dir outputs/accessibility_benchmark
+```
+
 ## Repository Layout
 
 ```text
@@ -77,6 +84,7 @@ data/literature_study_register.csv
 data/extracted/CHAPMAN_1995_SCATTER.csv
 outputs/figures/
 outputs/chapman/
+outputs/accessibility_benchmark/
 outputs/demo_fit_summary.csv
 ```
 
@@ -91,6 +99,8 @@ outputs/demo_fit_summary.csv
 ![Model comparison](outputs/figures/figure_model_comparison.svg)
 
 ![Identifiability conditioning](outputs/figures/figure_identifiability_conditioning.svg)
+
+![Accessibility benchmark](outputs/accessibility_benchmark/figures/figure_accessibility_visibility_family.svg)
 
 ## Minimal Data Schema
 

@@ -101,6 +101,10 @@ The `design` command checks whether a dataset can actually distinguish the three
 
 The intended interpretation is conservative: a product-law win in a confounded design is not strong evidence for the theory. It only becomes meaningful when the same law predicts held-out data in designs where spatial selectivity, timing resolution, and record irreversibility have been varied independently.
 
+## Accessibility Benchmark
+
+The `benchmark-accessibility` command varies path separation and record accessibility independently. It compares an accessibility-aware product law against a naive record-load product that treats all records as inaccessible. This is a falsification target rather than a claim of empirical success: real experiments would need to show the same two-axis visibility surface before the refined Theta variable earns its keep.
+
 ## Limitations
 
 The model is deliberately effective. It does not derive the Born rule, does not solve the measurement problem, and does not supersede environmental decoherence. Its intended scientific use is narrower: fit apparatus-parameterized visibility data and ask whether the Constraint Dynamics product factorization is empirically useful.
