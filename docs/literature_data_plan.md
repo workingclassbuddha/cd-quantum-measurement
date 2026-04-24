@@ -24,7 +24,14 @@ First-pass extracted points currently live at:
 data/extracted/CHAPMAN_1995_SCATTER.csv
 ```
 
-Those points are visual estimates from a rendered PDF and are workflow-grade, not publication-grade.
+Calibrated pixel-digitized points and provenance live at:
+
+```text
+data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv
+data/extracted/CHAPMAN_1995_DIGITIZATION.json
+```
+
+The calibrated points are stronger than the first pass, but they remain extracted from a paper figure rather than author-provided raw data.
 
 ## Highest-Priority Sources
 
@@ -45,7 +52,7 @@ Extraction target:
 
 - Fig. 2: relative contrast versus path separation.
 - Fig. 3: recovered contrast under restricted momentum acceptance.
-- Current status: first-pass visual digitization complete for Fig. 2 and two Fig. 3 conditioned branches.
+- Current status: calibrated pixel digitization complete for Fig. 2 and two Fig. 3 conditioned branches.
 
 Initial mapping:
 
@@ -139,6 +146,12 @@ Lambda/Gamma = fixed
 python src/constraint_dynamics_quantum_v3.py decompose-eraser --input data/extracted/<study>.csv --output-dir outputs/<study>_eraser
 python src/constraint_dynamics_quantum_v3.py design --input data/extracted/<study>.csv --output-dir outputs/<study>_design
 python src/constraint_dynamics_quantum_v3.py fit --input data/extracted/<study>.csv --output-dir outputs/<study>_fit
+```
+
+For Chapman specifically, regenerate the extraction with:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py digitize-chapman --pdf /tmp/chapman_prl95.pdf --output-dir outputs/chapman_digitization --data-dir data/extracted
 ```
 
 5. Run `design` and `fit` only after the extracted file has complete `Lambda`/`Gamma`/`Theta` columns or complete apparatus columns. The first-pass Chapman CSV is currently ready for eraser decomposition, not product-law fitting.

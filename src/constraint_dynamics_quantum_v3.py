@@ -11,9 +11,13 @@ Constraint Dynamics factors.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import html
 import json
 import math
+import shutil
+import subprocess
+import urllib.request
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Iterable
@@ -23,6 +27,10 @@ import pandas as pd
 
 
 EPS = 1e-12
+CHAPMAN_SOURCE_URL = "https://chapmanlabs.gatech.edu/papers/scattering_ifm_prl95.pdf"
+CHAPMAN_DIGITIZATION_DATE = "2026-04-24"
+CHAPMAN_RENDER_DPI = 220
+CHAPMAN_EXTRACTION_METHOD = "calibrated_pixel_digitization_v1"
 
 
 @dataclass(frozen=True)
@@ -906,6 +914,316 @@ def fit_accessibility_hypotheses(df: pd.DataFrame):
     return summary, pred, data
 
 
+def _chapman_point(x_pixel, y_pixel):
+    return {"x_pixel": float(x_pixel), "y_pixel": float(y_pixel)}
+
+
+def chapman_default_digitization_metadata():
+    """Return fixed Chapman calibration anchors and manually picked points."""
+
+    return {
+        "study_id": "CHAPMAN_1995_SCATTER",
+        "source_title": "Photon Scattering from Atoms in an Atom Interferometer: Coherence Lost and Regained",
+        "source_url": CHAPMAN_SOURCE_URL,
+        "doi": "https://doi.org/10.1103/PhysRevLett.75.3783",
+        "render_dpi": CHAPMAN_RENDER_DPI,
+        "extraction_method": CHAPMAN_EXTRACTION_METHOD,
+        "extracted_by": "Codex",
+        "extraction_date": CHAPMAN_DIGITIZATION_DATE,
+        "coordinate_system": "pdftoppm grayscale PGM pixels, origin at top left",
+        "figures": [
+            {
+                "figure": "Fig.2",
+                "page": 2,
+                "source_panel": "relative_contrast",
+                "axis": {
+                    "x_name": "d_over_lambda",
+                    "x_units": "dimensionless",
+                    "x_min": 0.0,
+                    "x_max": 2.0,
+                    "x_pixel_min": [1176.5, 448.5],
+                    "x_pixel_max": [1601.5, 448.5],
+                    "y_name": "relative_visibility",
+                    "y_min": 0.0,
+                    "y_max": 1.0,
+                    "y_pixel_min": [1176.5, 448.5],
+                    "y_pixel_max": [1176.5, 188.1],
+                },
+                "series": [
+                    {
+                        "visibility_type": "raw",
+                        "conditioned_on": "",
+                        "visibility_se": 0.035,
+                        "notes": "Calibrated manual pixel picks from Fig. 2 contrast panel.",
+                        "points": [
+                            _chapman_point(1176.5, 188.1),
+                            _chapman_point(1219.0, 240.2),
+                            _chapman_point(1261.5, 391.2),
+                            _chapman_point(1282.8, 438.1),
+                            _chapman_point(1304.0, 401.6),
+                            _chapman_point(1346.5, 378.2),
+                            _chapman_point(1389.0, 432.9),
+                            _chapman_point(1431.5, 406.8),
+                            _chapman_point(1474.0, 412.0),
+                            _chapman_point(1516.5, 435.5),
+                            _chapman_point(1559.0, 417.3),
+                            _chapman_point(1601.5, 430.3),
+                        ],
+                    }
+                ],
+            },
+            {
+                "figure": "Fig.3",
+                "page": 4,
+                "source_panel": "conditioned_contrast",
+                "axis": {
+                    "x_name": "d_over_lambda",
+                    "x_units": "dimensionless",
+                    "x_min": 0.0,
+                    "x_max": 2.0,
+                    "x_pixel_min": [337.6, 542.5],
+                    "x_pixel_max": [806.5, 542.5],
+                    "y_name": "relative_visibility",
+                    "y_min": 0.0,
+                    "y_max": 1.0,
+                    "y_pixel_min": [337.6, 542.5],
+                    "y_pixel_max": [337.6, 201.0],
+                },
+                "series": [
+                    {
+                        "visibility_type": "conditioned",
+                        "conditioned_on": "case_I_forward",
+                        "visibility_se": 0.04,
+                        "notes": "Calibrated manual pixel picks from Fig. 3 case I branch.",
+                        "points": [
+                            _chapman_point(337.6, 201.0),
+                            _chapman_point(384.5, 235.1),
+                            _chapman_point(431.4, 283.0),
+                            _chapman_point(454.8, 317.1),
+                            _chapman_point(478.3, 344.4),
+                            _chapman_point(525.2, 412.7),
+                            _chapman_point(572.0, 460.5),
+                            _chapman_point(618.9, 467.4),
+                            _chapman_point(665.8, 467.4),
+                            _chapman_point(712.7, 470.8),
+                            _chapman_point(759.6, 474.2),
+                            _chapman_point(806.5, 477.6),
+                        ],
+                    },
+                    {
+                        "visibility_type": "conditioned",
+                        "conditioned_on": "case_III_backward",
+                        "visibility_se": 0.045,
+                        "notes": "Calibrated manual pixel picks from Fig. 3 case III branch.",
+                        "points": [
+                            _chapman_point(337.6, 201.0),
+                            _chapman_point(384.5, 310.3),
+                            _chapman_point(431.4, 395.7),
+                            _chapman_point(454.8, 426.4),
+                            _chapman_point(478.3, 446.9),
+                            _chapman_point(525.2, 467.4),
+                            _chapman_point(572.0, 487.9),
+                            _chapman_point(618.9, 501.5),
+                            _chapman_point(665.8, 511.8),
+                            _chapman_point(712.7, 515.2),
+                            _chapman_point(759.6, 522.0),
+                            _chapman_point(806.5, 528.8),
+                        ],
+                    },
+                ],
+            },
+        ],
+    }
+
+
+def pixel_to_data(x_pixel, y_pixel, axis):
+    """Map calibrated pixel coordinates to data coordinates."""
+
+    x0 = float(axis["x_pixel_min"][0])
+    x1 = float(axis["x_pixel_max"][0])
+    y0 = float(axis["y_pixel_min"][1])
+    y1 = float(axis["y_pixel_max"][1])
+    x = float(axis["x_min"]) + (float(x_pixel) - x0) * (
+        float(axis["x_max"]) - float(axis["x_min"])
+    ) / max(x1 - x0, EPS)
+    y = float(axis["y_min"]) + (float(y_pixel) - y0) * (
+        float(axis["y_max"]) - float(axis["y_min"])
+    ) / (y1 - y0)
+    return x, y
+
+
+def read_pgm(path: Path):
+    """Read a raw P5 PGM file into a uint8 array."""
+
+    data = Path(path).read_bytes()
+    if data[:2] != b"P5":
+        raise ValueError(f"{path} is not a raw P5 PGM file")
+    idx = 2
+
+    def next_token(start):
+        pos = start
+        while data[pos : pos + 1] in b" \n\r\t":
+            pos += 1
+        if data[pos : pos + 1] == b"#":
+            while data[pos : pos + 1] not in b"\n\r":
+                pos += 1
+            return next_token(pos)
+        end = pos
+        while data[end : end + 1] not in b" \n\r\t":
+            end += 1
+        return data[pos:end].decode("ascii"), end
+
+    width, idx = next_token(idx)
+    height, idx = next_token(idx)
+    max_value, idx = next_token(idx)
+    if int(max_value) > 255:
+        raise ValueError(f"{path} uses unsupported PGM max value {max_value}")
+    while data[idx : idx + 1] in b" \n\r\t":
+        idx += 1
+    image = np.frombuffer(data[idx:], dtype=np.uint8)
+    expected = int(width) * int(height)
+    if image.size != expected:
+        raise ValueError(f"{path} has {image.size} pixels, expected {expected}")
+    return image.reshape(int(height), int(width))
+
+
+def render_chapman_pages(pdf_path: Path, tmp_dir: Path, dpi=CHAPMAN_RENDER_DPI):
+    """Render Chapman pages containing Fig. 2 and Fig. 3 to deterministic PGM files."""
+
+    pdftoppm = shutil.which("pdftoppm")
+    if not pdftoppm:
+        raise ValueError("pdftoppm is required for Chapman digitization")
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    rendered = {}
+    for page in [2, 4]:
+        prefix = tmp_dir / f"chapman_page"
+        subprocess.run(
+            [
+                pdftoppm,
+                "-r",
+                str(int(dpi)),
+                "-gray",
+                "-f",
+                str(page),
+                "-l",
+                str(page),
+                str(pdf_path),
+                str(prefix),
+            ],
+            check=True,
+        )
+        pgm = tmp_dir / f"chapman_page-{page}.pgm"
+        image = read_pgm(pgm)
+        rendered[str(page)] = {
+            "path": str(pgm),
+            "width": int(image.shape[1]),
+            "height": int(image.shape[0]),
+            "min_pixel": int(image.min()),
+            "max_pixel": int(image.max()),
+        }
+    return rendered
+
+
+def sha256_file(path: Path):
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def resolve_chapman_pdf(pdf_path: Path | None, tmp_dir: Path):
+    if pdf_path:
+        pdf_path = Path(pdf_path)
+        if not pdf_path.exists():
+            raise ValueError(f"Chapman PDF not found: {pdf_path}")
+        return pdf_path
+    for candidate in [Path("/tmp/chapman_prl95.pdf"), tmp_dir / "scattering_ifm_prl95.pdf"]:
+        if candidate.exists():
+            return candidate
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    target = tmp_dir / "scattering_ifm_prl95.pdf"
+    urllib.request.urlretrieve(CHAPMAN_SOURCE_URL, target)
+    return target
+
+
+def chapman_digitized_dataframe(metadata: dict) -> pd.DataFrame:
+    rows = []
+    columns = [
+        "study_id",
+        "source_figure",
+        "source_panel",
+        "extraction_method",
+        "extracted_by",
+        "extraction_date",
+        "x_name",
+        "x_value",
+        "x_units",
+        "visibility_obs",
+        "visibility_se",
+        "visibility_type",
+        "marker_visibility",
+        "t_meas",
+        "Lambda",
+        "Gamma",
+        "Theta",
+        "path_separation",
+        "detector_spatial_resolution",
+        "coherence_time",
+        "detector_response_time",
+        "record_entropy_bits",
+        "record_survival_probability",
+        "environment_coupling",
+        "record_accessibility",
+        "conditioned_on",
+        "notes",
+    ]
+    for figure in metadata["figures"]:
+        axis = figure["axis"]
+        for series in figure["series"]:
+            for point in series["points"]:
+                x_value, visibility = pixel_to_data(
+                    point["x_pixel"],
+                    point["y_pixel"],
+                    axis,
+                )
+                x_value = round(round(float(x_value) / 0.1) * 0.1, 6)
+                rows.append(
+                    {
+                        "study_id": metadata["study_id"],
+                        "source_figure": figure["figure"],
+                        "source_panel": figure["source_panel"],
+                        "extraction_method": metadata["extraction_method"],
+                        "extracted_by": metadata["extracted_by"],
+                        "extraction_date": metadata["extraction_date"],
+                        "x_name": axis["x_name"],
+                        "x_value": x_value,
+                        "x_units": axis["x_units"],
+                        "visibility_obs": round(float(np.clip(visibility, 0.0, 1.0)), 6),
+                        "visibility_se": series["visibility_se"],
+                        "visibility_type": series["visibility_type"],
+                        "marker_visibility": "",
+                        "t_meas": "",
+                        "Lambda": "",
+                        "Gamma": "",
+                        "Theta": "",
+                        "path_separation": "",
+                        "detector_spatial_resolution": "",
+                        "coherence_time": "",
+                        "detector_response_time": "",
+                        "record_entropy_bits": "",
+                        "record_survival_probability": "",
+                        "environment_coupling": "",
+                        "record_accessibility": "",
+                        "conditioned_on": series["conditioned_on"],
+                        "notes": series["notes"],
+                    }
+                )
+    data = pd.DataFrame(rows, columns=columns)
+    data = data.sort_values(["source_figure", "conditioned_on", "x_value"]).reset_index(drop=True)
+    return data
+
+
 def decompose_eraser_dataset(df: pd.DataFrame):
     """Decompose paired raw/conditioned visibility into reversible and durable loss.
 
@@ -1430,6 +1748,14 @@ def make_eraser_decomposition_outputs(df: pd.DataFrame, output_dir: Path):
         )
         return decomposition
 
+    extraction_method = str(decomposition["extraction_method"].iloc[0])
+    is_calibrated = extraction_method == CHAPMAN_EXTRACTION_METHOD
+    analysis_label = "Chapman Calibrated" if is_calibrated else "Chapman First-Pass"
+    provenance_note = (
+        "This analysis uses calibrated pixel-digitized points with stored axis anchors and point coordinates."
+        if is_calibrated
+        else "This analysis uses first-pass visually digitized points, not publication-grade data."
+    )
     x = decomposition["x_value"].to_numpy(dtype=float)
     order = np.argsort(x)
     x_sorted = x[order]
@@ -1454,7 +1780,7 @@ def make_eraser_decomposition_outputs(df: pd.DataFrame, output_dir: Path):
                 "dash": True,
             },
         ],
-        "Chapman First-Pass Raw vs Conditioned Visibility",
+        f"{analysis_label} Raw vs Conditioned Visibility",
         str(decomposition["x_name"].iloc[0]),
         "relative visibility",
         ylim=(0.0, 1.05),
@@ -1474,7 +1800,7 @@ def make_eraser_decomposition_outputs(df: pd.DataFrame, output_dir: Path):
                 "color": "#d84315",
             },
         ],
-        "Chapman First-Pass Loss Decomposition",
+        f"{analysis_label} Loss Decomposition",
         str(decomposition["x_name"].iloc[0]),
         "visibility loss",
         ylim=(0.0, 1.05),
@@ -1487,11 +1813,11 @@ def make_eraser_decomposition_outputs(df: pd.DataFrame, output_dir: Path):
         if peak_recovery >= 0.5
         else "inconclusive first-pass signal"
     )
-    interpretation = f"""# Chapman First-Pass Interpretation
+    interpretation = f"""# {analysis_label} Interpretation
 
 Status: {status}
 
-This analysis uses first-pass visually digitized points, not publication-grade data. The best conditioned branch is treated as an empirical estimate of the irreversible dephasing bound, while the gap between raw and conditioned visibility is treated as recoverable marker/path information.
+{provenance_note} The best conditioned branch is treated as an empirical estimate of the irreversible dephasing bound, while the gap between raw and conditioned visibility is treated as recoverable marker/path information.
 
 - Mean recovery fraction: {mean_recovery:.3f}
 - Peak recovery fraction: {peak_recovery:.3f} at {best_row['x_name']} = {best_row['x_value']:.3f}
@@ -1501,6 +1827,141 @@ Interpretation: a large conditioned/raw gap supports the scaffold's key separati
 """
     (output_dir / "chapman_interpretation.md").write_text(interpretation, encoding="utf-8")
     return decomposition
+
+
+def _chapman_decomposition_peak(decomposition: pd.DataFrame):
+    if decomposition.empty:
+        return {
+            "peak_x": np.nan,
+            "peak_recovery_fraction": np.nan,
+            "peak_recoverable_loss": np.nan,
+            "peak_raw_visibility": np.nan,
+            "peak_conditioned_visibility": np.nan,
+        }
+    row = decomposition.loc[decomposition["recovery_fraction"].idxmax()]
+    return {
+        "peak_x": float(row["x_value"]),
+        "peak_recovery_fraction": float(row["recovery_fraction"]),
+        "peak_recoverable_loss": float(row["recoverable_loss"]),
+        "peak_raw_visibility": float(row["raw_visibility"]),
+        "peak_conditioned_visibility": float(row["best_conditioned_visibility"]),
+    }
+
+
+def make_chapman_digitization_outputs(
+    pdf_path: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    tmp_dir = Path("outputs") / "tmp" / "chapman_digitization"
+    pdf = resolve_chapman_pdf(pdf_path, tmp_dir)
+    metadata = chapman_default_digitization_metadata()
+    metadata["pdf_sha256"] = sha256_file(pdf)
+    metadata["rendered_pages"] = render_chapman_pages(pdf, tmp_dir, metadata["render_dpi"])
+
+    digitized = chapman_digitized_dataframe(metadata)
+    digitized_path = data_dir / "CHAPMAN_1995_SCATTER_DIGITIZED.csv"
+    metadata_path = data_dir / "CHAPMAN_1995_DIGITIZATION.json"
+    digitized.to_csv(digitized_path, index=False)
+    metadata_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+
+    first_pass_path = data_dir / "CHAPMAN_1995_SCATTER.csv"
+    first_pass_decomp = pd.DataFrame()
+    comparison = pd.DataFrame()
+    if first_pass_path.exists():
+        first_pass = pd.read_csv(first_pass_path)
+        first_pass_decomp = decompose_eraser_dataset(first_pass)
+        first_pass_comp = first_pass_decomp[
+            [
+                "x_value",
+                "raw_visibility",
+                "best_conditioned_visibility",
+                "recovery_fraction",
+            ]
+        ].rename(
+            columns={
+                "raw_visibility": "raw_visibility_first_pass",
+                "best_conditioned_visibility": "best_conditioned_visibility_first_pass",
+                "recovery_fraction": "recovery_fraction_first_pass",
+            }
+        )
+        digitized_comp = decompose_eraser_dataset(digitized)[
+            [
+                "x_value",
+                "raw_visibility",
+                "best_conditioned_visibility",
+                "recovery_fraction",
+            ]
+        ].rename(
+            columns={
+                "raw_visibility": "raw_visibility_digitized",
+                "best_conditioned_visibility": "best_conditioned_visibility_digitized",
+                "recovery_fraction": "recovery_fraction_digitized",
+            }
+        )
+        comparison = first_pass_comp.merge(digitized_comp, on="x_value", how="outer")
+        comparison["raw_delta"] = (
+            comparison["raw_visibility_digitized"]
+            - comparison["raw_visibility_first_pass"]
+        )
+        comparison["best_conditioned_delta"] = (
+            comparison["best_conditioned_visibility_digitized"]
+            - comparison["best_conditioned_visibility_first_pass"]
+        )
+        comparison["recovery_fraction_delta"] = (
+            comparison["recovery_fraction_digitized"]
+            - comparison["recovery_fraction_first_pass"]
+        )
+        comparison.to_csv(output_dir / "first_pass_vs_digitized_comparison.csv", index=False)
+
+    digitized_decomp = decompose_eraser_dataset(digitized)
+    digitized_peak = _chapman_decomposition_peak(digitized_decomp)
+    first_pass_peak = _chapman_decomposition_peak(first_pass_decomp)
+    retained = (
+        math.isfinite(digitized_peak["peak_recovery_fraction"])
+        and digitized_peak["peak_recovery_fraction"] >= 0.5
+        and abs(digitized_peak["peak_x"] - 0.5) <= 0.15
+    )
+    verdict = (
+        "recovery window retained"
+        if retained
+        else "recovery window not robust at current calibration"
+    )
+    interpretation = (
+        "The calibrated pass retains a large recoverable-visibility window in "
+        "Chapman, which supports the scaffold's separation between accessible "
+        "entangled records and inaccessible durable records."
+        if retained
+        else "The calibrated pass does not retain the first-pass recovery "
+        "window strongly enough to support the accessibility interpretation."
+    )
+    report = f"""# Chapman Digitization Quality Report
+
+Status: {verdict}
+
+The Chapman 1995 extraction has been upgraded from first-pass visual estimates to calibrated pixel coordinates. The digitizer renders the source PDF with `pdftoppm`, parses the grayscale PGM output, and maps fixed pixel picks through stored axis anchors.
+
+- Source URL: {metadata['source_url']}
+- PDF SHA256: `{metadata['pdf_sha256']}`
+- Render DPI: {metadata['render_dpi']}
+- Extracted rows: {len(digitized)}
+- Extraction method: `{metadata['extraction_method']}`
+
+## Recovery Window
+
+- Digitized peak recovery fraction: {digitized_peak['peak_recovery_fraction']:.3f} at d/lambda = {digitized_peak['peak_x']:.3f}
+- Digitized peak recoverable loss: {digitized_peak['peak_recoverable_loss']:.3f}
+- Digitized raw / conditioned visibility at peak: {digitized_peak['peak_raw_visibility']:.3f} / {digitized_peak['peak_conditioned_visibility']:.3f}
+- First-pass peak recovery fraction: {first_pass_peak['peak_recovery_fraction']:.3f} at d/lambda = {first_pass_peak['peak_x']:.3f}
+
+## Interpretation
+
+{interpretation} It does not validate the Lambda/Gamma/Theta product law because detector acceptance and record accessibility have not yet been independently parameterized from the apparatus.
+"""
+    (output_dir / "digitization_quality_report.md").write_text(report, encoding="utf-8")
+    return digitized, metadata, comparison
 
 
 def make_accessibility_benchmark_outputs(output_dir: Path):
@@ -1720,6 +2181,10 @@ def run_accessibility_benchmark(output_dir: Path):
     make_accessibility_benchmark_outputs(output_dir)
 
 
+def run_digitize_chapman(pdf_path: Path | None, output_dir: Path, data_dir: Path):
+    make_chapman_digitization_outputs(pdf_path, output_dir, data_dir)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Constraint Dynamics quantum-measurement V3 scaffold"
@@ -1745,6 +2210,13 @@ def build_parser():
         help="generate record-accessibility discrimination benchmark",
     )
     access.add_argument("--output-dir", default="outputs/accessibility_benchmark")
+    digitize = sub.add_parser(
+        "digitize-chapman",
+        help="render and digitize Chapman 1995 Fig. 2/Fig. 3 visibility data",
+    )
+    digitize.add_argument("--pdf", default=None)
+    digitize.add_argument("--output-dir", default="outputs/chapman_digitization")
+    digitize.add_argument("--data-dir", default="data/extracted")
     bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
     bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
@@ -1769,6 +2241,9 @@ def main(argv=None):
             run_decompose_eraser(Path(args.input), Path(args.output_dir))
         elif command == "benchmark-accessibility":
             run_accessibility_benchmark(Path(args.output_dir))
+        elif command == "digitize-chapman":
+            pdf_path = None if args.pdf is None else Path(args.pdf)
+            run_digitize_chapman(pdf_path, Path(args.output_dir), Path(args.data_dir))
         elif command == "benchmark-designs":
             run_identifiability_benchmark(Path(args.output_dir))
         elif command == "template":

@@ -1,0 +1,13 @@
+study_id,x_name,x_value,raw_visibility,best_conditioned_visibility,eta_irreversible_hat,marker_visibility_hat,recoverable_loss,unrecoverable_loss,total_loss,recovery_fraction,n_raw,n_conditioned,best_conditioned_on,source_figure,extraction_method
+CHAPMAN_1995_SCATTER,d_over_lambda,0.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,1,2,case_III_backward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,0.2,0.799923,0.900146,0.900146,0.8886591730674802,0.10022299999999995,0.099854,0.20007699999999995,0.5009221449741849,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,0.4,0.220046,0.759883,0.759883,0.2895787904190514,0.539837,0.24011700000000002,0.779954,0.6921395364341999,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,0.5,0.039939,0.660029,0.660029,0.06051097754795623,0.62009,0.339971,0.960061,0.6458860426577061,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,0.6,0.180108,0.580088,0.580088,0.3104839265766573,0.39998000000000006,0.41991199999999995,0.8198920000000001,0.4878447405268011,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,0.8,0.269969,0.380088,0.380088,0.7102802508892678,0.11011899999999997,0.619912,0.730031,0.1508415396058523,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,1.0,0.059908,0.240117,0.240117,0.24949503783572177,0.180209,0.759883,0.940092,0.1916929406909111,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,1.2,0.160138,0.219912,0.219912,0.7281912765106042,0.059773999999999994,0.780088,0.839862,0.07117121622361769,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,1.4,0.140169,0.219912,0.219912,0.6373867728909746,0.07974300000000001,0.780088,0.859831,0.09274264361252386,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,1.6,0.049923,0.209956,0.209956,0.23777839166301512,0.160033,0.790044,0.950077,0.16844213679522818,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,1.8,0.119816,0.2,0.2,0.59908,0.080184,0.8,0.880184,0.09109913381747453,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1
+CHAPMAN_1995_SCATTER,d_over_lambda,2.0,0.069892,0.190044,0.190044,0.3677674643766707,0.120152,0.809956,0.930108,0.12918069729536782,1,2,case_I_forward,Fig.3,calibrated_pixel_digitization_v1

@@ -13,6 +13,8 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     build_accessibility_benchmark_dataset,
     build_joint_density,
     build_synthetic_visibility_dataset,
+    chapman_default_digitization_metadata,
+    chapman_digitized_dataframe,
     decompose_eraser_dataset,
     design_diagnostics,
     energetic_constraint,
@@ -20,6 +22,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     fit_visibility_models,
     partial_trace_marker,
     path_visibility_from_rho,
+    pixel_to_data,
     quantum_eraser_observables,
 )
 
@@ -77,6 +80,51 @@ def test_accessibility_benchmark_ranks_aware_product_first():
     naive = summary[summary["model"] == "naive_record_product"].iloc[0]
     aware = summary[summary["model"] == "aware_record_product"].iloc[0]
     assert naive["aicc"] - aware["aicc"] > 10.0
+
+
+def test_chapman_calibration_maps_axis_anchors():
+    metadata = chapman_default_digitization_metadata()
+    axis = metadata["figures"][0]["axis"]
+    x_min, y_min = pixel_to_data(
+        axis["x_pixel_min"][0],
+        axis["y_pixel_min"][1],
+        axis,
+    )
+    x_max, y_max = pixel_to_data(
+        axis["x_pixel_max"][0],
+        axis["y_pixel_max"][1],
+        axis,
+    )
+    assert np.isclose(x_min, axis["x_min"])
+    assert np.isclose(y_min, axis["y_min"])
+    assert np.isclose(x_max, axis["x_max"])
+    assert np.isclose(y_max, axis["y_max"])
+
+
+def test_chapman_digitized_dataframe_schema_and_pairs():
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    required = {
+        "study_id",
+        "source_figure",
+        "x_name",
+        "x_value",
+        "visibility_obs",
+        "visibility_type",
+        "conditioned_on",
+    }
+    assert required.issubset(df.columns)
+    assert len(df) == 36
+    counts = df.groupby(["x_name", "x_value"])["visibility_type"].nunique()
+    assert counts.min() == 2
+
+
+def test_chapman_digitized_decomposition_has_recovery_window():
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    decomposition = decompose_eraser_dataset(df)
+    assert not decomposition.empty
+    peak = decomposition.loc[decomposition["recovery_fraction"].idxmax()]
+    assert 0.35 <= peak["x_value"] <= 0.65
+    assert peak["recovery_fraction"] > 0.5
 
 
 def test_decompose_eraser_recovers_known_synthetic_values():

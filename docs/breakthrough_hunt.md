@@ -17,7 +17,7 @@ That is the most interesting result so far. It says the scaffold can separate vi
 
 This is not a discovery of collapse dynamics and not a validation of the Lambda/Gamma/Theta product law. Chapman et al. explicitly explain the result with standard quantum mechanics: the atom becomes entangled with the scattered photon, and restricted acceptance of correlated atoms/photon directions recovers part of the contrast.
 
-The current Chapman CSV is also first-pass visual digitization. It is good enough for workflow triage, not for quantitative claims.
+The original Chapman CSV is first-pass visual digitization. The upgraded calibrated extraction records pixel anchors, point picks, PDF hash, and source provenance. It is stronger than the first pass but still not a substitute for author-provided raw data.
 
 ## What It May Teach Constraint Dynamics
 
@@ -48,6 +48,25 @@ python src/constraint_dynamics_quantum_v3.py benchmark-accessibility --output-di
 
 This benchmark intentionally generates data from the accessibility-aware Theta definition, then asks whether a naive record-load product can fit it. Passing the benchmark is not evidence for the theory; it defines the empirical pattern that would matter.
 
+The real-data push is the calibrated Chapman command:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py digitize-chapman --pdf /tmp/chapman_prl95.pdf --output-dir outputs/chapman_digitization --data-dir data/extracted
+python src/constraint_dynamics_quantum_v3.py decompose-eraser --input data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv --output-dir outputs/chapman_digitized
+```
+
+The criterion is strict: the recoverable-visibility window near d/lambda = 0.5 must remain after calibrated pixel extraction.
+
+The calibrated pass retains that window:
+
+```text
+peak recovery fraction: 0.692 at d/lambda = 0.4
+recovery fraction at d/lambda = 0.5: 0.646
+raw / conditioned visibility at d/lambda = 0.5: 0.040 / 0.660
+```
+
+This strengthens the accessibility interpretation as an empirical target. It still does not validate the product law because detector acceptance and record accessibility have not been independently parameterized.
+
 ## Current Verdict
 
-We have a promising target and a sharper theory variable. We do not yet have a breakthrough.
+We have a stronger Chapman-backed target and a sharper theory variable. We do not yet have a breakthrough.

@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="460.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Chapman Calibrated Raw vs Conditioned Visibility</text>
+<rect x="82" y="54" width="810" height="384" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="438" stroke="#eceff1"/>
+<text x="82.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">-0.04</text>
+<line x1="244.00" y1="54" x2="244.00" y2="438" stroke="#eceff1"/>
+<text x="244.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.38</text>
+<line x1="406.00" y1="54" x2="406.00" y2="438" stroke="#eceff1"/>
+<text x="406.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.79</text>
+<line x1="568.00" y1="54" x2="568.00" y2="438" stroke="#eceff1"/>
+<text x="568.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1.2</text>
+<line x1="730.00" y1="54" x2="730.00" y2="438" stroke="#eceff1"/>
+<text x="730.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1.6</text>
+<line x1="892.00" y1="54" x2="892.00" y2="438" stroke="#eceff1"/>
+<text x="892.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">2</text>
+<line x1="82" y1="438.00" x2="892" y2="438.00" stroke="#eceff1"/>
+<text x="72.00" y="442.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0</text>
+<line x1="82" y1="361.20" x2="892" y2="361.20" stroke="#eceff1"/>
+<text x="72.00" y="365.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.21</text>
+<line x1="82" y1="284.40" x2="892" y2="284.40" stroke="#eceff1"/>
+<text x="72.00" y="288.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.42</text>
+<line x1="82" y1="207.60" x2="892" y2="207.60" stroke="#eceff1"/>
+<text x="72.00" y="211.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.63</text>
+<line x1="82" y1="130.80" x2="892" y2="130.80" stroke="#eceff1"/>
+<text x="72.00" y="134.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.84</text>
+<line x1="82" y1="54.00" x2="892" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.1</text>
+<polyline fill="none" stroke="#2962ff" stroke-width="2.5" points="97.58,72.29 175.46,145.46 253.35,357.53 292.29,423.39 331.23,372.13 409.12,339.27 487.00,416.09 564.88,379.44 642.77,386.74 720.65,419.74 798.54,394.18 876.42,412.44"/>
+<polyline fill="none" stroke="#00897b" stroke-width="2.5" points="97.58,72.29 175.46,108.80 253.35,160.10 292.29,196.62 331.23,225.85 409.12,299.00 487.00,350.19 564.88,357.58 642.77,357.58 720.65,361.22 798.54,364.86 876.42,368.50"/>
+<polyline fill="none" stroke="#d84315" stroke-width="2.5" stroke-dasharray="7 5" points="97.58,72.29 175.46,108.80 253.35,160.10 292.29,196.62 331.23,225.85 409.12,299.00 487.00,350.19 564.88,357.58 642.77,357.58 720.65,361.22 798.54,364.86 876.42,368.50"/>
+<line x1="94" y1="72" x2="122" y2="72" stroke="#2962ff" stroke-width="3"/>
+<text x="130.00" y="76.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">raw visibility</text>
+<line x1="94" y1="94" x2="122" y2="94" stroke="#00897b" stroke-width="3"/>
+<text x="130.00" y="98.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">best conditioned visibility</text>
+<line x1="94" y1="116" x2="122" y2="116" stroke="#d84315" stroke-width="3" stroke-dasharray="7 5"/>
+<text x="130.00" y="120.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">eta irreversible estimate</text>
+<text x="487.00" y="492.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">d_over_lambda</text>
+<text x="22.00" y="246.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 246.00)">relative visibility</text>
+</svg>

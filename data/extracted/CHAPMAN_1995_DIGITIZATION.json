@@ -1,0 +1,262 @@
+{
+  "study_id": "CHAPMAN_1995_SCATTER",
+  "source_title": "Photon Scattering from Atoms in an Atom Interferometer: Coherence Lost and Regained",
+  "source_url": "https://chapmanlabs.gatech.edu/papers/scattering_ifm_prl95.pdf",
+  "doi": "https://doi.org/10.1103/PhysRevLett.75.3783",
+  "render_dpi": 220,
+  "extraction_method": "calibrated_pixel_digitization_v1",
+  "extracted_by": "Codex",
+  "extraction_date": "2026-04-24",
+  "coordinate_system": "pdftoppm grayscale PGM pixels, origin at top left",
+  "figures": [
+    {
+      "figure": "Fig.2",
+      "page": 2,
+      "source_panel": "relative_contrast",
+      "axis": {
+        "x_name": "d_over_lambda",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 2.0,
+        "x_pixel_min": [
+          1176.5,
+          448.5
+        ],
+        "x_pixel_max": [
+          1601.5,
+          448.5
+        ],
+        "y_name": "relative_visibility",
+        "y_min": 0.0,
+        "y_max": 1.0,
+        "y_pixel_min": [
+          1176.5,
+          448.5
+        ],
+        "y_pixel_max": [
+          1176.5,
+          188.1
+        ]
+      },
+      "series": [
+        {
+          "visibility_type": "raw",
+          "conditioned_on": "",
+          "visibility_se": 0.035,
+          "notes": "Calibrated manual pixel picks from Fig. 2 contrast panel.",
+          "points": [
+            {
+              "x_pixel": 1176.5,
+              "y_pixel": 188.1
+            },
+            {
+              "x_pixel": 1219.0,
+              "y_pixel": 240.2
+            },
+            {
+              "x_pixel": 1261.5,
+              "y_pixel": 391.2
+            },
+            {
+              "x_pixel": 1282.8,
+              "y_pixel": 438.1
+            },
+            {
+              "x_pixel": 1304.0,
+              "y_pixel": 401.6
+            },
+            {
+              "x_pixel": 1346.5,
+              "y_pixel": 378.2
+            },
+            {
+              "x_pixel": 1389.0,
+              "y_pixel": 432.9
+            },
+            {
+              "x_pixel": 1431.5,
+              "y_pixel": 406.8
+            },
+            {
+              "x_pixel": 1474.0,
+              "y_pixel": 412.0
+            },
+            {
+              "x_pixel": 1516.5,
+              "y_pixel": 435.5
+            },
+            {
+              "x_pixel": 1559.0,
+              "y_pixel": 417.3
+            },
+            {
+              "x_pixel": 1601.5,
+              "y_pixel": 430.3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "figure": "Fig.3",
+      "page": 4,
+      "source_panel": "conditioned_contrast",
+      "axis": {
+        "x_name": "d_over_lambda",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 2.0,
+        "x_pixel_min": [
+          337.6,
+          542.5
+        ],
+        "x_pixel_max": [
+          806.5,
+          542.5
+        ],
+        "y_name": "relative_visibility",
+        "y_min": 0.0,
+        "y_max": 1.0,
+        "y_pixel_min": [
+          337.6,
+          542.5
+        ],
+        "y_pixel_max": [
+          337.6,
+          201.0
+        ]
+      },
+      "series": [
+        {
+          "visibility_type": "conditioned",
+          "conditioned_on": "case_I_forward",
+          "visibility_se": 0.04,
+          "notes": "Calibrated manual pixel picks from Fig. 3 case I branch.",
+          "points": [
+            {
+              "x_pixel": 337.6,
+              "y_pixel": 201.0
+            },
+            {
+              "x_pixel": 384.5,
+              "y_pixel": 235.1
+            },
+            {
+              "x_pixel": 431.4,
+              "y_pixel": 283.0
+            },
+            {
+              "x_pixel": 454.8,
+              "y_pixel": 317.1
+            },
+            {
+              "x_pixel": 478.3,
+              "y_pixel": 344.4
+            },
+            {
+              "x_pixel": 525.2,
+              "y_pixel": 412.7
+            },
+            {
+              "x_pixel": 572.0,
+              "y_pixel": 460.5
+            },
+            {
+              "x_pixel": 618.9,
+              "y_pixel": 467.4
+            },
+            {
+              "x_pixel": 665.8,
+              "y_pixel": 467.4
+            },
+            {
+              "x_pixel": 712.7,
+              "y_pixel": 470.8
+            },
+            {
+              "x_pixel": 759.6,
+              "y_pixel": 474.2
+            },
+            {
+              "x_pixel": 806.5,
+              "y_pixel": 477.6
+            }
+          ]
+        },
+        {
+          "visibility_type": "conditioned",
+          "conditioned_on": "case_III_backward",
+          "visibility_se": 0.045,
+          "notes": "Calibrated manual pixel picks from Fig. 3 case III branch.",
+          "points": [
+            {
+              "x_pixel": 337.6,
+              "y_pixel": 201.0
+            },
+            {
+              "x_pixel": 384.5,
+              "y_pixel": 310.3
+            },
+            {
+              "x_pixel": 431.4,
+              "y_pixel": 395.7
+            },
+            {
+              "x_pixel": 454.8,
+              "y_pixel": 426.4
+            },
+            {
+              "x_pixel": 478.3,
+              "y_pixel": 446.9
+            },
+            {
+              "x_pixel": 525.2,
+              "y_pixel": 467.4
+            },
+            {
+              "x_pixel": 572.0,
+              "y_pixel": 487.9
+            },
+            {
+              "x_pixel": 618.9,
+              "y_pixel": 501.5
+            },
+            {
+              "x_pixel": 665.8,
+              "y_pixel": 511.8
+            },
+            {
+              "x_pixel": 712.7,
+              "y_pixel": 515.2
+            },
+            {
+              "x_pixel": 759.6,
+              "y_pixel": 522.0
+            },
+            {
+              "x_pixel": 806.5,
+              "y_pixel": 528.8
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pdf_sha256": "27c288986e414efb43a776bd7c02b79208cba51beb1598e40915ceaa3c3f5b72",
+  "rendered_pages": {
+    "2": {
+      "path": "outputs/tmp/chapman_digitization/chapman_page-2.pgm",
+      "width": 1870,
+      "height": 2420,
+      "min_pixel": 0,
+      "max_pixel": 255
+    },
+    "4": {
+      "path": "outputs/tmp/chapman_digitization/chapman_page-4.pgm",
+      "width": 1870,
+      "height": 2420,
+      "min_pixel": 0,
+      "max_pixel": 255
+    }
+  }
+}

@@ -55,6 +55,13 @@ Decompose paired raw/conditioned quantum eraser visibility data:
 python src/constraint_dynamics_quantum_v3.py decompose-eraser --input data/extracted/CHAPMAN_1995_SCATTER.csv --output-dir outputs/chapman
 ```
 
+Regenerate the calibrated Chapman extraction:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py digitize-chapman --pdf /tmp/chapman_prl95.pdf --output-dir outputs/chapman_digitization --data-dir data/extracted
+python src/constraint_dynamics_quantum_v3.py decompose-eraser --input data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv --output-dir outputs/chapman_digitized
+```
+
 Generate the balanced-vs-confounded benchmark:
 
 ```bash
@@ -82,8 +89,12 @@ src/constraint_dynamics_quantum_v3.py
 data/visibility_fit_template.csv
 data/literature_study_register.csv
 data/extracted/CHAPMAN_1995_SCATTER.csv
+data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv
+data/extracted/CHAPMAN_1995_DIGITIZATION.json
 outputs/figures/
 outputs/chapman/
+outputs/chapman_digitized/
+outputs/chapman_digitization/
 outputs/accessibility_benchmark/
 outputs/demo_fit_summary.csv
 ```
@@ -129,3 +140,5 @@ The model respects standard quantum eraser behavior: reversible path marking can
 Use [docs/experimental_design.md](docs/experimental_design.md) before taking a product-law fit seriously. The scaffold now treats high factor correlation and poor design conditioning as first-class warnings rather than afterthoughts.
 
 The included Chapman extraction is a first-pass visual digitization from the paper PDF, intended to exercise the workflow and identify promising signals. It should be replaced by publication-grade digitization before making quantitative claims.
+
+The calibrated Chapman extraction stores axis anchors, pixel point picks, PDF hash, and source provenance. It still supports only an honest recoverability claim; it is not a product-law validation until detector acceptance and record accessibility are independently parameterized.

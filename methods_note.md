@@ -95,6 +95,10 @@ unrecoverable_loss = 1 - eta_irreversible_hat
 
 This is bookkeeping, not a derivation. Its purpose is to separate "visibility hidden in correlations" from "visibility lost to durable dephasing" before attempting a Lambda/Gamma/Theta fit.
 
+## Chapman Digitization
+
+The `digitize-chapman` command renders the Chapman 1995 PDF through `pdftoppm`, parses deterministic grayscale PGM files, and maps stored pixel picks through axis calibration anchors. The output includes a digitized CSV, JSON provenance with PDF SHA256, and a quality report comparing the first-pass and calibrated recovery windows.
+
 ## Identifiability Diagnostics
 
 The `design` command checks whether a dataset can actually distinguish the three proposed factors. It reports factor correlations, variance inflation factors, factor ranges, and the condition number of the full second-order feature matrix. The benchmark command compares a balanced factorial synthetic design with a confounded latent-load design where Lambda, Gamma, and Theta rise together.
