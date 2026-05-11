@@ -87,6 +87,7 @@ The follow-up command is:
 
 ```bash
 python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir outputs/no_refit_target_scout
+python src/constraint_dynamics_quantum_v3.py audit-breakthrough-gaps --output-dir outputs/breakthrough_gap_audit
 ```
 
 Current verdict:
@@ -96,6 +97,8 @@ no second no-refit distribution target yet
 eligible second distribution targets: 0
 recommended next candidate: EIBENBERGER_2014_RECOIL_ABSORPTION
 ```
+
+The expanded G11 audit currently checks 13 candidates and still reports `eligible_second_no_refit_targets = 0`. The blocker split is mostly `record_variable_not_independent`, with a smaller `paired_visibility_curve_missing` group. The latest refresh adds Ding 2025, Chen 2022, Yoon/Cho 2021, Rozema 2012, and Kaneda 2014 as useful controls or near misses, not breakthrough-gate closers.
 
 The Eibenberger recoil-control command is:
 

@@ -211,6 +211,7 @@ Rank candidate experiments for the missing second no-refit distribution gate, th
 
 ```bash
 python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir outputs/no_refit_target_scout
+python src/constraint_dynamics_quantum_v3.py audit-breakthrough-gaps --output-dir outputs/breakthrough_gap_audit
 python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_weak_value_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
@@ -356,7 +357,7 @@ The Xiao distribution-prediction command is the current sharpest no-refit check.
 
 The vector-aware stress test now survives its configured robustness checks: `P(no-refit beats published bound) = 1.000`, `P(no-refit RMSE < 0.025) = 0.957`, pairing-null `P(RMSE <= observed) = 0.003`, and branch-label-swap `P(RMSE <= observed) = 0.000`. The caveat is important: this is a within-paper cross-figure prediction with vector-coordinate uncertainty, not an independent apparatus validation.
 
-The second-target scout now explicitly fails the strict Xiao-like gate: no second independent measured-distribution-to-visibility target has been identified. Eibenberger 2014 is the best next recoil-control lane. Its Eq. (2)-style recoil kernel fits scout Fig. 2b points well with the paper cross section (`RMSE = 0.0251`) and nearly matches a visibility-fitted cross section (`RMSE = 0.0247`), but the paper uses visibility reduction to extract the absorption cross section, so it is not an independent distribution validation.
+The second-target scout now explicitly fails the strict Xiao-like gate: no second independent measured-distribution-to-visibility target has been identified. The current register checks 13 candidates, including modern duality, weak-measurement, and entanglement-memory controls. The gap audit writes `outputs/breakthrough_gap_audit/g11_gap_audit_report.md` and currently reports `eligible_second_no_refit_targets = 0`. Eibenberger 2014 remains the best recoil-control lane. Its Eq. (2)-style recoil kernel fits scout Fig. 2b points well with the paper cross section (`RMSE = 0.0251`) and nearly matches a visibility-fitted cross section (`RMSE = 0.0247`), but the paper uses visibility reduction to extract the absorption cross section, so it is not an independent distribution validation.
 
 The Mir weak-value scout is the closest historical near miss. The arXiv source includes Fig. 3, an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 quantum-eraser conditional patterns. The scout verdict is `measured momentum-transfer distribution found, visibility sweep missing`: useful as a weak-value/momentum-transfer control, but it does not clear the missing second no-refit distribution-to-visibility gate.
 
