@@ -9517,6 +9517,108 @@ author_data_request_tracker.csv
     return register
 
 
+def make_author_data_intake_outputs(output_dir: Path):
+    """Write schemas for evaluating any author data that arrives."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    schemas = [
+        {
+            "target_id": "xiao_2019_author_data",
+            "dataset_id": "xiao_fig3_fig4_numerical",
+            "minimum_required_files": "fig3_branch_distributions.csv; fig4_visibility_momentum.csv",
+            "required_columns": "figure,branch_or_panel,x_value,y_value,value_se,source_note",
+            "g11_role": "lead calibration only",
+            "can_close_g11": False,
+            "validation_rule": "recompute Fig. 3 branch moments and Fig. 4 no-refit RMSE; compare to current vector extraction",
+            "next_cli_if_received": "predict-xiao-visibility-from-distribution",
+        },
+        {
+            "target_id": "hochrainer_2017_independent_widths",
+            "dataset_id": "hochrainer_visibility_widths",
+            "minimum_required_files": "visibility_profiles.csv; independent_momentum_widths.csv",
+            "required_columns": "pump_waist,visibility_profile_or_width,value,value_se,independence_basis",
+            "g11_role": "possible second no-refit test",
+            "can_close_g11": True,
+            "validation_rule": "record width must be measured or simulated independently of the visibility FWHM being predicted",
+            "next_cli_if_received": "new analyze-hochrainer-no-refit-widths command",
+        },
+        {
+            "target_id": "mir_2007_visibility_context",
+            "dataset_id": "mir_pwv_visibility_pairing",
+            "minimum_required_files": "pwv_distribution.csv; visibility_or_contrast_sweep.csv",
+            "required_columns": "which_way_strength_or_setting,q_or_x,value,value_se,visibility_or_contrast,setting_note",
+            "g11_role": "possible weak-value distribution control",
+            "can_close_g11": True,
+            "validation_rule": "P_wv(q) and visibility/contrast must be paired by controlled which-way settings",
+            "next_cli_if_received": "new analyze-mir-pwv-visibility command",
+        },
+        {
+            "target_id": "eibenberger_2014_recoil_controls",
+            "dataset_id": "eibenberger_held_out_recoil_load",
+            "minimum_required_files": "visibility_ratios.csv; independent_sigma_or_recoil_calibration.csv",
+            "required_columns": "laser_power_or_distance,visibility_ratio,visibility_se,sigma_abs_or_recoil_load,calibration_basis",
+            "g11_role": "possible held-out recoil/load control",
+            "can_close_g11": True,
+            "validation_rule": "sigma_abs or equivalent recoil/load calibration must not be inferred from the same visibility reduction",
+            "next_cli_if_received": "extend scout-eibenberger-recoil-absorption with held-out calibration input",
+        },
+    ]
+    schema = pd.DataFrame(schemas)
+    schema.to_csv(output_dir / "author_data_intake_schema.csv", index=False)
+
+    manifest = pd.DataFrame(
+        [
+            {
+                "target_id": row["target_id"],
+                "received": False,
+                "data_path": "",
+                "provenance_path": "",
+                "contact_or_source": "",
+                "date_received": "",
+                "license_or_permission": "",
+                "passes_schema_check": False,
+                "supports_g11": False,
+                "notes": "",
+            }
+            for row in schemas
+        ]
+    )
+    manifest.to_csv(output_dir / "author_data_received_manifest_template.csv", index=False)
+
+    for row in schemas:
+        columns = [item.strip() for item in row["required_columns"].split(",")]
+        pd.DataFrame(columns=columns).to_csv(
+            output_dir / f"{row['dataset_id']}_template.csv",
+            index=False,
+        )
+
+    closeable_count = int(schema["can_close_g11"].sum())
+    report = f"""# Author Data Intake Plan
+
+Purpose: make incoming author/numerical data immediately testable against G11.
+
+## Intake Rule
+
+Data can affect G11 only when the record distribution, bandwidth, width, or load proxy is independent of the visibility/decoherence curve it predicts. Calibration data for Xiao are still valuable, but they tighten the current lead rather than closing the second-experiment gate.
+
+## Schemas
+
+{chr(10).join(f"- **{row['target_id']}**: {row['g11_role']}; can close G11 = {row['can_close_g11']}; rule: {row['validation_rule']}" for row in schemas)}
+
+## Summary
+
+- Intake targets: {len(schemas)}
+- Targets that could close G11 if the independence rule is satisfied: {closeable_count}
+- Manifest template: `author_data_received_manifest_template.csv`
+
+## Next Step
+
+When data arrives, fill the manifest, commit only data with clear permission/provenance, and add a dedicated analysis CLI before updating the breakthrough scorecard.
+"""
+    (output_dir / "author_data_intake_plan.md").write_text(report, encoding="utf-8")
+    return schema, manifest
+
+
 def eibenberger_default_metadata():
     """Return seeded Fig. 2b points and constants for Eibenberger 2014."""
 
@@ -13518,6 +13620,10 @@ def run_prepare_author_data_requests(output_dir: Path):
     make_breakthrough_author_data_requests(output_dir)
 
 
+def run_prepare_author_data_intake(output_dir: Path):
+    make_author_data_intake_outputs(output_dir)
+
+
 def run_audit_breakthrough_gaps(output_dir: Path):
     make_breakthrough_gap_audit_outputs(output_dir)
 
@@ -13941,6 +14047,14 @@ def build_parser():
         "--output-dir",
         default="outputs/author_data_requests",
     )
+    author_intake = sub.add_parser(
+        "prepare-author-data-intake",
+        help="write schemas and manifest templates for received G11 author data",
+    )
+    author_intake.add_argument(
+        "--output-dir",
+        default="outputs/author_data_intake",
+    )
     gap_audit = sub.add_parser(
         "audit-breakthrough-gaps",
         help="audit which evidence is still missing for the second no-refit gate",
@@ -14197,6 +14311,8 @@ def main(argv=None):
             run_scout_no_refit_targets(Path(args.output_dir))
         elif command == "prepare-author-data-requests":
             run_prepare_author_data_requests(Path(args.output_dir))
+        elif command == "prepare-author-data-intake":
+            run_prepare_author_data_intake(Path(args.output_dir))
         elif command == "audit-breakthrough-gaps":
             run_audit_breakthrough_gaps(Path(args.output_dir))
         elif command == "audit-public-data-availability":

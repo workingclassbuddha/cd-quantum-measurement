@@ -23,6 +23,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
 | Author-data request tracker prepared | `outputs/author_data_requests/author_data_request_tracker.csv`; issues #2-#5 | Pass, drafts ready but not sent |
+| Author-data intake schemas prepared | `outputs/author_data_intake/` | Pass |
 | GitHub coordination created | Issues #1-#5 | Pass |
 | Second independent measured-distribution-to-visibility validation found | `outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv` reports `eligible_second_no_refit_targets = 0` | Fail |
 | Lambda/Gamma/Theta product law independently validated | `outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv` gate G12 | Fail |

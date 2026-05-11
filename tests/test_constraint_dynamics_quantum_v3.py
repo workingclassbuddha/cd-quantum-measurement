@@ -64,6 +64,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_xiao_distribution_prediction_stress_outputs,
     make_breakthrough_candidate_outputs,
     make_breakthrough_author_data_requests,
+    make_author_data_intake_outputs,
     make_breakthrough_gap_audit_outputs,
     make_public_data_availability_outputs,
     make_no_refit_target_scout_outputs,
@@ -984,6 +985,30 @@ def test_breakthrough_author_data_requests_outputs_and_cli(tmp_path):
     )
     assert (cli_output_dir / "author_data_request_packet.md").exists()
     assert (cli_output_dir / "author_data_request_tracker.csv").exists()
+
+
+def test_author_data_intake_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "author_intake"
+    schema, manifest = make_author_data_intake_outputs(output_dir)
+    assert not schema.empty
+    assert not manifest.empty
+    assert "xiao_2019_author_data" in set(schema["target_id"])
+    assert bool(schema[schema["target_id"] == "xiao_2019_author_data"]["can_close_g11"].iloc[0]) is False
+    assert int(schema["can_close_g11"].sum()) >= 1
+    assert (output_dir / "author_data_intake_schema.csv").exists()
+    assert (output_dir / "author_data_received_manifest_template.csv").exists()
+    assert (output_dir / "author_data_intake_plan.md").exists()
+    assert (output_dir / "mir_pwv_visibility_pairing_template.csv").exists()
+
+    cli_output_dir = tmp_path / "author_intake_cli"
+    main(
+        [
+            "prepare-author-data-intake",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "author_data_intake_plan.md").exists()
 
 
 def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
