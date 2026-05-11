@@ -8993,6 +8993,114 @@ Hochrainer is a strong record-width control and may be useful for a future inver
     return scout, summary, metadata
 
 
+def make_breakthrough_author_data_requests(output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    targets = [
+        {
+            "target_id": "xiao_2019_author_data",
+            "study": "Xiao et al. 2019",
+            "why": "current lead; ask for numerical Fig. 3 probability curves and Fig. 4 visibility/momentum data",
+            "needed_data": "Fig. 3 branch probability distributions, Fig. 4 visibility/disturbance points, extraction uncertainties, and phase-mixture weights",
+            "gate": "tighten within-paper no-refit result and enable external replication of the current lead",
+            "source_url": XIAO_PAPER_URL,
+            "doi": XIAO_DOI,
+        },
+        {
+            "target_id": "hochrainer_2017_independent_widths",
+            "study": "Hochrainer et al. 2017",
+            "why": "strong inverse-problem near miss; ask whether independent coincidence-based momentum widths exist",
+            "needed_data": "raw visibility profiles, FWHM estimates, pump waist values, and any independently measured or simulated conditional momentum-correlation widths not inferred from visibility",
+            "gate": "could become a second no-refit test if independent momentum widths predict visibility profiles",
+            "source_url": HOCHRAINER_PAPER_URL,
+            "doi": HOCHRAINER_DOI,
+        },
+        {
+            "target_id": "mir_2007_visibility_context",
+            "study": "Mir et al. 2007",
+            "why": "closest historical measured momentum-transfer distribution; ask if paired visibility/contrast data were recorded",
+            "needed_data": "Fig. 3 P_wv(q) numerical data, Fig. 4 conditional eraser data, and any raw/conditioned fringe visibility or contrast values for varied which-way strength",
+            "gate": "could become a weak-value control if visibility data can be paired to measured P_wv(q)",
+            "source_url": MIR_PAPER_URL,
+            "doi": MIR_DOI,
+        },
+        {
+            "target_id": "eibenberger_2014_recoil_controls",
+            "study": "Eibenberger et al. 2014",
+            "why": "recoil-control lane; ask for raw Fig. 2 visibility ratios and independent absorption/recoil calibration details",
+            "needed_data": "Fig. 2b visibility ratios, velocity distribution, recoil laser geometry, independent sigma_abs calibration, and uncertainty budget",
+            "gate": "stays a control unless recoil/cross-section calibration can be held out from visibility",
+            "source_url": "https://arxiv.org/abs/1402.5307",
+            "doi": "https://doi.org/10.1103/PhysRevLett.112.250402",
+        },
+    ]
+    register = pd.DataFrame(targets)
+    register.to_csv(output_dir / "author_data_request_register.csv", index=False)
+
+    for target in targets:
+        body = f"""Subject: Numerical data request for {target['study']} visibility/record-variable analysis
+
+Dear authors,
+
+I am preparing a conservative reproducibility analysis of standard quantum-measurement and decoherence experiments, focused on whether measured record variables such as momentum-transfer or momentum-correlation distributions can predict visibility loss without refitting the key bandwidth parameter.
+
+Your paper is important for this analysis:
+
+- Study: {target['study']}
+- Source: {target['source_url']}
+- DOI: {target['doi']}
+- Why it matters: {target['why']}
+
+Would you be willing to share numerical data or analysis tables for:
+
+{target['needed_data']}
+
+The intended test is deliberately modest:
+
+{target['gate']}
+
+This is not a claim of physics beyond standard quantum mechanics and not a collapse-solution claim. The goal is to test whether record accessibility/bandwidth/load is a useful empirical organizing variable across standard-QM experiments.
+
+If data sharing is possible, CSV files with column definitions and uncertainty notes would be ideal. If not, any guidance about whether the requested quantities were recorded independently would still be scientifically useful.
+
+With thanks,
+Matthew A. Cator / Constraint Dynamics quantum-measurement scaffold
+"""
+        (output_dir / f"{target['target_id']}_request.md").write_text(
+            body,
+            encoding="utf-8",
+        )
+
+    report = f"""# Breakthrough Author Data Request Packet
+
+Purpose: attack the missing G11 gate directly.
+
+Current G11 blocker:
+
+```text
+Second independent distribution-to-visibility experiment found: 0
+```
+
+This packet prepares concise data requests for the strongest candidates and near misses. The goal is to find out whether any author-level numerical data can turn a near miss into a held-out no-refit distribution-to-visibility test.
+
+## Targets
+
+{chr(10).join(f"- **{row['study']}** (`{row['target_id']}`): {row['why']}" for row in targets)}
+
+## Strict Boundary
+
+Requested data should support a standard-QM-compatible reproducibility check. Do not frame the request as a breakthrough, collapse solution, or beyond-QM claim.
+
+## Generated Files
+
+```text
+author_data_request_register.csv
+{chr(10).join(target['target_id'] + '_request.md' for target in targets)}
+```
+"""
+    (output_dir / "author_data_request_packet.md").write_text(report, encoding="utf-8")
+    return register
+
+
 def eibenberger_default_metadata():
     """Return seeded Fig. 2b points and constants for Eibenberger 2014."""
 
@@ -12990,6 +13098,10 @@ def run_scout_no_refit_targets(output_dir: Path):
     make_no_refit_target_scout_outputs(output_dir)
 
 
+def run_prepare_author_data_requests(output_dir: Path):
+    make_breakthrough_author_data_requests(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -13397,6 +13509,14 @@ def build_parser():
         "--output-dir",
         default="outputs/no_refit_target_scout",
     )
+    author_requests = sub.add_parser(
+        "prepare-author-data-requests",
+        help="write data-request templates for the missing no-refit breakthrough gate",
+    )
+    author_requests.add_argument(
+        "--output-dir",
+        default="outputs/author_data_requests",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -13635,6 +13755,8 @@ def main(argv=None):
             )
         elif command == "scout-no-refit-targets":
             run_scout_no_refit_targets(Path(args.output_dir))
+        elif command == "prepare-author-data-requests":
+            run_prepare_author_data_requests(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(

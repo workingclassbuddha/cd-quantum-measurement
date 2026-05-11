@@ -1,0 +1,32 @@
+# Breakthrough Author Data Request Packet
+
+Purpose: attack the missing G11 gate directly.
+
+Current G11 blocker:
+
+```text
+Second independent distribution-to-visibility experiment found: 0
+```
+
+This packet prepares concise data requests for the strongest candidates and near misses. The goal is to find out whether any author-level numerical data can turn a near miss into a held-out no-refit distribution-to-visibility test.
+
+## Targets
+
+- **Xiao et al. 2019** (`xiao_2019_author_data`): current lead; ask for numerical Fig. 3 probability curves and Fig. 4 visibility/momentum data
+- **Hochrainer et al. 2017** (`hochrainer_2017_independent_widths`): strong inverse-problem near miss; ask whether independent coincidence-based momentum widths exist
+- **Mir et al. 2007** (`mir_2007_visibility_context`): closest historical measured momentum-transfer distribution; ask if paired visibility/contrast data were recorded
+- **Eibenberger et al. 2014** (`eibenberger_2014_recoil_controls`): recoil-control lane; ask for raw Fig. 2 visibility ratios and independent absorption/recoil calibration details
+
+## Strict Boundary
+
+Requested data should support a standard-QM-compatible reproducibility check. Do not frame the request as a breakthrough, collapse solution, or beyond-QM claim.
+
+## Generated Files
+
+```text
+author_data_request_register.csv
+xiao_2019_author_data_request.md
+hochrainer_2017_independent_widths_request.md
+mir_2007_visibility_context_request.md
+eibenberger_2014_recoil_controls_request.md
+```

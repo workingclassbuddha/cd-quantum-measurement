@@ -63,6 +63,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_xiao_distribution_prediction_outputs,
     make_xiao_distribution_prediction_stress_outputs,
     make_breakthrough_candidate_outputs,
+    make_breakthrough_author_data_requests,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_weak_value_scout_outputs,
@@ -956,6 +957,26 @@ def test_no_refit_target_scout_outputs_and_cli(tmp_path):
     assert (
         cli_output_dir / "second_no_refit_target_scout_report.md"
     ).exists()
+
+
+def test_breakthrough_author_data_requests_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "author_requests"
+    register = make_breakthrough_author_data_requests(output_dir)
+    assert not register.empty
+    assert "xiao_2019_author_data" in set(register["target_id"])
+    assert (output_dir / "author_data_request_register.csv").exists()
+    assert (output_dir / "author_data_request_packet.md").exists()
+    assert (output_dir / "hochrainer_2017_independent_widths_request.md").exists()
+
+    cli_output_dir = tmp_path / "author_requests_cli"
+    main(
+        [
+            "prepare-author-data-requests",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "author_data_request_packet.md").exists()
 
 
 def test_eibenberger_recoil_reduction_is_bounded():
