@@ -99,12 +99,32 @@ Current verdict:
 ```text
 no second no-refit distribution target yet
 eligible second distribution targets: 0
-recommended next candidate: EIBENBERGER_2014_RECOIL_ABSORPTION
+recommended next candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 ```
 
-The expanded G11 audit currently checks 14 candidates and still reports `eligible_second_no_refit_targets = 0`. The blocker split is mostly `record_variable_not_independent`, with a smaller `paired_visibility_curve_missing` group. Recent refreshes add Ding 2025, Chen 2022, Yoon/Cho 2021, Rozema 2012, Kaneda 2014, and Lahiri 2017 as useful controls or near misses, not breakthrough-gate closers.
+The expanded G11 audit currently checks 15 candidates and still reports `eligible_second_no_refit_targets = 0`. The blocker split is mostly `record_variable_not_independent`, with a smaller `paired_visibility_curve_missing` group. Recent refreshes add Ding 2025, Chen 2022, Yoon/Cho 2021, Rozema 2012, Kaneda 2014, Lahiri 2017, and Kokorowski 2001 as useful controls or leads, not breakthrough-gate closers.
 
-The public-data audit checks the lead source records for immediately usable numerical tables. Its current verdict is `public data does not close G11`: five lead source records checked, zero public numerical tables found that support G11 without author contact.
+The new best public-data lead is Kokorowski et al. 2001:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-kokorowski-multiphoton \
+  --source-dir outputs/tmp/kokorowski_source/extracted \
+  --output-dir outputs/kokorowski_multiphoton_scout \
+  --data-dir data/extracted
+```
+
+Current Kokorowski scout result:
+
+```text
+status: high-priority public no-refit candidate, digitization required
+source package available: true
+no-refit-like figures found: 2
+clears G11 now: false
+```
+
+Why this matters: the source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. That is exactly the shape of the missing gate, but it remains only a lead until the Fig. 4 contrast data are digitized and predicted from those independent parameters without refitting the record-load variable.
+
+The public-data audit checks the lead source records for immediately usable numerical tables. Its current verdict is `public data does not close G11`: six lead source records checked, zero public numerical tables found that support G11 without author contact.
 
 The author-data intake plan writes target-specific schemas and manifest templates. Its key rule is strict: a response can affect G11 only if the record distribution, record width, or load calibration is independent of the visibility/decoherence curve being predicted.
 

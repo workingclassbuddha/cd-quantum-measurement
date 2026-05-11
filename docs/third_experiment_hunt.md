@@ -115,6 +115,26 @@ gas-species theory/experiment correlation: 0.888
 
 This is exactly the expected boring control: irreversible collision records produce monotone exponential decoherence, and the methane pressure scale is internally consistent across Fig. 2 and Fig. 3. It strengthens the environmental-record-load lane but does not satisfy the missing independent no-refit distribution gate.
 
+## New Public No-Refit Lead
+
+Kokorowski et al. 2001, *From Single to Multiple-Photon Decoherence in an Atom Interferometer*, is now the strongest next public-data candidate:
+
+- arXiv: https://arxiv.org/abs/quant-ph/0009044
+- DOI: https://doi.org/10.1103/PhysRevLett.86.2191
+- Source status: arXiv package contains `decoh.tex` and EPS figures.
+- Key figure: `figure4.eps`, many-photon contrast loss versus path separation.
+
+The source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. If a calibrated digitization shows those parameters predict contrast without refitting the record-load variable, Kokorowski could become the missing independent validation lane. Until then it remains a lead, not a result.
+
+Current scout command:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-kokorowski-multiphoton \
+  --source-dir outputs/tmp/kokorowski_source/extracted \
+  --output-dir outputs/kokorowski_multiphoton_scout \
+  --data-dir data/extracted
+```
+
 ## Success Criteria
 
 - The digitization includes figure provenance, EPS SHA256, axis anchors, point extraction uncertainty, and source metadata.

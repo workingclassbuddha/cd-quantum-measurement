@@ -73,6 +73,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_eibenberger_recoil_scout_outputs,
     make_mir_weak_value_scout_outputs,
     make_hochrainer_momentum_correlation_scout_outputs,
+    make_kokorowski_multiphoton_scout_outputs,
     make_hornberger_collisional_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
@@ -90,6 +91,8 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     mir_weak_value_scout_dataframe,
     hochrainer_momentum_correlation_metadata,
     hochrainer_momentum_correlation_scout_dataframe,
+    kokorowski_multiphoton_metadata,
+    kokorowski_multiphoton_scout_dataframe,
     fit_hornberger_collisional_scout,
     hornberger_default_metadata,
     hornberger_digitized_dataframe,
@@ -1175,6 +1178,7 @@ def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
     assert "XIAO_2019_INTERNAL_LEAD" in set(audit["candidate_id"])
     assert "G11 still failed" == summary["verdict"].iloc[0]
     assert int(summary["eligible_second_no_refit_targets"].iloc[0]) == 0
+    assert "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in set(audit["candidate_id"])
     assert "paired_visibility_curve_missing" in set(audit["blocker_class"])
     assert (output_dir / "g11_gap_audit.csv").exists()
     assert (output_dir / "g11_blocker_summary.csv").exists()
@@ -1189,6 +1193,48 @@ def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "g11_gap_audit_report.md").exists()
+
+
+def test_kokorowski_multiphoton_scout_outputs_and_cli(tmp_path):
+    source_dir = tmp_path / "kokorowski_source"
+    source_dir.mkdir()
+    (source_dir / "decoh.tex").write_text("test source", encoding="utf-8")
+    for name in ["figure2.eps", "figure3.eps", "figure4.eps"]:
+        (source_dir / name).write_text("%!PS-Adobe test", encoding="utf-8")
+
+    metadata = kokorowski_multiphoton_metadata(source_dir)
+    scout_df = kokorowski_multiphoton_scout_dataframe(metadata)
+    assert not scout_df.empty
+    assert scout_df["visibility_curve_available"].all()
+    assert int(scout_df["record_variable_independent_of_visibility_fit"].sum()) >= 2
+
+    output_dir = tmp_path / "kokorowski"
+    data_dir = tmp_path / "data"
+    scout, summary, _metadata = make_kokorowski_multiphoton_scout_outputs(
+        source_dir,
+        output_dir,
+        data_dir,
+    )
+    assert not scout.empty
+    assert bool(summary["source_package_available"].iloc[0])
+    assert not bool(summary["clears_g11_now"].iloc[0])
+    assert (output_dir / "kokorowski_multiphoton_scout_report.md").exists()
+    assert (data_dir / "KOKOROWSKI_2001_MULTIPHOTON_SCOUT.csv").exists()
+
+    cli_output_dir = tmp_path / "kokorowski_cli"
+    cli_data_dir = tmp_path / "kokorowski_data_cli"
+    main(
+        [
+            "scout-kokorowski-multiphoton",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(cli_data_dir),
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_multiphoton_scout_summary.csv").exists()
 
 
 def test_public_data_availability_outputs_and_cli(tmp_path):

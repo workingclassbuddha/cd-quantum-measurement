@@ -6,16 +6,17 @@ This scout asks a narrow question: is there a second experiment, independent of 
 
 ## Result
 
-- Candidate count: 14
+- Candidate count: 15
 - Eligible second distribution targets: 0
-- Recommended next candidate: `EIBENBERGER_2014_RECOIL_ABSORPTION`
-- Recommended next command: `scout-eibenberger-recoil-absorption`
+- Recommended next candidate: `KOKOROWSKI_2001_MULTIPHOTON_SCATTERING`
+- Recommended next command: `scout-kokorowski-multiphoton`
 
 The answer is currently negative for the strict Xiao-like gate. The best next practical target is Eibenberger 2014 because it has a clean photon-recoil mechanism and visibility reduction in a matter-wave interferometer. But it is a recoil-control scout, not yet the missing independent measured-distribution prediction.
 
 ## Candidate Register
 
 - **Xiao et al. 2019** (`XIAO_2019_INTERNAL_LEAD`): score 0.95. Role: current lead, not independent second experiment. Blocker: within-paper cross-figure result; cannot satisfy independent second-experiment gate
+- **Kokorowski et al. 2001** (`KOKOROWSKI_2001_MULTIPHOTON_SCATTERING`): score 0.84. Role: new strongest public-data G11 candidate, pending digitized no-refit validation. Blocker: source text reports independent beam-deflection parameters, but no committed numerical digitization/prediction has validated the no-refit gate yet
 - **Eibenberger et al. 2014** (`EIBENBERGER_2014_RECOIL_ABSORPTION`): score 0.70. Role: best next recoil-control scout. Blocker: visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense
 - **Hackermueller/Hornberger et al. 2003** (`HORNBERGER_2003_COLLISIONAL_DECOHERENCE`): score 0.68. Role: best standard-decoherence no-adjustable-parameter control. Blocker: excellent record-load control but not an independently measured record distribution
 - **Hochrainer et al. 2017** (`HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION`): score 0.60. Role: strong inverse-problem near miss. Blocker: visibility profiles are used to infer the momentum-correlation width, so the record variable is not independent of the visibility observable

@@ -1,0 +1,2 @@
+verdict,source_package_available,figure_count,no_refit_like_figure_count,clears_g11_now,recommended_next
+"high-priority public no-refit candidate, digitization required",True,3,2,False,digitize Kokorowski Fig. 4 and predict contrast from independent nbar/sigma_n/kappa-prime parameters

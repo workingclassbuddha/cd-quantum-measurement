@@ -68,6 +68,9 @@ HACKERMUELLER_EXTRACTION_METHOD = "calibrated_eps_render_digitization_v2"
 HORNBERGER_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/quant-ph/0303093"
 HORNBERGER_PAPER_URL = "https://arxiv.org/abs/quant-ph/0303093"
 HORNBERGER_DOI = "https://doi.org/10.1103/PhysRevLett.90.160401"
+KOKOROWSKI_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/quant-ph/0009044"
+KOKOROWSKI_PAPER_URL = "https://arxiv.org/abs/quant-ph/0009044"
+KOKOROWSKI_DOI = "https://doi.org/10.1103/PhysRevLett.86.2191"
 HORNBERGER_DIGITIZATION_DATE = "2026-05-11"
 HORNBERGER_EXTRACTION_METHOD = "manual_eps_render_scout_v1"
 
@@ -8546,6 +8549,26 @@ def no_refit_target_candidate_register():
             "source_basis": "paper reports exponential visibility decrease with gas pressure and good quantitative agreement with decoherence theory.",
         },
         {
+            "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+            "study": "Kokorowski et al. 2001",
+            "primary_url": KOKOROWSKI_PAPER_URL,
+            "doi": KOKOROWSKI_DOI,
+            "record_variable": "spontaneous-emission recoil distribution plus independently measured photon-number width",
+            "visibility_observable": "atom-interferometer contrast versus path separation and scattered photon number",
+            "record_distribution_independent_of_visibility_fit": True,
+            "visibility_curve_available": False,
+            "phase_available": True,
+            "local_source_available": Path(
+                "outputs/tmp/kokorowski_source/extracted/figure4.eps"
+            ).exists(),
+            "candidate_role": "new strongest public-data G11 candidate, pending digitized no-refit validation",
+            "implementation_status": "source package local, scout pending",
+            "next_command": "scout-kokorowski-multiphoton",
+            "no_refit_gate_score": 0.84,
+            "blocker": "source text reports independent beam-deflection parameters, but no committed numerical digitization/prediction has validated the no-refit gate yet",
+            "source_basis": "arXiv source says Fig. 4 theory curves use nbar and sigma_n determined from independent beam-deflection measurements; the source package contains EPS figures.",
+        },
+        {
             "candidate_id": "KOCSIS_2011_AVERAGE_TRAJECTORIES",
             "study": "Kocsis et al. 2011",
             "primary_url": "https://www.nist.gov/publications/observing-average-trajectories-single-photons-two-slit-interferometer",
@@ -9075,6 +9098,17 @@ def make_public_data_availability_outputs(output_dir: Path):
             "next_action": "request raw Fig. 2b values and independent sigma_abs or recoil/load calibration",
         },
         {
+            "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+            "study": "Kokorowski et al. 2001",
+            "checked_url": KOKOROWSKI_PAPER_URL,
+            "public_full_text_or_record": True,
+            "public_source_package_or_figures": True,
+            "numerical_tables_found": False,
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "arXiv source includes TeX and EPS figures; text reports independent beam-deflection/broadening parameters for Fig. 4, but the visibility curves still need calibrated digitization and no-refit reproduction.",
+            "next_action": "digitize Fig. 4 and analyze whether independently measured nbar/sigma_n/kappa-prime parameters predict contrast without refitting",
+        },
+        {
             "candidate_id": "DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD",
             "study": "Ding et al. 2025",
             "checked_url": "https://www.nature.com/articles/s41377-025-01759-4",
@@ -9527,6 +9561,209 @@ This scout checks whether induced-coherence visibility profiles can provide the 
 Hochrainer is a strong record-width control and may be useful for a future inverse-problem section. It is not the second independent no-refit validation unless author-level or supplementary data provide an independently measured momentum-correlation width that can be held out from the visibility fit.
 """
     (output_dir / "hochrainer_momentum_correlation_scout_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return scout, summary, metadata
+
+
+def resolve_kokorowski_source_dir(source_dir: Path | None):
+    candidates = []
+    if source_dir is not None:
+        candidates.extend([Path(source_dir) / "extracted", Path(source_dir)])
+    candidates.extend(
+        [
+            Path("outputs/tmp/kokorowski_source/extracted"),
+            Path("outputs/tmp/kokorowski_source"),
+        ]
+    )
+    for candidate in candidates:
+        if (candidate / "decoh.tex").exists() and (candidate / "figure4.eps").exists():
+            return candidate
+    return None
+
+
+def kokorowski_multiphoton_metadata(source_dir: Path | None = None):
+    source = resolve_kokorowski_source_dir(source_dir)
+
+    def source_sha(filename: str):
+        if source is None:
+            return ""
+        path = Path(source) / filename
+        return sha256_file(path) if path.exists() else ""
+
+    return {
+        "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+        "source_url": KOKOROWSKI_PAPER_URL,
+        "arxiv_source_url": KOKOROWSKI_ARXIV_SOURCE_URL,
+        "doi": KOKOROWSKI_DOI,
+        "source_dir": "" if source is None else str(source),
+        "source_tex_sha256": source_sha("decoh.tex"),
+        "extraction_method": "source_text_and_eps_manifest_scout_v1",
+        "figures": [
+            {
+                "figure": "Figure 2",
+                "source_file": "figure2.eps",
+                "source_file_sha256": source_sha("figure2.eps"),
+                "observable": "normalized contrast/decoherence function versus path separation for several mean photon numbers",
+                "visibility_curve_available": True,
+                "record_distribution_available": True,
+                "record_variable_independent_of_visibility_fit": False,
+                "scout_role": "few-photon Fourier-kernel control; reported nbar/sigma_n values are extracted from best-fit visibility curves",
+            },
+            {
+                "figure": "Figure 3",
+                "source_file": "figure3.eps",
+                "source_file_sha256": source_sha("figure3.eps"),
+                "observable": "contrast loss versus mean photons scattered at fixed path separations",
+                "visibility_curve_available": True,
+                "record_distribution_available": True,
+                "record_variable_independent_of_visibility_fit": True,
+                "scout_role": "possible no-refit decay check using beam-broadening photon-number calibration and measured phase product",
+            },
+            {
+                "figure": "Figure 4",
+                "source_file": "figure4.eps",
+                "source_file_sha256": source_sha("figure4.eps"),
+                "observable": "many-photon contrast loss versus path separation for two laser intensities",
+                "visibility_curve_available": True,
+                "record_distribution_available": True,
+                "record_variable_independent_of_visibility_fit": True,
+                "scout_role": "strongest next candidate: caption reports theory curves generated from independently measured nbar and sigma_n",
+            },
+        ],
+        "source_text_findings": [
+            "Eq. beta(d) is written as the Fourier transform of photon momentum-transfer distribution P(Delta k).",
+            "The total decoherence function sums beta(d)^n over a photon-number distribution P(n).",
+            "Figure 2 nbar/sigma_n values were extracted from best-fit visibility curves, so Fig. 2 is not a strict no-refit result.",
+            "The text says Fig. 4 nbar and sigma_n were independently determined from beam-deflection and broadening measurements.",
+            "Figure 4 therefore looks like a public-data route to the missing second no-refit gate, pending calibrated digitization and model comparison.",
+        ],
+    }
+
+
+def kokorowski_multiphoton_scout_dataframe(metadata: dict):
+    rows = []
+    for fig in metadata["figures"]:
+        rows.append(
+            {
+                "study_id": metadata["study_id"],
+                "figure": fig["figure"],
+                "source_file": fig["source_file"],
+                "source_file_sha256": fig["source_file_sha256"],
+                "observable": fig["observable"],
+                "visibility_curve_available": bool(fig["visibility_curve_available"]),
+                "record_distribution_available": bool(fig["record_distribution_available"]),
+                "record_variable_independent_of_visibility_fit": bool(
+                    fig["record_variable_independent_of_visibility_fit"]
+                ),
+                "clears_g11_now": False,
+                "scout_role": fig["scout_role"],
+                "source_url": metadata["source_url"],
+                "doi": metadata["doi"],
+                "extraction_method": metadata["extraction_method"],
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def make_kokorowski_multiphoton_scout_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    metadata = kokorowski_multiphoton_metadata(source_dir)
+    scout = kokorowski_multiphoton_scout_dataframe(metadata)
+    source_available = bool(metadata.get("source_dir"))
+    no_refit_like_figures = scout[
+        scout["record_variable_independent_of_visibility_fit"]
+        & scout["visibility_curve_available"]
+        & scout["record_distribution_available"]
+    ]
+    verdict = (
+        "high-priority public no-refit candidate, digitization required"
+        if source_available and not no_refit_like_figures.empty
+        else "candidate identified, source package not resolved"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "source_package_available": source_available,
+                "figure_count": int(len(scout)),
+                "no_refit_like_figure_count": int(len(no_refit_like_figures)),
+                "clears_g11_now": False,
+                "recommended_next": "digitize Kokorowski Fig. 4 and predict contrast from independent nbar/sigma_n/kappa-prime parameters",
+            }
+        ]
+    )
+    scout.to_csv(data_dir / "KOKOROWSKI_2001_MULTIPHOTON_SCOUT.csv", index=False)
+    (data_dir / "KOKOROWSKI_2001_MULTIPHOTON_SCOUT.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    scout.to_csv(output_dir / "kokorowski_multiphoton_scout_figures.csv", index=False)
+    summary.to_csv(output_dir / "kokorowski_multiphoton_scout_summary.csv", index=False)
+
+    findings = "\n".join(f"- {item}" for item in metadata["source_text_findings"])
+    figure_lines = "\n".join(
+        "- **{figure}** (`{source_file}`): {observable}. Role: {role}".format(
+            figure=row["figure"],
+            source_file=row["source_file"],
+            observable=row["observable"],
+            role=row["scout_role"],
+        )
+        for _, row in scout.iterrows()
+    )
+    report = f"""# Kokorowski 2001 Multiphoton Decoherence Scout
+
+Verdict: {verdict}
+
+This scout checks whether Kokorowski et al. 2001 can become the missing second independent measured-record-to-visibility validation. It is especially relevant because the paper explicitly formulates decoherence as the Fourier transform of photon momentum-transfer distributions and reports independent beam-deflection/broadening measurements for the many-photon parameters used in Fig. 4.
+
+- Source URL: {metadata['source_url']}
+- arXiv source URL: {metadata['arxiv_source_url']}
+- DOI: {metadata['doi']}
+- Source directory: `{metadata.get('source_dir', '')}`
+- TeX SHA256: `{metadata.get('source_tex_sha256', '')}`
+- Extraction method: `{metadata['extraction_method']}`
+
+## Source Findings
+
+{findings}
+
+## Figure Register
+
+{figure_lines}
+
+## Gate Decision
+
+- Source package available: {source_available}
+- No-refit-like figures found: {int(len(no_refit_like_figures))}
+- Clears G11 now: False
+
+Kokorowski does not clear G11 yet because this scout has not digitized the visibility curves or reproduced the no-refit prediction numerically. It is now the best public-data candidate to implement next.
+
+## Exact Next CLI Proposal
+
+```bash
+python src/constraint_dynamics_quantum_v3.py digitize-kokorowski-multiphoton \\
+  --source-dir outputs/tmp/kokorowski_source/extracted \\
+  --output-dir outputs/kokorowski_multiphoton_digitization \\
+  --data-dir data/extracted
+
+python src/constraint_dynamics_quantum_v3.py analyze-kokorowski-multiphoton \\
+  --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \\
+  --output-dir outputs/kokorowski_multiphoton
+```
+
+## Strict Boundary
+
+This is a standard quantum-decoherence candidate, not a collapse solution and not product-law validation. The only possible breakthrough relevance is whether independently measured recoil/photon-number parameters predict visibility without refitting the record bandwidth/load variable.
+"""
+    (output_dir / "kokorowski_multiphoton_scout_report.md").write_text(
         report,
         encoding="utf-8",
     )
@@ -14203,6 +14440,14 @@ def run_scout_hochrainer_momentum_correlation(
     make_hochrainer_momentum_correlation_scout_outputs(source_dir, output_dir, data_dir)
 
 
+def run_scout_kokorowski_multiphoton(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_kokorowski_multiphoton_scout_outputs(source_dir, output_dir, data_dir)
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -14692,6 +14937,16 @@ def build_parser():
         default="outputs/hochrainer_momentum_correlation_scout",
     )
     hochrainer.add_argument("--data-dir", default="data/extracted")
+    kokorowski = sub.add_parser(
+        "scout-kokorowski-multiphoton",
+        help="scout Kokorowski 2001 multiphoton decoherence as a public no-refit candidate",
+    )
+    kokorowski.add_argument("--source-dir", default=None)
+    kokorowski.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_multiphoton_scout",
+    )
+    kokorowski.add_argument("--data-dir", default="data/extracted")
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -14940,6 +15195,13 @@ def main(argv=None):
         elif command == "scout-hochrainer-momentum-correlation":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_hochrainer_momentum_correlation(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "scout-kokorowski-multiphoton":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_scout_kokorowski_multiphoton(
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),

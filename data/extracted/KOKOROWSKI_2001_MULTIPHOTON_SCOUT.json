@@ -1,0 +1,48 @@
+{
+  "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+  "source_url": "https://arxiv.org/abs/quant-ph/0009044",
+  "arxiv_source_url": "https://arxiv.org/e-print/quant-ph/0009044",
+  "doi": "https://doi.org/10.1103/PhysRevLett.86.2191",
+  "source_dir": "outputs/tmp/kokorowski_source/extracted",
+  "source_tex_sha256": "4f436a938adf03dfe478a0cc11f780fafb01d4975a5e61f23f617bf6c9566647",
+  "extraction_method": "source_text_and_eps_manifest_scout_v1",
+  "figures": [
+    {
+      "figure": "Figure 2",
+      "source_file": "figure2.eps",
+      "source_file_sha256": "0f4e4d971a32bb5ef2158569e533add0e8881ead0e72eae6d8a5da212e284d80",
+      "observable": "normalized contrast/decoherence function versus path separation for several mean photon numbers",
+      "visibility_curve_available": true,
+      "record_distribution_available": true,
+      "record_variable_independent_of_visibility_fit": false,
+      "scout_role": "few-photon Fourier-kernel control; reported nbar/sigma_n values are extracted from best-fit visibility curves"
+    },
+    {
+      "figure": "Figure 3",
+      "source_file": "figure3.eps",
+      "source_file_sha256": "485b2c0acad7e68ef40d3b43eb7ff20601bd1ace42a6736e109e1426008656ba",
+      "observable": "contrast loss versus mean photons scattered at fixed path separations",
+      "visibility_curve_available": true,
+      "record_distribution_available": true,
+      "record_variable_independent_of_visibility_fit": true,
+      "scout_role": "possible no-refit decay check using beam-broadening photon-number calibration and measured phase product"
+    },
+    {
+      "figure": "Figure 4",
+      "source_file": "figure4.eps",
+      "source_file_sha256": "a85b2073c180fbd505206c109711386449cc4c7702c7f5c9ec7f7cf5f7b3161d",
+      "observable": "many-photon contrast loss versus path separation for two laser intensities",
+      "visibility_curve_available": true,
+      "record_distribution_available": true,
+      "record_variable_independent_of_visibility_fit": true,
+      "scout_role": "strongest next candidate: caption reports theory curves generated from independently measured nbar and sigma_n"
+    }
+  ],
+  "source_text_findings": [
+    "Eq. beta(d) is written as the Fourier transform of photon momentum-transfer distribution P(Delta k).",
+    "The total decoherence function sums beta(d)^n over a photon-number distribution P(n).",
+    "Figure 2 nbar/sigma_n values were extracted from best-fit visibility curves, so Fig. 2 is not a strict no-refit result.",
+    "The text says Fig. 4 nbar and sigma_n were independently determined from beam-deflection and broadening measurements.",
+    "Figure 4 therefore looks like a public-data route to the missing second no-refit gate, pending calibrated digitization and model comparison."
+  ]
+}

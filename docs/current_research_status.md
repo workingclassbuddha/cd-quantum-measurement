@@ -11,19 +11,21 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Requirement | Evidence | Status |
 | --- | --- | --- |
 | Public repo exists and is usable | `https://github.com/workingclassbuddha/cd-quantum-measurement` | Pass |
-| Main branch remains green | Latest GitHub Actions run passed after `link G11 tracking issues` | Pass |
+| Main branch remains green | Latest GitHub Actions run passed after `add author outreach queue` | Pass |
 | Chapman Fourier/record-bandwidth lane implemented | `outputs/chapman_kernel/chapman_kernel_report.md`; `outputs/chapman_kernel_stress/chapman_kernel_stress_report.md` | Pass |
 | Chapman complex phase overconstraint tested | `outputs/chapman_complex_kernel/`; `outputs/chapman_complex_mixture/`; `outputs/chapman_phase_grade/` | Pass, but raw phase still fails |
 | Xiao distribution-to-visibility bridge implemented | `outputs/xiao_distribution_prediction_vector/`; `outputs/xiao_distribution_prediction_vector_stress/` | Pass |
 | Xiao result kept conservative | `outputs/breakthrough_candidate/breakthrough_candidate_report.md` | Pass |
 | Hackermueller thermal durable-record lane implemented | `outputs/hackermueller_thermal/`; `outputs/hackermueller_thermal_stress/` | Pass |
 | Hornberger collisional guardrail implemented | `outputs/hornberger_collisional_scout/` | Pass |
-| Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass, 14 candidates and zero eligible second targets |
+| Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass, 15 candidates and zero eligible second targets |
+| Kokorowski multiphoton public-data scout implemented | `outputs/kokorowski_multiphoton_scout/` | Pass, strongest next public-data candidate but not digitized |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
 | Author-data request tracker prepared | `outputs/author_data_requests/author_data_request_tracker.csv`; issues #2-#5 | Pass, drafts ready but not sent |
 | Author contact route candidates recorded | `outputs/author_data_requests/author_contact_candidate_register.csv` | Pass, verify before sending |
+| Author outreach queue prepared | `outputs/author_outreach_queue/` | Pass, 4 rows held until contact verification |
 | Author-data intake schemas prepared | `outputs/author_data_intake/` | Pass |
 | Author-data manifest validator prepared | `outputs/author_data_validation/` | Pass, no rows ready for G11 yet |
 | GitHub coordination created | Issues #1-#5 | Pass |
@@ -39,6 +41,8 @@ lead candidate found, breakthrough not yet
 ```
 
 The strongest empirical structure is the Xiao no-refit distribution-to-visibility bridge, supported by Chapman Fourier-kernel structure and irreversible-record controls from Hackermueller and Hornberger. This is not enough for a breakthrough claim because the second independent no-refit gate remains open.
+
+The newest public-data lead is Kokorowski et al. 2001. Its source text reports independently measured beam-deflection/broadening parameters for many-photon decoherence curves, making it the strongest next candidate for a public no-refit validation. It does **not** close G11 until Fig. 4 is digitized and the prediction is reproduced numerically.
 
 ## Open Gates
 
@@ -60,5 +64,14 @@ Do not add more model freedom until either:
 
 1. author-level numerical data create a second held-out no-refit test; or
 2. a new literature/source pass finds an experiment with both an independently measured record distribution and a paired visibility/decoherence curve.
+
+Immediate public-data next step:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-kokorowski-multiphoton \
+  --source-dir outputs/tmp/kokorowski_source/extracted \
+  --output-dir outputs/kokorowski_multiphoton_scout \
+  --data-dir data/extracted
+```
 
 If neither path produces a second validation, the honest conclusion is that the current breakthrough path has found a strong empirical target but not a breakthrough.
