@@ -1,0 +1,2 @@
+verdict,visibility_curve_available,record_distribution_available,record_variable_inferred_from_visibility,clears_no_refit_gate,figure_count,recommended_next
+visibility-derived momentum-correlation near miss,True,True,True,False,2,treat as inverse-problem control unless author data includes independent coincidence-based momentum widths

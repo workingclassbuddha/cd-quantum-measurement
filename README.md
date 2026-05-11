@@ -213,6 +213,7 @@ Rank candidate experiments for the missing second no-refit distribution gate, th
 python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir outputs/no_refit_target_scout
 python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_weak_value_scout --data-dir data/extracted
+python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hornberger-collisional --source-dir outputs/tmp/third_hunt_sources/hornberger --output-dir outputs/hornberger_collisional_scout --data-dir data/extracted
 ```
 
@@ -358,6 +359,8 @@ The vector-aware stress test now survives its configured robustness checks: `P(n
 The second-target scout now explicitly fails the strict Xiao-like gate: no second independent measured-distribution-to-visibility target has been identified. Eibenberger 2014 is the best next recoil-control lane. Its Eq. (2)-style recoil kernel fits scout Fig. 2b points well with the paper cross section (`RMSE = 0.0251`) and nearly matches a visibility-fitted cross section (`RMSE = 0.0247`), but the paper uses visibility reduction to extract the absorption cross section, so it is not an independent distribution validation.
 
 The Mir weak-value scout is the closest historical near miss. The arXiv source includes Fig. 3, an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 quantum-eraser conditional patterns. The scout verdict is `measured momentum-transfer distribution found, visibility sweep missing`: useful as a weak-value/momentum-transfer control, but it does not clear the missing second no-refit distribution-to-visibility gate.
+
+The Hochrainer induced-coherence scout is a strong inverse-problem near miss. The paper explicitly links visibility profiles to the conditional transverse momentum probability density, and Fig. 3 reports momentum-correlation width versus pump waist. The scout verdict is `visibility-derived momentum-correlation near miss`: relevant to record bandwidth, but not independent enough because the record width is computed from visibility FWHM.
 
 The Hornberger collisional scout now adds the standard-decoherence guardrail. Scout Fig. 2 methane visibility gives a fitted decoherence pressure `p_v = 0.807 x 10^-6 mbar`, while Fig. 3 CH4 gives `0.810 x 10^-6 mbar`; gas-species theory vs experiment has pressure RMSE `0.185 x 10^-6 mbar` and correlation `0.888`. This supports the environmental-record-load lane, but it is deliberately not counted as the missing Xiao-like no-refit distribution test.
 

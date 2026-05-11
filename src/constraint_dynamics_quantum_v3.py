@@ -55,6 +55,11 @@ MIR_PAPER_URL = "https://arxiv.org/abs/0706.3966"
 MIR_DOI = "https://doi.org/10.1088/1367-2630/9/8/287"
 MIR_DIGITIZATION_DATE = "2026-05-11"
 MIR_SCOUT_EXTRACTION_METHOD = "source_figure_availability_scout_v1"
+HOCHRAINER_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/1610.05529"
+HOCHRAINER_PAPER_URL = "https://arxiv.org/abs/1610.05529"
+HOCHRAINER_DOI = "https://doi.org/10.1073/pnas.1615874114"
+HOCHRAINER_DIGITIZATION_DATE = "2026-05-11"
+HOCHRAINER_SCOUT_EXTRACTION_METHOD = "source_figure_visibility_correlation_scout_v1"
 HACKERMUELLER_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/quant-ph/0402146"
 HACKERMUELLER_PAPER_URL = "https://arxiv.org/abs/quant-ph/0402146"
 HACKERMUELLER_DOI = "https://doi.org/10.1038/nature02276"
@@ -8440,6 +8445,26 @@ def no_refit_target_candidate_register():
             "source_basis": "arXiv abstract reports a weak-measurement double-slit which-way experiment measuring P_wv(q), a distribution for momentum transfer.",
         },
         {
+            "candidate_id": "HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION",
+            "study": "Hochrainer et al. 2017",
+            "primary_url": "https://arxiv.org/abs/1610.05529",
+            "doi": "https://doi.org/10.1073/pnas.1615874114",
+            "record_variable": "conditional transverse momentum-correlation width",
+            "visibility_observable": "induced-coherence visibility profiles and FWHM",
+            "record_distribution_independent_of_visibility_fit": False,
+            "visibility_curve_available": True,
+            "phase_available": False,
+            "local_source_available": Path(
+                "outputs/tmp/second_no_refit_sources/hochrainer/extracted/visibilityfigure.pdf"
+            ).exists(),
+            "candidate_role": "strong inverse-problem near miss",
+            "implementation_status": "scout implemented",
+            "next_command": "scout-hochrainer-momentum-correlation",
+            "no_refit_gate_score": 0.60,
+            "blocker": "visibility profiles are used to infer the momentum-correlation width, so the record variable is not independent of the visibility observable",
+            "source_basis": "paper states visibility depends only on conditional momentum probability density and uses visibility FWHM to determine Delta p(q_i|q_s).",
+        },
+        {
             "candidate_id": "CORMANN_2016_MODULAR_VALUE",
             "study": "Cormann et al. 2016",
             "primary_url": "https://arxiv.org/abs/1508.01353",
@@ -8776,6 +8801,192 @@ This scout checks whether Mir et al. 2007 can serve as the missing independent X
 Mir is a useful weak-value momentum-transfer control and may help interpret Xiao historically, but it is not the second independent distribution-to-visibility validation. The next breakthrough-grade target still needs both a measured record distribution and a visibility/decoherence curve whose key bandwidth/load parameter is not refit from that curve.
 """
     (output_dir / "mir_weak_value_scout_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return scout, summary, metadata
+
+
+def resolve_hochrainer_source_dir(source_dir: Path | None):
+    candidates = []
+    if source_dir is not None:
+        candidates.extend([Path(source_dir) / "extracted", Path(source_dir)])
+    candidates.extend(
+        [
+            Path("outputs/tmp/second_no_refit_sources/hochrainer/extracted"),
+            Path("outputs/tmp/second_no_refit_sources/hochrainer"),
+        ]
+    )
+    for candidate in candidates:
+        if (
+            (candidate / "mom_corr_nov16.tex").exists()
+            and (candidate / "visibilityfigure.pdf").exists()
+        ):
+            return candidate
+    return None
+
+
+def hochrainer_momentum_correlation_metadata(source_dir: Path | None = None):
+    source = resolve_hochrainer_source_dir(source_dir)
+    def file_sha(filename):
+        if source is None or not (source / filename).exists():
+            return ""
+        return sha256_file(source / filename)
+
+    return {
+        "study_id": "HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION",
+        "source_title": "Quantifying the Momentum Correlation between Two Light Beams by Detecting One",
+        "source_authors": "Hochrainer; Lahiri; Lapkiewicz; Lemos; Zeilinger",
+        "year": 2017,
+        "source_url": HOCHRAINER_PAPER_URL,
+        "arxiv_source_url": HOCHRAINER_ARXIV_SOURCE_URL,
+        "doi": HOCHRAINER_DOI,
+        "source_dir": "" if source is None else str(source),
+        "source_tex_sha256": file_sha("mom_corr_nov16.tex"),
+        "digitization_date": HOCHRAINER_DIGITIZATION_DATE,
+        "extraction_method": HOCHRAINER_SCOUT_EXTRACTION_METHOD,
+        "gate_question": (
+            "Does an independently measured momentum-correlation distribution predict "
+            "visibility, or is the momentum variable inferred from visibility itself?"
+        ),
+        "figures": [
+            {
+                "figure": "Figure 2",
+                "source_file": "visibilityfigure.pdf",
+                "source_file_sha256": file_sha("visibilityfigure.pdf"),
+                "observable": "visibility profiles and FWHM versus pump waist",
+                "visibility_curve_available": True,
+                "record_distribution_available": False,
+                "record_variable_inferred_from_visibility": True,
+                "scout_role": "visibility-to-momentum-correlation inverse problem",
+            },
+            {
+                "figure": "Figure 3",
+                "source_file": "correlationWidths.pdf",
+                "source_file_sha256": file_sha("correlationWidths.pdf"),
+                "observable": "experimentally determined transverse momentum-correlation variance versus pump waist",
+                "visibility_curve_available": False,
+                "record_distribution_available": True,
+                "record_variable_inferred_from_visibility": True,
+                "scout_role": "derived momentum-correlation width, not independent held-out record",
+            },
+        ],
+        "source_text_findings": [
+            "The paper states visibility depends on conditional momentum probability density P(q_i|q_s).",
+            "Visibility profiles are measured by scanning interferometric phase.",
+            "The FWHM of the visibility profile is used to numerically compute the momentum-correlation variance.",
+            "This is a strong operational record-width lane, but it is an inverse problem rather than an independent no-refit validation.",
+        ],
+    }
+
+
+def hochrainer_momentum_correlation_scout_dataframe(metadata: dict):
+    rows = []
+    for fig in metadata["figures"]:
+        rows.append(
+            {
+                "study_id": metadata["study_id"],
+                "figure": fig["figure"],
+                "source_file": fig["source_file"],
+                "source_file_sha256": fig["source_file_sha256"],
+                "observable": fig["observable"],
+                "visibility_curve_available": bool(fig["visibility_curve_available"]),
+                "record_distribution_available": bool(fig["record_distribution_available"]),
+                "record_variable_inferred_from_visibility": bool(
+                    fig["record_variable_inferred_from_visibility"]
+                ),
+                "clears_no_refit_gate": False,
+                "scout_role": fig["scout_role"],
+                "source_url": metadata["source_url"],
+                "doi": metadata["doi"],
+                "extraction_method": metadata["extraction_method"],
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def make_hochrainer_momentum_correlation_scout_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    metadata = hochrainer_momentum_correlation_metadata(source_dir)
+    scout = hochrainer_momentum_correlation_scout_dataframe(metadata)
+    visibility_available = bool(scout["visibility_curve_available"].any())
+    record_available = bool(scout["record_distribution_available"].any())
+    inferred_from_visibility = bool(scout["record_variable_inferred_from_visibility"].any())
+    clears_gate = bool(visibility_available and record_available and not inferred_from_visibility)
+    verdict = (
+        "independent momentum-correlation validation candidate"
+        if clears_gate
+        else "visibility-derived momentum-correlation near miss"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "visibility_curve_available": visibility_available,
+                "record_distribution_available": record_available,
+                "record_variable_inferred_from_visibility": inferred_from_visibility,
+                "clears_no_refit_gate": clears_gate,
+                "figure_count": int(len(scout)),
+                "recommended_next": (
+                    "treat as inverse-problem control unless author data includes independent coincidence-based momentum widths"
+                ),
+            }
+        ]
+    )
+    scout.to_csv(data_dir / "HOCHRAINER_2017_MOMENTUM_CORRELATION_SCOUT.csv", index=False)
+    (data_dir / "HOCHRAINER_2017_MOMENTUM_CORRELATION_SCOUT.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    summary.to_csv(output_dir / "hochrainer_momentum_correlation_scout_summary.csv", index=False)
+    scout.to_csv(output_dir / "hochrainer_momentum_correlation_scout_figures.csv", index=False)
+    findings = "\n".join(f"- {item}" for item in metadata["source_text_findings"])
+    figure_lines = "\n".join(
+        "- **{figure}** (`{source_file}`): {observable}. Role: {role}".format(
+            figure=row["figure"],
+            source_file=row["source_file"],
+            observable=row["observable"],
+            role=row["scout_role"],
+        )
+        for _, row in scout.iterrows()
+    )
+    report = f"""# Hochrainer 2017 Momentum-Correlation Scout
+
+Verdict: {verdict}
+
+This scout checks whether induced-coherence visibility profiles can provide the missing independent distribution-to-visibility validation. The paper is highly relevant because it explicitly links visibility to the conditional transverse momentum probability density. It does not clear the strict no-refit gate because the reported momentum-correlation width is computed from the measured visibility FWHM.
+
+- Source URL: {metadata['source_url']}
+- DOI: {metadata['doi']}
+- Source directory: `{metadata.get('source_dir', '')}`
+- TeX SHA256: `{metadata.get('source_tex_sha256', '')}`
+- Extraction method: `{metadata['extraction_method']}`
+
+## Source Findings
+
+{findings}
+
+## Figure Register
+
+{figure_lines}
+
+## Gate Decision
+
+- Visibility curve available: {visibility_available}
+- Record distribution/width available: {record_available}
+- Record variable inferred from visibility: {inferred_from_visibility}
+- Clears no-refit gate: {clears_gate}
+
+## Interpretation
+
+Hochrainer is a strong record-width control and may be useful for a future inverse-problem section. It is not the second independent no-refit validation unless author-level or supplementary data provide an independently measured momentum-correlation width that can be held out from the visibility fit.
+"""
+    (output_dir / "hochrainer_momentum_correlation_scout_report.md").write_text(
         report,
         encoding="utf-8",
     )
@@ -12795,6 +13006,14 @@ def run_scout_mir_weak_value(
     make_mir_weak_value_scout_outputs(source_dir, output_dir, data_dir)
 
 
+def run_scout_hochrainer_momentum_correlation(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_hochrainer_momentum_correlation_scout_outputs(source_dir, output_dir, data_dir)
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -13198,6 +13417,16 @@ def build_parser():
         default="outputs/mir_weak_value_scout",
     )
     mir.add_argument("--data-dir", default="data/extracted")
+    hochrainer = sub.add_parser(
+        "scout-hochrainer-momentum-correlation",
+        help="scout Hochrainer 2017 induced-coherence momentum-correlation visibility as an inverse-problem near miss",
+    )
+    hochrainer.add_argument("--source-dir", default=None)
+    hochrainer.add_argument(
+        "--output-dir",
+        default="outputs/hochrainer_momentum_correlation_scout",
+    )
+    hochrainer.add_argument("--data-dir", default="data/extracted")
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -13416,6 +13645,13 @@ def main(argv=None):
         elif command == "scout-mir-weak-value":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_mir_weak_value(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "scout-hochrainer-momentum-correlation":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_scout_hochrainer_momentum_correlation(
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),

@@ -1,0 +1,42 @@
+{
+  "study_id": "HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION",
+  "source_title": "Quantifying the Momentum Correlation between Two Light Beams by Detecting One",
+  "source_authors": "Hochrainer; Lahiri; Lapkiewicz; Lemos; Zeilinger",
+  "year": 2017,
+  "source_url": "https://arxiv.org/abs/1610.05529",
+  "arxiv_source_url": "https://arxiv.org/e-print/1610.05529",
+  "doi": "https://doi.org/10.1073/pnas.1615874114",
+  "source_dir": "outputs/tmp/second_no_refit_sources/hochrainer/extracted",
+  "source_tex_sha256": "3e0e2e3fddc6c3f147b884e611b42a2727005f08c1135189b36e26dc5b61a2bb",
+  "digitization_date": "2026-05-11",
+  "extraction_method": "source_figure_visibility_correlation_scout_v1",
+  "gate_question": "Does an independently measured momentum-correlation distribution predict visibility, or is the momentum variable inferred from visibility itself?",
+  "figures": [
+    {
+      "figure": "Figure 2",
+      "source_file": "visibilityfigure.pdf",
+      "source_file_sha256": "02332eafd682a7d8f67c445eb7ccc8fad4663aae8ba92a6585284cb2a43cdeed",
+      "observable": "visibility profiles and FWHM versus pump waist",
+      "visibility_curve_available": true,
+      "record_distribution_available": false,
+      "record_variable_inferred_from_visibility": true,
+      "scout_role": "visibility-to-momentum-correlation inverse problem"
+    },
+    {
+      "figure": "Figure 3",
+      "source_file": "correlationWidths.pdf",
+      "source_file_sha256": "3a0d7dc4ac66933dfaae31b816c1de1882a3d895a3dad05a3f3f2ada484687f5",
+      "observable": "experimentally determined transverse momentum-correlation variance versus pump waist",
+      "visibility_curve_available": false,
+      "record_distribution_available": true,
+      "record_variable_inferred_from_visibility": true,
+      "scout_role": "derived momentum-correlation width, not independent held-out record"
+    }
+  ],
+  "source_text_findings": [
+    "The paper states visibility depends on conditional momentum probability density P(q_i|q_s).",
+    "Visibility profiles are measured by scanning interferometric phase.",
+    "The FWHM of the visibility profile is used to numerically compute the momentum-correlation variance.",
+    "This is a strong operational record-width lane, but it is an inverse problem rather than an independent no-refit validation."
+  ]
+}

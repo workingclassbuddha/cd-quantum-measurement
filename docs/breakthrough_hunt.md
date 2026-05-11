@@ -131,6 +131,23 @@ eraser/phase structure available: true
 
 Mir is the closest historical near miss: Fig. 3 gives an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 gives quantum-eraser conditional patterns. It is useful as a weak-value/momentum-transfer control, but it still does not provide the paired visibility-loss sweep needed for the no-refit breakthrough gate.
 
+The Hochrainer induced-coherence command is:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
+```
+
+Current Hochrainer result:
+
+```text
+status: visibility-derived momentum-correlation near miss
+visibility curve available: true
+record distribution/width available: true
+record variable inferred from visibility: true
+```
+
+Hochrainer is a strong inverse-problem control: the paper explicitly connects visibility profiles to the conditional transverse momentum probability density. It does not close the gate because the reported momentum-correlation width is computed from the measured visibility FWHM rather than held out as an independently measured record variable.
+
 ## Current Signal
 
 The first-pass Chapman analysis found a strong recoverability window:

@@ -66,6 +66,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_weak_value_scout_outputs,
+    make_hochrainer_momentum_correlation_scout_outputs,
     make_hornberger_collisional_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
@@ -81,6 +82,8 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     eibenberger_recoil_reduction,
     mir_weak_value_metadata,
     mir_weak_value_scout_dataframe,
+    hochrainer_momentum_correlation_metadata,
+    hochrainer_momentum_correlation_scout_dataframe,
     fit_hornberger_collisional_scout,
     hornberger_default_metadata,
     hornberger_digitized_dataframe,
@@ -1041,6 +1044,42 @@ def test_mir_weak_value_scout_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "mir_weak_value_scout_report.md").exists()
+
+
+def test_hochrainer_momentum_correlation_scout_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "hochrainer"
+    cli_output_dir = tmp_path / "hochrainer_cli"
+    metadata = hochrainer_momentum_correlation_metadata(None)
+    scout_df = hochrainer_momentum_correlation_scout_dataframe(metadata)
+    assert not scout_df.empty
+    assert scout_df["visibility_curve_available"].any()
+    assert scout_df["record_distribution_available"].any()
+    assert scout_df["record_variable_inferred_from_visibility"].any()
+
+    scout, summary, metadata = make_hochrainer_momentum_correlation_scout_outputs(
+        None,
+        output_dir,
+        data_dir,
+    )
+    assert metadata["study_id"] == "HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION"
+    assert not scout.empty
+    assert not summary.empty
+    assert not bool(summary["clears_no_refit_gate"].iloc[0])
+    assert summary["verdict"].iloc[0] == "visibility-derived momentum-correlation near miss"
+    assert (output_dir / "hochrainer_momentum_correlation_scout_report.md").exists()
+    assert (data_dir / "HOCHRAINER_2017_MOMENTUM_CORRELATION_SCOUT.csv").exists()
+
+    main(
+        [
+            "scout-hochrainer-momentum-correlation",
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "hochrainer_momentum_correlation_scout_report.md").exists()
 
 
 def test_hornberger_collisional_scout_outputs_and_cli(tmp_path):
