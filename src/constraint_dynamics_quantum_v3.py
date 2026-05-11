@@ -8485,6 +8485,24 @@ def no_refit_target_candidate_register():
             "source_basis": "local scout finds phase/visibility constraints but not a measured distribution-to-visibility bridge.",
         },
         {
+            "candidate_id": "DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD",
+            "study": "Ding et al. 2025",
+            "primary_url": "https://www.nature.com/articles/s41377-025-01759-4",
+            "doi": "https://doi.org/10.1038/s41377-025-01759-4",
+            "record_variable": "ancilla quantum-memory entanglement / path predictability",
+            "visibility_observable": "interference visibility in integrated photonic chip duality tests",
+            "record_distribution_independent_of_visibility_fit": False,
+            "visibility_curve_available": True,
+            "phase_available": False,
+            "local_source_available": False,
+            "candidate_role": "modern entanglement-memory control, not record-distribution gate",
+            "implementation_status": "literature refresh logged",
+            "next_command": "",
+            "no_refit_gate_score": 0.50,
+            "blocker": "tests wave-particle-entanglement conservation, but not a measured momentum/record distribution that predicts visibility without refit",
+            "source_basis": "2025 Light: Science & Applications article reports chip demonstrations using visibility, path predictability, and entanglement measures.",
+        },
+        {
             "candidate_id": "DURR_1998_COMPLEMENTARITY",
             "study": "Duerr/Nonn/Rempe 1998",
             "primary_url": "https://doi.org/10.1038/31822",
@@ -8751,7 +8769,7 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 ## Strict Interpretation
 
-G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. Chapman, Hackermueller, Hornberger, Eibenberger, Mir, Hochrainer, and Cormann are useful controls or near misses, but they do not yet give a second held-out distribution-to-visibility prediction.
+G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. Chapman, Hackermueller, Hornberger, Eibenberger, Mir, Hochrainer, Cormann, and Ding are useful controls or near misses, but they do not yet give a second held-out distribution-to-visibility prediction.
 
 ## Non-Claims
 

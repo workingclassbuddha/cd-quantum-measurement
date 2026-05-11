@@ -6,7 +6,7 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 ## Current Answer
 
-- Candidates audited: 8
+- Candidates audited: 9
 - Eligible second no-refit targets: 0
 - Top current candidate: XIAO_2019_INTERNAL_LEAD
 - Top blocker class: internal_lead_not_second_experiment
@@ -21,17 +21,17 @@ This audit checks the missing gate directly: can a second experiment, independen
 - **Hochrainer et al. 2017** (`HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
 - **Mir et al. 2007** (`MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER`): paired_visibility_curve_missing. Next: obtain paired visibility or contrast sweep for the measured record distribution
 - **Duerr/Nonn/Rempe 1998** (`DURR_1998_COMPLEMENTARITY`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
-- **Kocsis et al. 2011** (`KOCSIS_2011_AVERAGE_TRAJECTORIES`): paired_visibility_curve_missing. Next: obtain paired visibility or contrast sweep for the measured record distribution
+- **Ding et al. 2025** (`DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
 
 ## Blocker Summary
 
-- `record_variable_not_independent`: 5
+- `record_variable_not_independent`: 6
 - `paired_visibility_curve_missing`: 2
 - `internal_lead_not_second_experiment`: 1
 
 ## Strict Interpretation
 
-G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. Chapman, Hackermueller, Hornberger, Eibenberger, Mir, Hochrainer, and Cormann are useful controls or near misses, but they do not yet give a second held-out distribution-to-visibility prediction.
+G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. Chapman, Hackermueller, Hornberger, Eibenberger, Mir, Hochrainer, Cormann, and Ding are useful controls or near misses, but they do not yet give a second held-out distribution-to-visibility prediction.
 
 ## Non-Claims
 
