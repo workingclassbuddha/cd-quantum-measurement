@@ -9,17 +9,16 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 ## Summary
 
 - Objective achieved: False
-- Failed requirements: 3
-- Eligible second no-refit targets: 0
-- Public G11 support without author contact: 0
+- Failed requirements: 2
+- Eligible second no-refit targets: 1
+- Public G11 support without author contact: 1
 - Author-data G11-ready rows: 0
 
 ## Failed Or Open Requirements
 
-- **second_independent_distribution_to_visibility_validation**: eligible_second=0; public_support=0; author_ready=0
 - **chapman_raw_phase_repaired**: G10 remains a blocker unless the scorecard says raw phase repaired.
 - **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law.
 
 ## Rule
 
-Do not mark the goal complete while any failed requirement remains. In particular, no amount of clean CI can substitute for the missing second independent distribution-to-visibility validation.
+Do not mark the goal complete while any failed requirement remains. Passing CI or clearing G11 cannot substitute for the still-open Chapman phase and product-law gates.

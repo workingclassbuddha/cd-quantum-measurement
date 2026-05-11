@@ -8,7 +8,7 @@ The current project state is:
 lead candidate found, breakthrough not yet
 ```
 
-That is the strongest honest claim so far. The lead candidate is now Xiao 2019 vector Fig. 3 distribution-to-Fig. 4 visibility prediction: an independently digitized momentum distribution predicts the visibility-loss tradeoff without refitting the key bandwidth parameter. Chapman and Hackermueller provide cross-experiment support for the broader record-variable reading, but they do not clear the missing second independent no-refit distribution gate.
+That is the strongest honest claim so far. The lead candidate now has two pieces: Xiao 2019 vector Fig. 3 distribution-to-Fig. 4 visibility prediction, plus Kokorowski 2001 Fig. 4 many-photon decoherence prediction from independently reported beam-deflection/broadening parameters. Chapman and Hackermueller provide additional cross-experiment support for the broader record-variable reading.
 
 The new reproducible gate is:
 
@@ -20,7 +20,7 @@ Current dossier verdict:
 
 ```text
 lead candidate found, breakthrough not yet
-passed gates: 9 / 12
+passed gates: 10 / 12
 ```
 
 It means Chapman and Xiao now point toward the same operational variable:
@@ -49,9 +49,11 @@ Xiao no-refit / published-bound RMSE ratio: 0.193
 Xiao distribution pairing-null P(RMSE <= observed): 0.003
 Xiao distribution branch-label-null P(RMSE <= observed): 0.000
 Hackermueller stress P(thermal delta-T4 beats exp power): 0.994
+Kokorowski independent-kappa RMSE: 0.0240
+Kokorowski refit-kappa RMSE: 0.0193
 ```
 
-This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the next breakthrough-grade move is an outside held-out prediction where an independently measured record distribution predicts visibility without refitting the bandwidth.
+This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the Kokorowski result is the first second-experiment public no-refit candidate. The next breakthrough-grade move is to stress-test Kokorowski and repair or falsify the remaining Chapman phase/product-law gates.
 
 ## Breakthrough-Readiness Dossier
 
@@ -71,14 +73,14 @@ Current pass/fail summary:
 - Chapman raw Fourier-kernel support: pass.
 - Hackermueller durable thermal-record support: pass.
 - Chapman raw complex phase repair: fail.
-- Second independent distribution-to-visibility experiment: fail.
+- Second independent distribution-to-visibility experiment: pass via Kokorowski, pending stress testing.
 - Lambda/Gamma/Theta product-law validation: fail.
 
 Therefore the working breakthrough target is narrow:
 
 ```text
-Find a second independent experiment where a measured record distribution predicts
-visibility/decoherence without refitting the key bandwidth or load parameter.
+Stress-test the second independent no-refit candidate and keep the stronger
+breakthrough language blocked until Chapman phase or product-law gates clear.
 ```
 
 ## Second No-Refit Target Scout
@@ -97,40 +99,44 @@ python src/constraint_dynamics_quantum_v3.py audit-current-goal-status --output-
 Current verdict:
 
 ```text
-no second no-refit distribution target yet
-eligible second distribution targets: 0
+second no-refit distribution target found
+eligible second distribution targets: 1
 recommended next candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 ```
 
-The expanded G11 audit currently checks 15 candidates and still reports `eligible_second_no_refit_targets = 0`. The blocker split is mostly `record_variable_not_independent`, with a smaller `paired_visibility_curve_missing` group. Recent refreshes add Ding 2025, Chen 2022, Yoon/Cho 2021, Rozema 2012, Kaneda 2014, Lahiri 2017, and Kokorowski 2001 as useful controls or leads, not breakthrough-gate closers.
+The expanded G11 audit currently checks 15 candidates and now reports `eligible_second_no_refit_targets = 1`. Recent refreshes add Ding 2025, Chen 2022, Yoon/Cho 2021, Rozema 2012, Kaneda 2014, Lahiri 2017, and Kokorowski 2001 as useful controls or leads; Kokorowski is the first one to clear the strict public no-refit candidate gate.
 
 The new best public-data lead is Kokorowski et al. 2001:
 
 ```bash
-python src/constraint_dynamics_quantum_v3.py scout-kokorowski-multiphoton \
+python src/constraint_dynamics_quantum_v3.py digitize-kokorowski-multiphoton \
   --source-dir outputs/tmp/kokorowski_source/extracted \
-  --output-dir outputs/kokorowski_multiphoton_scout \
+  --output-dir outputs/kokorowski_multiphoton_digitization \
   --data-dir data/extracted
+
+python src/constraint_dynamics_quantum_v3.py analyze-kokorowski-multiphoton \
+  --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
+  --output-dir outputs/kokorowski_multiphoton
 ```
 
-Current Kokorowski scout result:
+Current Kokorowski result:
 
 ```text
-status: high-priority public no-refit candidate, digitization required
-source package available: true
-no-refit-like figures found: 2
-clears G11 now: false
+status: independent multiphoton no-refit candidate passes digitized Fig. 4
+combined independent-kappa RMSE: 0.0240
+combined refit-kappa RMSE: 0.0193
+eligible second no-refit targets: 1
 ```
 
-Why this matters: the source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. That is exactly the shape of the missing gate, but it remains only a lead until the Fig. 4 contrast data are digitized and predicted from those independent parameters without refitting the record-load variable.
+Why this matters: the source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. The local vector digitization now shows those parameters predict the digitized contrast without refitting the record-load variable. It remains a standard-QM decoherence result and needs robustness/null testing before publication-grade language.
 
-The public-data audit checks the lead source records for immediately usable numerical tables. Its current verdict is `public data does not close G11`: six lead source records checked, zero public numerical tables found that support G11 without author contact.
+The public-data audit checks the lead source records for immediately usable numerical tables or source-figure routes. Its current verdict is now that public data can close G11 through the Kokorowski source package and local vector digitization, even though no author numerical table has been found.
 
 The author-data intake plan writes target-specific schemas and manifest templates. Its key rule is strict: a response can affect G11 only if the record distribution, record width, or load calibration is independent of the visibility/decoherence curve being predicted.
 
 The validator turns that rule into a gate. With the committed empty manifest template, it reports `no author data ready for G11 analysis`.
 
-The current-goal audit is the stoplight for this thread. It currently reports `objective not complete: breakthrough path still blocked`, with G10, G11, and G12 open.
+The current-goal audit is the stoplight for this thread. It currently reports `objective not complete: breakthrough path still blocked`, with G10 and G12 open.
 
 Live tracking:
 

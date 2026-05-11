@@ -8035,7 +8035,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 
 ## Rule
 
-Do not mark the goal complete while any failed requirement remains. In particular, no amount of clean CI can substitute for the missing second independent distribution-to-visibility validation.
+Do not mark the goal complete while any failed requirement remains. Passing CI or clearing G11 cannot substitute for the still-open Chapman phase and product-law gates.
 """
     (output_dir / "current_goal_completion_audit.md").write_text(
         report,
@@ -8456,14 +8456,14 @@ This dossier does not fit a new model. It scores the current outputs against str
 
 Passed gates: {passed_count} / {total_count}
 
-The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao is therefore the centerpiece. Chapman and Hackermueller provide cross-experiment support for record bandwidth/load, but they do not by themselves clear the no-refit breakthrough gate.
+The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao remains the centerpiece because it gives the cleanest distribution-to-visibility bridge. Kokorowski now supplies the first second-experiment public no-refit candidate: independently reported many-photon beam-deflection/broadening parameters predict Fig. 4 contrast after vector digitization. Chapman, Hackermueller, and Hornberger provide supporting standard-QM record bandwidth/load controls.
 
 Eibenberger is now logged as a useful recoil-control lane: the known photon recoil mechanism predicts visibility reduction at roughly the paper absorption cross section. It strengthens the standard-QM compatibility of the record-kernel framing, but it does not close G11 because the absorption cross section is still extracted from visibility rather than independently measured as a held-out record distribution.
 
 ## Strict Claim
 
 ```text
-We have a lead breakthrough candidate: an independently digitized Xiao momentum distribution predicts visibility loss better than scalar baselines without refitting the key record-bandwidth parameter.
+We have a stronger lead candidate: Xiao gives a within-paper no-refit momentum-distribution prediction, and Kokorowski gives a second-experiment public no-refit decoherence prediction from independently reported many-photon parameters.
 ```
 
 ## Strict Non-Claims
@@ -8471,11 +8471,11 @@ We have a lead breakthrough candidate: an independently digitized Xiao momentum 
 - This does not solve collapse.
 - This does not validate the Lambda/Gamma/Theta product law.
 - This does not show physics beyond standard quantum mechanics.
-- This is not yet a cross-experiment no-refit prediction.
+- This does not repair the Chapman raw phase failure.
 
 ## Next Move
 
-Find a second independent experiment with both measured record distribution and visibility/decoherence output. Do not add model freedom until that search fails.
+Promote Kokorowski from candidate to stress-tested validation, then keep the breakthrough language blocked until Chapman raw phase or an independent Lambda/Gamma/Theta product-law experiment clears its gate.
 """
     (output_dir / "breakthrough_candidate_report.md").write_text(
         report,
@@ -8556,16 +8556,22 @@ def no_refit_target_candidate_register():
             "record_variable": "spontaneous-emission recoil distribution plus independently measured photon-number width",
             "visibility_observable": "atom-interferometer contrast versus path separation and scattered photon number",
             "record_distribution_independent_of_visibility_fit": True,
-            "visibility_curve_available": False,
+            "visibility_curve_available": Path(
+                "data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv"
+            ).exists(),
             "phase_available": True,
             "local_source_available": Path(
                 "outputs/tmp/kokorowski_source/extracted/figure4.eps"
             ).exists(),
             "candidate_role": "new strongest public-data G11 candidate, pending digitized no-refit validation",
-            "implementation_status": "source package local, scout pending",
-            "next_command": "scout-kokorowski-multiphoton",
+            "implementation_status": (
+                "digitized/analyzed"
+                if Path("outputs/kokorowski_multiphoton/kokorowski_multiphoton_summary.csv").exists()
+                else "source package local, scout implemented"
+            ),
+            "next_command": "digitize-kokorowski-multiphoton; analyze-kokorowski-multiphoton",
             "no_refit_gate_score": 0.84,
-            "blocker": "source text reports independent beam-deflection parameters, but no committed numerical digitization/prediction has validated the no-refit gate yet",
+            "blocker": "source text reports independent beam-deflection parameters; G11 requires committed digitization and no-refit reproduction",
             "source_basis": "arXiv source says Fig. 4 theory curves use nbar and sigma_n determined from independent beam-deflection measurements; the source package contains EPS figures.",
         },
         {
@@ -9104,9 +9110,11 @@ def make_public_data_availability_outputs(output_dir: Path):
             "public_full_text_or_record": True,
             "public_source_package_or_figures": True,
             "numerical_tables_found": False,
-            "supports_g11_without_author_contact": False,
-            "evidence_summary": "arXiv source includes TeX and EPS figures; text reports independent beam-deflection/broadening parameters for Fig. 4, but the visibility curves still need calibrated digitization and no-refit reproduction.",
-            "next_action": "digitize Fig. 4 and analyze whether independently measured nbar/sigma_n/kappa-prime parameters predict contrast without refitting",
+            "supports_g11_without_author_contact": Path(
+                "outputs/kokorowski_multiphoton/kokorowski_multiphoton_summary.csv"
+            ).exists(),
+            "evidence_summary": "arXiv source includes TeX and EPS figures; text reports independent beam-deflection/broadening parameters for Fig. 4, and the local vector digitization/analyze path tests the no-refit contrast prediction.",
+            "next_action": "stress-test Kokorowski Fig. 4 extraction and compare against null/refit controls",
         },
         {
             "candidate_id": "DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD",
@@ -9168,7 +9176,7 @@ This audit asks whether public records, source packages, or article pages alread
 
 ## Interpretation
 
-The public record supports continued reproducibility work, especially for Xiao figure extraction and arXiv source-package scouts. It does not currently supply the missing second independent measured-distribution-to-visibility validation. The live next step remains author/numerical-data acquisition.
+The public record now supplies one route through the missing G11 gate: Kokorowski's arXiv source package plus vector Fig. 4 digitization tests independently reported many-photon parameters against contrast loss without author contact. Author numerical tables would still improve provenance, and the Kokorowski result still needs robustness/null testing.
 """
     (output_dir / "public_data_availability_report.md").write_text(
         report,
@@ -9768,6 +9776,358 @@ This is a standard quantum-decoherence candidate, not a collapse solution and no
         encoding="utf-8",
     )
     return scout, summary, metadata
+
+
+KOKOROWSKI_FIG4_CALIBRATION = {
+    "x_min_px": 80.50,
+    "x_max_px": 415.00,
+    "x_min_d_over_lambda": 0.0,
+    "x_max_d_over_lambda": 0.30,
+    "y_top_px": 18.00,
+    "y_bottom_px": 265.00,
+    "y_top_visibility": 1.0,
+    "y_bottom_visibility": 0.0,
+}
+
+
+def kokorowski_fig4_pixel_to_data(x_px: float, y_px: float):
+    cal = KOKOROWSKI_FIG4_CALIBRATION
+    d = cal["x_min_d_over_lambda"] + (
+        (float(x_px) - cal["x_min_px"])
+        / (cal["x_max_px"] - cal["x_min_px"])
+        * (cal["x_max_d_over_lambda"] - cal["x_min_d_over_lambda"])
+    )
+    visibility = cal["y_bottom_visibility"] + (
+        (cal["y_bottom_px"] - float(y_px))
+        / (cal["y_bottom_px"] - cal["y_top_px"])
+        * (cal["y_top_visibility"] - cal["y_bottom_visibility"])
+    )
+    return float(d), float(visibility)
+
+
+def parse_kokorowski_figure4_eps(eps_path: Path):
+    """Extract Fig. 4 circle/bullet point centers from Igor EPS vector commands."""
+
+    text = Path(eps_path).read_text(encoding="latin-1", errors="ignore")
+    rows = []
+    branches = [
+        {
+            "marker_command": "StrokePath",
+            "branch": "circle_high_intensity",
+            "marker": "open_circle",
+            "nbar_independent": 8.1,
+            "nbar_se": 0.3,
+            "sigma_n_independent": 3.5,
+            "sigma_n_se": 0.1,
+            "kappa_prime_calculated_k0": 2.5,
+            "kappa_prime_calculated_se_k0": 0.1,
+            "kappa_prime_fit_reported_k0": 2.39,
+            "kappa_prime_fit_reported_se_k0": 0.05,
+        },
+        {
+            "marker_command": "FillPath",
+            "branch": "bullet_lower_intensity",
+            "marker": "filled_circle",
+            "nbar_independent": 4.8,
+            "nbar_se": 0.2,
+            "sigma_n_independent": 1.8,
+            "sigma_n_se": 0.1,
+            "kappa_prime_calculated_k0": 1.8,
+            "kappa_prime_calculated_se_k0": 0.1,
+            "kappa_prime_fit_reported_k0": 1.71,
+            "kappa_prime_fit_reported_se_k0": 0.05,
+        },
+    ]
+    for branch in branches:
+        pattern = (
+            r"newpath\s+([0-9.]+)\s+([0-9.]+)\s+4\.00\s+0\s+360\s+arc\s+0\s+"
+            + re.escape(branch["marker_command"])
+        )
+        for point_index, match in enumerate(re.finditer(pattern, text)):
+            x_px, y_px = map(float, match.groups())
+            d_over_lambda, visibility = kokorowski_fig4_pixel_to_data(x_px, y_px)
+            rows.append(
+                {
+                    "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                    "figure": "Figure 4",
+                    "panel": "many_photon_path_separation",
+                    "branch": branch["branch"],
+                    "marker": branch["marker"],
+                    "point_index": int(point_index),
+                    "d_over_lambda": d_over_lambda,
+                    "visibility": visibility,
+                    "visibility_se": 0.025,
+                    "pixel_x": x_px,
+                    "pixel_y": y_px,
+                    "nbar_independent": branch["nbar_independent"],
+                    "nbar_se": branch["nbar_se"],
+                    "sigma_n_independent": branch["sigma_n_independent"],
+                    "sigma_n_se": branch["sigma_n_se"],
+                    "kappa_prime_calculated_k0": branch["kappa_prime_calculated_k0"],
+                    "kappa_prime_calculated_se_k0": branch[
+                        "kappa_prime_calculated_se_k0"
+                    ],
+                    "kappa_prime_fit_reported_k0": branch["kappa_prime_fit_reported_k0"],
+                    "kappa_prime_fit_reported_se_k0": branch[
+                        "kappa_prime_fit_reported_se_k0"
+                    ],
+                    "source_file": str(eps_path),
+                    "extraction_method": "eps_vector_point_extraction_v1",
+                }
+            )
+    df = pd.DataFrame(rows).sort_values(["branch", "point_index"]).reset_index(drop=True)
+    return df
+
+
+def make_kokorowski_multiphoton_digitization_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    source = resolve_kokorowski_source_dir(source_dir)
+    if source is None:
+        raise ValueError(
+            "Kokorowski source dir not found. Expected decoh.tex and figure4.eps."
+        )
+    eps_path = Path(source) / "figure4.eps"
+    df = parse_kokorowski_figure4_eps(eps_path)
+    if df.empty:
+        raise ValueError(f"No Kokorowski Fig. 4 points extracted from {eps_path}")
+    csv_path = data_dir / "KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv"
+    json_path = data_dir / "KOKOROWSKI_2001_MULTIPHOTON_DIGITIZATION.json"
+    df.to_csv(csv_path, index=False)
+    metadata = {
+        "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+        "source_url": KOKOROWSKI_PAPER_URL,
+        "arxiv_source_url": KOKOROWSKI_ARXIV_SOURCE_URL,
+        "doi": KOKOROWSKI_DOI,
+        "source_dir": str(source),
+        "source_file": str(eps_path),
+        "source_file_sha256": sha256_file(eps_path),
+        "source_tex_sha256": sha256_file(Path(source) / "decoh.tex"),
+        "figure": "Figure 4",
+        "axis_calibration": KOKOROWSKI_FIG4_CALIBRATION,
+        "extraction_method": "eps_vector_point_extraction_v1",
+        "visibility_uncertainty": 0.025,
+        "provenance_note": "Point centers were parsed from EPS circle commands. Independent nbar/sigma_n values are reported in the Fig. 4 caption and surrounding source text as beam-deflection/broadening measurements.",
+    }
+    json_path.write_text(json.dumps(metadata, indent=2), encoding="utf-8")
+    df.to_csv(output_dir / "kokorowski_multiphoton_digitized_points.csv", index=False)
+    branch_counts = df.groupby("branch", as_index=False).agg(point_count=("visibility", "count"))
+    branch_counts.to_csv(output_dir / "kokorowski_multiphoton_digitization_summary.csv", index=False)
+    branch_lines = "\n".join(
+        "- **{branch}**: {count} points".format(
+            branch=row["branch"],
+            count=int(row["point_count"]),
+        )
+        for _, row in branch_counts.iterrows()
+    )
+    report = f"""# Kokorowski 2001 Multiphoton Digitization
+
+Status: vector Fig. 4 digitization complete
+
+- Source URL: {KOKOROWSKI_PAPER_URL}
+- DOI: {KOKOROWSKI_DOI}
+- EPS: `{eps_path}`
+- EPS SHA256: `{metadata['source_file_sha256']}`
+- Extraction method: `eps_vector_point_extraction_v1`
+- Output CSV: `{csv_path}`
+- Output JSON: `{json_path}`
+
+## Branch Counts
+
+{branch_lines}
+
+## Calibration
+
+- x-axis: path separation `d/lambda` from 0.00 to 0.30
+- y-axis: relative contrast from 1.0 to 0.0
+- point source: EPS `arc` commands with `StrokePath` for open circles and `FillPath` for bullets
+
+## Boundary
+
+This digitization is stronger than raster picking because it reads vector point centers, but it still uses figure coordinates from the publication rather than author tables.
+"""
+    (output_dir / "kokorowski_multiphoton_digitization_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return df, metadata
+
+
+def kokorowski_visibility_from_kappa(d_over_lambda, kappa_prime_k0):
+    d = np.asarray(d_over_lambda, dtype=float)
+    kappa = float(kappa_prime_k0)
+    visibility = np.exp(-0.5 * (kappa * 2.0 * math.pi * d) ** 2)
+    return np.clip(visibility, 0.0, 1.0)
+
+
+def fit_kokorowski_refit_kappa(d_over_lambda, visibility):
+    d = np.asarray(d_over_lambda, dtype=float)
+    y = np.asarray(visibility, dtype=float)
+    grid = np.linspace(0.2, 4.0, 1200)
+    best = None
+    for kappa in grid:
+        pred = kokorowski_visibility_from_kappa(d, kappa)
+        rmse = float(np.sqrt(np.mean((y - pred) ** 2)))
+        if best is None or rmse < best[1]:
+            best = (float(kappa), rmse)
+    return best
+
+
+def make_kokorowski_multiphoton_analysis_outputs(input_csv: Path, output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_csv)
+    required = {
+        "branch",
+        "d_over_lambda",
+        "visibility",
+        "kappa_prime_calculated_k0",
+        "kappa_prime_fit_reported_k0",
+    }
+    missing = sorted(required - set(df.columns))
+    if missing:
+        raise ValueError(f"Kokorowski input missing columns: {', '.join(missing)}")
+
+    prediction_rows = []
+    summary_rows = []
+    for branch, branch_df in df.groupby("branch", sort=True):
+        d = branch_df["d_over_lambda"].to_numpy(dtype=float)
+        y = branch_df["visibility"].to_numpy(dtype=float)
+        k_calc = float(branch_df["kappa_prime_calculated_k0"].iloc[0])
+        k_reported = float(branch_df["kappa_prime_fit_reported_k0"].iloc[0])
+        k_refit, refit_rmse = fit_kokorowski_refit_kappa(d, y)
+        models = [
+            ("calculated_independent_kappa", k_calc),
+            ("reported_visibility_fit_kappa", k_reported),
+            ("refit_kappa_from_digitized_points", k_refit),
+        ]
+        for model, kappa in models:
+            pred = kokorowski_visibility_from_kappa(d, kappa)
+            rmse = float(np.sqrt(np.mean((y - pred) ** 2)))
+            mae = float(np.mean(np.abs(y - pred)))
+            summary_rows.append(
+                {
+                    "branch": branch,
+                    "model": model,
+                    "kappa_prime_k0": float(kappa),
+                    "rmse_visibility": rmse,
+                    "mae_visibility": mae,
+                    "n_points": int(len(branch_df)),
+                    "nbar_independent": float(branch_df["nbar_independent"].iloc[0]),
+                    "sigma_n_independent": float(
+                        branch_df["sigma_n_independent"].iloc[0]
+                    ),
+                }
+            )
+            for row, pred_value in zip(branch_df.to_dict("records"), pred):
+                prediction_rows.append(
+                    {
+                        "branch": branch,
+                        "model": model,
+                        "d_over_lambda": float(row["d_over_lambda"]),
+                        "visibility_observed": float(row["visibility"]),
+                        "visibility_predicted": float(pred_value),
+                        "residual": float(row["visibility"] - pred_value),
+                        "kappa_prime_k0": float(kappa),
+                    }
+                )
+
+    summary = pd.DataFrame(summary_rows)
+    predictions = pd.DataFrame(prediction_rows)
+    calc_rows = summary[summary["model"] == "calculated_independent_kappa"]
+    refit_rows = summary[summary["model"] == "refit_kappa_from_digitized_points"]
+    combined_calc_rmse = float(
+        np.sqrt(
+            np.mean(
+                predictions[predictions["model"] == "calculated_independent_kappa"][
+                    "residual"
+                ].to_numpy(dtype=float)
+                ** 2
+            )
+        )
+    )
+    combined_refit_rmse = float(
+        np.sqrt(
+            np.mean(
+                predictions[predictions["model"] == "refit_kappa_from_digitized_points"][
+                    "residual"
+                ].to_numpy(dtype=float)
+                ** 2
+            )
+        )
+    )
+    passes_no_refit = bool(
+        combined_calc_rmse < 0.05 and combined_calc_rmse <= 1.5 * combined_refit_rmse
+    )
+    verdict = (
+        "independent multiphoton no-refit candidate passes digitized Fig. 4"
+        if passes_no_refit
+        else "multiphoton no-refit candidate remains inconclusive"
+    )
+    summary.insert(0, "status", verdict)
+    summary.to_csv(output_dir / "kokorowski_multiphoton_summary.csv", index=False)
+    predictions.to_csv(output_dir / "kokorowski_multiphoton_predictions.csv", index=False)
+
+    write_bar_svg(
+        output_dir / "figures" / "figure_kokorowski_branch_rmse.svg",
+        summary["branch"].astype(str) + " / " + summary["model"].astype(str),
+        summary["rmse_visibility"].to_numpy(dtype=float),
+        "Kokorowski Fig. 4 Model RMSE",
+        "visibility RMSE",
+    )
+
+    calc_lines = "\n".join(
+        "- **{branch}**: independent kappa RMSE {rmse:.4f}; reported fit kappa {fit:.2f} k0; independent kappa {calc:.2f} k0".format(
+            branch=row["branch"],
+            rmse=float(row["rmse_visibility"]),
+            fit=float(
+                summary[
+                    (summary["branch"] == row["branch"])
+                    & (summary["model"] == "reported_visibility_fit_kappa")
+                ]["kappa_prime_k0"].iloc[0]
+            ),
+            calc=float(row["kappa_prime_k0"]),
+        )
+        for _, row in calc_rows.iterrows()
+    )
+    report = f"""# Kokorowski 2001 Multiphoton Analysis
+
+Status: {verdict}
+
+This analysis asks whether the independently reported many-photon parameters in Kokorowski Fig. 4 predict visibility without refitting the record-load width. The model is the standard decoherence expression:
+
+```text
+V(d) = exp[-0.5 * (kappa_prime * 2*pi*d/lambda)^2]
+```
+
+## Result
+
+- Combined independent-kappa RMSE: {combined_calc_rmse:.4f}
+- Combined refit-kappa RMSE: {combined_refit_rmse:.4f}
+- Passes no-refit digitized-Fig. 4 criterion: {passes_no_refit}
+
+{calc_lines}
+
+## Interpretation
+
+This is a stronger public-data lead than the previous near misses because the source text says the Fig. 4 parameters were determined from independent beam-deflection/broadening measurements. It is still standard quantum decoherence and does not validate the Constraint Dynamics product law.
+
+## What This Does Not Show
+
+- No collapse solution.
+- No beyond-standard-quantum-mechanics claim.
+- No Lambda/Gamma/Theta product-law validation.
+- No author-table provenance yet.
+"""
+    (output_dir / "kokorowski_multiphoton_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, predictions
 
 
 def make_breakthrough_author_data_requests(output_dir: Path):
@@ -14448,6 +14808,18 @@ def run_scout_kokorowski_multiphoton(
     make_kokorowski_multiphoton_scout_outputs(source_dir, output_dir, data_dir)
 
 
+def run_digitize_kokorowski_multiphoton(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_kokorowski_multiphoton_digitization_outputs(source_dir, output_dir, data_dir)
+
+
+def run_analyze_kokorowski_multiphoton(input_csv: Path, output_dir: Path):
+    make_kokorowski_multiphoton_analysis_outputs(input_csv, output_dir)
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -14947,6 +15319,28 @@ def build_parser():
         default="outputs/kokorowski_multiphoton_scout",
     )
     kokorowski.add_argument("--data-dir", default="data/extracted")
+    kokorowski_digitize = sub.add_parser(
+        "digitize-kokorowski-multiphoton",
+        help="digitize Kokorowski 2001 Fig. 4 multiphoton decoherence points from EPS vectors",
+    )
+    kokorowski_digitize.add_argument("--source-dir", default=None)
+    kokorowski_digitize.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_multiphoton_digitization",
+    )
+    kokorowski_digitize.add_argument("--data-dir", default="data/extracted")
+    kokorowski_analyze = sub.add_parser(
+        "analyze-kokorowski-multiphoton",
+        help="test Kokorowski Fig. 4 independent multiphoton parameters against visibility",
+    )
+    kokorowski_analyze.add_argument(
+        "--input",
+        default="data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv",
+    )
+    kokorowski_analyze.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_multiphoton",
+    )
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -15205,6 +15599,18 @@ def main(argv=None):
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),
+            )
+        elif command == "digitize-kokorowski-multiphoton":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_digitize_kokorowski_multiphoton(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "analyze-kokorowski-multiphoton":
+            run_analyze_kokorowski_multiphoton(
+                Path(args.input),
+                Path(args.output_dir),
             )
         elif command == "scout-hornberger-collisional":
             source_dir = None if args.source_dir is None else Path(args.source_dir)

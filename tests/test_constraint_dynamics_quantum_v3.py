@@ -74,6 +74,10 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_mir_weak_value_scout_outputs,
     make_hochrainer_momentum_correlation_scout_outputs,
     make_kokorowski_multiphoton_scout_outputs,
+    make_kokorowski_multiphoton_digitization_outputs,
+    make_kokorowski_multiphoton_analysis_outputs,
+    kokorowski_fig4_pixel_to_data,
+    kokorowski_visibility_from_kappa,
     make_hornberger_collisional_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
@@ -1000,7 +1004,12 @@ def test_no_refit_target_scout_outputs_and_cli(tmp_path):
     assert not register.empty
     assert not summary.empty
     assert "XIAO_2019_INTERNAL_LEAD" in set(register["candidate_id"])
-    assert summary["verdict"].iloc[0] == "no second no-refit distribution target yet"
+    assert summary["verdict"].iloc[0] == "second no-refit distribution target found"
+    assert int(summary["eligible_second_distribution_targets"].iloc[0]) >= 1
+    assert (
+        summary["recommended_next_candidate"].iloc[0]
+        == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
     assert (
         output_dir / "second_no_refit_target_scout_report.md"
     ).exists()
@@ -1176,8 +1185,8 @@ def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
     assert not blockers.empty
     assert not summary.empty
     assert "XIAO_2019_INTERNAL_LEAD" in set(audit["candidate_id"])
-    assert "G11 still failed" == summary["verdict"].iloc[0]
-    assert int(summary["eligible_second_no_refit_targets"].iloc[0]) == 0
+    assert "second independent no-refit candidate found" == summary["verdict"].iloc[0]
+    assert int(summary["eligible_second_no_refit_targets"].iloc[0]) >= 1
     assert "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in set(audit["candidate_id"])
     assert "paired_visibility_curve_missing" in set(audit["blocker_class"])
     assert (output_dir / "g11_gap_audit.csv").exists()
@@ -1237,14 +1246,81 @@ def test_kokorowski_multiphoton_scout_outputs_and_cli(tmp_path):
     assert (cli_output_dir / "kokorowski_multiphoton_scout_summary.csv").exists()
 
 
+def test_kokorowski_digitization_and_analysis_outputs_and_cli(tmp_path):
+    source_dir = Path("outputs/tmp/kokorowski_source/extracted")
+    if not (source_dir / "figure4.eps").exists():
+        pytest.skip("Kokorowski source package not available")
+
+    d0, v0 = kokorowski_fig4_pixel_to_data(80.50, 18.00)
+    d1, v1 = kokorowski_fig4_pixel_to_data(415.00, 265.00)
+    assert np.isclose(d0, 0.0)
+    assert np.isclose(v0, 1.0)
+    assert np.isclose(d1, 0.30)
+    assert np.isclose(v1, 0.0)
+    assert np.all(
+        (kokorowski_visibility_from_kappa(np.array([0.0, 0.1]), 1.8) >= 0.0)
+        & (kokorowski_visibility_from_kappa(np.array([0.0, 0.1]), 1.8) <= 1.0)
+    )
+
+    data_dir = tmp_path / "data"
+    digitize_dir = tmp_path / "digitize"
+    df, metadata = make_kokorowski_multiphoton_digitization_outputs(
+        source_dir,
+        digitize_dir,
+        data_dir,
+    )
+    assert not df.empty
+    assert {"open_circle", "filled_circle"} == set(df["marker"])
+    assert metadata["extraction_method"] == "eps_vector_point_extraction_v1"
+
+    analysis_dir = tmp_path / "analysis"
+    summary, predictions = make_kokorowski_multiphoton_analysis_outputs(
+        data_dir / "KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv",
+        analysis_dir,
+    )
+    assert not summary.empty
+    assert not predictions.empty
+    calc = summary[summary["model"] == "calculated_independent_kappa"]
+    assert float(calc["rmse_visibility"].max()) < 0.05
+    assert (
+        "independent multiphoton no-refit candidate passes"
+        in summary["status"].iloc[0]
+    )
+
+    cli_data_dir = tmp_path / "cli_data"
+    cli_digitize_dir = tmp_path / "cli_digitize"
+    main(
+        [
+            "digitize-kokorowski-multiphoton",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_digitize_dir),
+            "--data-dir",
+            str(cli_data_dir),
+        ]
+    )
+    cli_analysis_dir = tmp_path / "cli_analysis"
+    main(
+        [
+            "analyze-kokorowski-multiphoton",
+            "--input",
+            str(cli_data_dir / "KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv"),
+            "--output-dir",
+            str(cli_analysis_dir),
+        ]
+    )
+    assert (cli_analysis_dir / "kokorowski_multiphoton_report.md").exists()
+
+
 def test_public_data_availability_outputs_and_cli(tmp_path):
     output_dir = tmp_path / "public_data"
     availability, summary = make_public_data_availability_outputs(output_dir)
     assert not availability.empty
     assert not summary.empty
     assert "XIAO_2019_INTERNAL_LEAD" in set(availability["candidate_id"])
-    assert int(summary["supports_g11_without_author_contact"].iloc[0]) == 0
-    assert summary["verdict"].iloc[0] == "public data does not close G11"
+    assert int(summary["supports_g11_without_author_contact"].iloc[0]) == 1
+    assert summary["verdict"].iloc[0] == "public data closes G11"
     assert (output_dir / "public_data_availability.csv").exists()
     assert (output_dir / "public_data_availability_report.md").exists()
 

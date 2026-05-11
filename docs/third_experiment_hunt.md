@@ -117,22 +117,32 @@ This is exactly the expected boring control: irreversible collision records prod
 
 ## New Public No-Refit Lead
 
-Kokorowski et al. 2001, *From Single to Multiple-Photon Decoherence in an Atom Interferometer*, is now the strongest next public-data candidate:
+Kokorowski et al. 2001, *From Single to Multiple-Photon Decoherence in an Atom Interferometer*, is now the first second-experiment public no-refit candidate:
 
 - arXiv: https://arxiv.org/abs/quant-ph/0009044
 - DOI: https://doi.org/10.1103/PhysRevLett.86.2191
 - Source status: arXiv package contains `decoh.tex` and EPS figures.
 - Key figure: `figure4.eps`, many-photon contrast loss versus path separation.
 
-The source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. If a calibrated digitization shows those parameters predict contrast without refitting the record-load variable, Kokorowski could become the missing independent validation lane. Until then it remains a lead, not a result.
+The source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. The local vector digitization now shows those parameters predict contrast without refitting the record-load variable:
 
-Current scout command:
+```text
+status: independent multiphoton no-refit candidate passes digitized Fig. 4
+combined independent-kappa RMSE: 0.0240
+combined refit-kappa RMSE: 0.0193
+```
+
+Current commands:
 
 ```bash
-python src/constraint_dynamics_quantum_v3.py scout-kokorowski-multiphoton \
+python src/constraint_dynamics_quantum_v3.py digitize-kokorowski-multiphoton \
   --source-dir outputs/tmp/kokorowski_source/extracted \
-  --output-dir outputs/kokorowski_multiphoton_scout \
+  --output-dir outputs/kokorowski_multiphoton_digitization \
   --data-dir data/extracted
+
+python src/constraint_dynamics_quantum_v3.py analyze-kokorowski-multiphoton \
+  --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
+  --output-dir outputs/kokorowski_multiphoton
 ```
 
 ## Success Criteria

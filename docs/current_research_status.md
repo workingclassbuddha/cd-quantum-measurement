@@ -19,7 +19,9 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Hackermueller thermal durable-record lane implemented | `outputs/hackermueller_thermal/`; `outputs/hackermueller_thermal_stress/` | Pass |
 | Hornberger collisional guardrail implemented | `outputs/hornberger_collisional_scout/` | Pass |
 | Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass, 15 candidates and zero eligible second targets |
-| Kokorowski multiphoton public-data scout implemented | `outputs/kokorowski_multiphoton_scout/` | Pass, strongest next public-data candidate but not digitized |
+| Kokorowski multiphoton public-data scout implemented | `outputs/kokorowski_multiphoton_scout/` | Pass |
+| Kokorowski Fig. 4 vector digitization implemented | `data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv`; `outputs/kokorowski_multiphoton_digitization/` | Pass |
+| Kokorowski independent-parameter no-refit analysis implemented | `outputs/kokorowski_multiphoton/kokorowski_multiphoton_report.md` | Pass, combined independent-kappa RMSE 0.0240 |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
@@ -30,7 +32,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Author-data manifest validator prepared | `outputs/author_data_validation/` | Pass, no rows ready for G11 yet |
 | GitHub coordination created | Issues #1-#5 | Pass |
 | Current goal completion audit prepared | `outputs/current_goal_audit/` | Pass, objective not complete |
-| Second independent measured-distribution-to-visibility validation found | `outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv` reports `eligible_second_no_refit_targets = 0` | Fail |
+| Second independent measured-distribution-to-visibility validation found | `outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv` reports `eligible_second_no_refit_targets = 1` via Kokorowski | Pass, needs stress testing |
 | Lambda/Gamma/Theta product law independently validated | `outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv` gate G12 | Fail |
 | Beyond-QM or collapse claim made | README, theory notes, and reports reject this claim | Correctly not claimed |
 
@@ -40,14 +42,14 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 lead candidate found, breakthrough not yet
 ```
 
-The strongest empirical structure is the Xiao no-refit distribution-to-visibility bridge, supported by Chapman Fourier-kernel structure and irreversible-record controls from Hackermueller and Hornberger. This is not enough for a breakthrough claim because the second independent no-refit gate remains open.
+The strongest empirical structure is now Xiao plus Kokorowski: Xiao gives the cleanest within-paper no-refit momentum-distribution prediction, and Kokorowski gives a second-experiment public no-refit decoherence prediction from independently reported many-photon parameters.
 
-The newest public-data lead is Kokorowski et al. 2001. Its source text reports independently measured beam-deflection/broadening parameters for many-photon decoherence curves, making it the strongest next candidate for a public no-refit validation. It does **not** close G11 until Fig. 4 is digitized and the prediction is reproduced numerically.
+This is still not enough for a breakthrough claim because Chapman raw complex phase remains unrepaired and the Lambda/Gamma/Theta product law is not independently validated. The Kokorowski result also needs a stress pass before being treated as publication-grade.
 
 ## Open Gates
 
 - **G10:** Chapman raw complex phase remains unrepaired.
-- **G11:** no second independent measured-distribution-to-visibility validation found.
+- **G11:** second independent public no-refit candidate found in Kokorowski, pending stress testing.
 - **G12:** Lambda/Gamma/Theta product law remains provisional.
 
 ## Live Coordination
@@ -63,15 +65,19 @@ The newest public-data lead is Kokorowski et al. 2001. Its source text reports i
 Do not add more model freedom until either:
 
 1. author-level numerical data create a second held-out no-refit test; or
-2. a new literature/source pass finds an experiment with both an independently measured record distribution and a paired visibility/decoherence curve.
+2. Kokorowski survives a robustness/null-control pass as a second independent no-refit validation.
 
 Immediate public-data next step:
 
 ```bash
-python src/constraint_dynamics_quantum_v3.py scout-kokorowski-multiphoton \
+python src/constraint_dynamics_quantum_v3.py digitize-kokorowski-multiphoton \
   --source-dir outputs/tmp/kokorowski_source/extracted \
-  --output-dir outputs/kokorowski_multiphoton_scout \
+  --output-dir outputs/kokorowski_multiphoton_digitization \
   --data-dir data/extracted
+
+python src/constraint_dynamics_quantum_v3.py analyze-kokorowski-multiphoton \
+  --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
+  --output-dir outputs/kokorowski_multiphoton
 ```
 
 If neither path produces a second validation, the honest conclusion is that the current breakthrough path has found a strong empirical target but not a breakthrough.

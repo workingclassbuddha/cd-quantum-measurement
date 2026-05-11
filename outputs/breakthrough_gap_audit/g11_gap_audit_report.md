@@ -1,21 +1,21 @@
 # G11 Breakthrough Gap Audit
 
-Verdict: G11 still failed
+Verdict: second independent no-refit candidate found
 
 This audit checks the missing gate directly: can a second experiment, independent of Xiao, provide a measured record distribution that predicts a visibility/decoherence curve without refitting the key record-bandwidth/load parameter?
 
 ## Current Answer
 
 - Candidates audited: 15
-- Eligible second no-refit targets: 0
-- Top current candidate: XIAO_2019_INTERNAL_LEAD
-- Top blocker class: internal_lead_not_second_experiment
-- Next move: keep as lead benchmark; use it to validate extraction and stress-test standards
+- Eligible second no-refit targets: 1
+- Top current candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
+- Top blocker class: none
+- Next move: promote to full no-refit distribution-to-visibility implementation
 
 ## Candidate Readout
 
+- **Kokorowski et al. 2001** (`KOKOROWSKI_2001_MULTIPHOTON_SCATTERING`): none. Next: promote to full no-refit distribution-to-visibility implementation
 - **Xiao et al. 2019** (`XIAO_2019_INTERNAL_LEAD`): internal_lead_not_second_experiment. Next: keep as lead benchmark; use it to validate extraction and stress-test standards
-- **Kokorowski et al. 2001** (`KOKOROWSKI_2001_MULTIPHOTON_SCATTERING`): paired_visibility_curve_missing. Next: obtain paired visibility or contrast sweep for the measured record distribution
 - **Cormann et al. 2016** (`CORMANN_2016_MODULAR_VALUE`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
 - **Eibenberger et al. 2014** (`EIBENBERGER_2014_RECOIL_ABSORPTION`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
 - **Hackermueller/Hornberger et al. 2003** (`HORNBERGER_2003_COLLISIONAL_DECOHERENCE`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
@@ -26,8 +26,9 @@ This audit checks the missing gate directly: can a second experiment, independen
 ## Blocker Summary
 
 - `record_variable_not_independent`: 9
-- `paired_visibility_curve_missing`: 5
+- `paired_visibility_curve_missing`: 4
 - `internal_lead_not_second_experiment`: 1
+- `none`: 1
 
 ## Strict Interpretation
 

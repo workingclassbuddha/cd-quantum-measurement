@@ -1,0 +1,24 @@
+{
+  "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+  "source_url": "https://arxiv.org/abs/quant-ph/0009044",
+  "arxiv_source_url": "https://arxiv.org/e-print/quant-ph/0009044",
+  "doi": "https://doi.org/10.1103/PhysRevLett.86.2191",
+  "source_dir": "outputs/tmp/kokorowski_source/extracted",
+  "source_file": "outputs/tmp/kokorowski_source/extracted/figure4.eps",
+  "source_file_sha256": "a85b2073c180fbd505206c109711386449cc4c7702c7f5c9ec7f7cf5f7b3161d",
+  "source_tex_sha256": "4f436a938adf03dfe478a0cc11f780fafb01d4975a5e61f23f617bf6c9566647",
+  "figure": "Figure 4",
+  "axis_calibration": {
+    "x_min_px": 80.5,
+    "x_max_px": 415.0,
+    "x_min_d_over_lambda": 0.0,
+    "x_max_d_over_lambda": 0.3,
+    "y_top_px": 18.0,
+    "y_bottom_px": 265.0,
+    "y_top_visibility": 1.0,
+    "y_bottom_visibility": 0.0
+  },
+  "extraction_method": "eps_vector_point_extraction_v1",
+  "visibility_uncertainty": 0.025,
+  "provenance_note": "Point centers were parsed from EPS circle commands. Independent nbar/sigma_n values are reported in the Fig. 4 caption and surrounding source text as beam-deflection/broadening measurements."
+}

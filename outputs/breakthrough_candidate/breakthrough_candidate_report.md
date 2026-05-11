@@ -26,9 +26,9 @@ This dossier does not fit a new model. It scores the current outputs against str
 - Hackermueller P(thermal delta-T4 beats exp power): 0.994
 - Hackermueller P(thermal delta-T4 is best): 0.701
 - Synthesis statuses: collisional record-load guardrail supports standard decoherence; side-peak distribution supports bandwidth proxy; supports Fourier record-bandwidth over scalar exponential; survives uncertainty and pairing null; thermal record-load proxy supports durable environmental record lane
-- Second no-refit scout verdict: no second no-refit distribution target yet
-- Eligible second no-refit targets: 0
-- Recommended second-target candidate: EIBENBERGER_2014_RECOIL_ABSORPTION
+- Second no-refit scout verdict: second no-refit distribution target found
+- Eligible second no-refit targets: 1
+- Recommended second-target candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Eibenberger recoil-control status: control_fit
 - Eibenberger best recoil model: visibility_fit_sigma_abs
 - Eibenberger best RMSE: 0.0247268685940939
@@ -39,21 +39,21 @@ This dossier does not fit a new model. It scores the current outputs against str
 
 - Chapman raw phase verdict: model still fails
 - Chapman best mixture raw phase RMSE: 1.3087718496350118
-- Second independent distribution-to-visibility experiment: no second no-refit distribution target yet
+- Second independent distribution-to-visibility experiment: second no-refit distribution target found
 - Lambda/Gamma/Theta product law validation: not yet
 
 ## Gate Score
 
-Passed gates: 9 / 12
+Passed gates: 10 / 12
 
-The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao is therefore the centerpiece. Chapman and Hackermueller provide cross-experiment support for record bandwidth/load, but they do not by themselves clear the no-refit breakthrough gate.
+The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao remains the centerpiece because it gives the cleanest distribution-to-visibility bridge. Kokorowski now supplies the first second-experiment public no-refit candidate: independently reported many-photon beam-deflection/broadening parameters predict Fig. 4 contrast after vector digitization. Chapman, Hackermueller, and Hornberger provide supporting standard-QM record bandwidth/load controls.
 
 Eibenberger is now logged as a useful recoil-control lane: the known photon recoil mechanism predicts visibility reduction at roughly the paper absorption cross section. It strengthens the standard-QM compatibility of the record-kernel framing, but it does not close G11 because the absorption cross section is still extracted from visibility rather than independently measured as a held-out record distribution.
 
 ## Strict Claim
 
 ```text
-We have a lead breakthrough candidate: an independently digitized Xiao momentum distribution predicts visibility loss better than scalar baselines without refitting the key record-bandwidth parameter.
+We have a stronger lead candidate: Xiao gives a within-paper no-refit momentum-distribution prediction, and Kokorowski gives a second-experiment public no-refit decoherence prediction from independently reported many-photon parameters.
 ```
 
 ## Strict Non-Claims
@@ -61,8 +61,8 @@ We have a lead breakthrough candidate: an independently digitized Xiao momentum 
 - This does not solve collapse.
 - This does not validate the Lambda/Gamma/Theta product law.
 - This does not show physics beyond standard quantum mechanics.
-- This is not yet a cross-experiment no-refit prediction.
+- This does not repair the Chapman raw phase failure.
 
 ## Next Move
 
-Find a second independent experiment with both measured record distribution and visibility/decoherence output. Do not add model freedom until that search fails.
+Promote Kokorowski from candidate to stress-tested validation, then keep the breakthrough language blocked until Chapman raw phase or an independent Lambda/Gamma/Theta product-law experiment clears its gate.

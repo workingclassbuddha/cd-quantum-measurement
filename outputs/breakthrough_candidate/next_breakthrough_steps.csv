@@ -1,5 +1,5 @@
 priority,action,success_criterion,why
 1,Promote Xiao vector distribution prediction to centerpiece,Keep no-refit RMSE below 0.025 and null p-values below 0.05 under stricter extraction uncertainty.,This is the only current no-refit distribution-to-visibility bridge.
-2,Find or digitize a second independent distribution-to-visibility dataset,Measured record distribution predicts visibility without refitting the bandwidth/load parameter.,This is the missing breakthrough gate; latest scout verdict is `no second no-refit distribution target yet`.
+2,Find or digitize a second independent distribution-to-visibility dataset,Measured record distribution predicts visibility without refitting the bandwidth/load parameter.,This is the missing breakthrough gate; latest scout verdict is `second no-refit distribution target found`.
 3,Repair Chapman raw phase by publication-grade Fig. 2 digitization before adding model freedom,Raw phase RMSE improves while raw visibility and conditioned ordering remain competitive.,Current complex phase overconstraint is the strongest internal blocker.
 4,Design an independent Lambda/Gamma/Theta apparatus-factor experiment,Factors vary independently enough to beat additive and pairwise alternatives out of sample.,The product law remains provisional.

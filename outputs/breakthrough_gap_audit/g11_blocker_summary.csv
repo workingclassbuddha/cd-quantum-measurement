@@ -1,4 +1,5 @@
 blocker_class,candidate_count
 record_variable_not_independent,9
-paired_visibility_curve_missing,5
+paired_visibility_curve_missing,4
 internal_lead_not_second_experiment,1
+none,1
