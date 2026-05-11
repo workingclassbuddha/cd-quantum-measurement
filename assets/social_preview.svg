@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Record bandwidth research scaffold</title>
+  <desc id="desc">A social preview image for the Constraint Dynamics quantum measurement test repository.</desc>
+  <rect width="1600" height="900" fill="#0f172a"/>
+  <g opacity="0.2" stroke="#64748b" stroke-width="2">
+    <path d="M120 720 H1480"/>
+    <path d="M120 570 H1480"/>
+    <path d="M120 420 H1480"/>
+    <path d="M120 270 H1480"/>
+    <path d="M120 120 H1480"/>
+  </g>
+  <path d="M140 650 C250 338 360 320 470 608 S690 840 800 440 S1020 88 1130 340 S1350 785 1480 438" fill="none" stroke="#22d3ee" stroke-width="18" stroke-linecap="round"/>
+  <path d="M140 650 C250 338 360 320 470 608 S690 840 800 440 S1020 88 1130 340 S1350 785 1480 438" fill="none" stroke="#f59e0b" stroke-width="8" stroke-linecap="round" stroke-dasharray="1 36"/>
+  <text x="120" y="180" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="78" font-weight="800">Record Variables</text>
+  <text x="120" y="268" fill="#f8fafc" font-family="Inter, Arial, sans-serif" font-size="78" font-weight="800">Across Quantum Experiments</text>
+  <text x="120" y="338" fill="#cbd5e1" font-family="Inter, Arial, sans-serif" font-size="34">Chapman + Xiao + Hackermueller, with conservative standard-QM claims</text>
+  <g transform="translate(120 730)" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="700">
+    <text x="0" y="0" fill="#22d3ee">Fourier kernel</text>
+    <text x="320" y="0" fill="#f59e0b">Momentum proxy</text>
+    <text x="670" y="0" fill="#fb7185">Thermal record load</text>
+  </g>
+</svg>

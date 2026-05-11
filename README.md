@@ -1,6 +1,37 @@
 # Constraint Dynamics Quantum Measurement Test
 
-Exploratory, falsifiable scaffold for testing whether Constraint Dynamics gives a useful effective factorization of apparatus-dependent quantum visibility loss.
+![Constraint Dynamics Quantum Measurement Test](assets/record_bandwidth_hero.svg)
+
+Exploratory, falsifiable scaffold for testing whether record accessibility, record bandwidth, and durable environmental record load organize apparatus-dependent quantum visibility loss across standard quantum-measurement and decoherence experiments.
+
+[![Tests](https://github.com/workingclassbuddha/constraint-dynamics-quantum-test/actions/workflows/tests.yml/badge.svg)](https://github.com/workingclassbuddha/constraint-dynamics-quantum-test/actions/workflows/tests.yml)
+![Python](https://img.shields.io/badge/python-3.11%2B-3776ab)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Status](https://img.shields.io/badge/scientific%20claim-conservative-blue)
+
+## At A Glance
+
+This repository is a research scaffold, not a finished theory of collapse. It turns a Constraint Dynamics question into reproducible empirical tests:
+
+```text
+Does visibility loss track generic dephasing strength,
+or does it track what kind of record the apparatus/environment has made?
+```
+
+Current answer: across Chapman 1995, Xiao 2019, and Hackermueller 2004, the stronger conservative signal is a record-variable structure:
+
+- Chapman: unresolved photon momentum records behave like a Fourier kernel, not a monotone exponential.
+- Xiao: reconstructed momentum-disturbance distributions predict visibility loss in a no-refit cross-figure check.
+- Hackermueller: thermal emitted-photon record load survives bootstrap stress better than a plain scalar exp(power) baseline.
+
+The allowed claim is narrow:
+
+```text
+Record accessibility / bandwidth / load is a useful empirical organizing variable
+across standard-QM measurement and decoherence experiments.
+```
+
+The disallowed claims are equally important: this does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics.
 
 ## Current Research State
 
@@ -61,6 +92,12 @@ Install dependencies in your preferred Python environment:
 
 ```bash
 python -m pip install -r requirements.txt
+```
+
+Run the test suite:
+
+```bash
+python -m pytest -q
 ```
 
 Generate the demo outputs:
@@ -277,9 +314,7 @@ The model respects standard quantum eraser behavior: reversible path marking can
 
 Use [docs/experimental_design.md](docs/experimental_design.md) before taking a product-law fit seriously. The scaffold now treats high factor correlation and poor design conditioning as first-class warnings rather than afterthoughts.
 
-The included Chapman extraction is a first-pass visual digitization from the paper PDF, intended to exercise the workflow and identify promising signals. It should be replaced by publication-grade digitization before making quantitative claims.
-
-The calibrated Chapman extraction stores axis anchors, pixel point picks, PDF hash, and source provenance. It still supports only an honest recoverability claim; it is not a product-law validation until detector acceptance and record accessibility are independently parameterized.
+The calibrated literature extractions store axis anchors, point picks, source hashes, uncertainty estimates, and provenance. They support reproducible exploratory checks, not standalone publication-grade metrology.
 
 The Chapman kernel analysis adds a sharper caution: the raw Chapman curve has a zero-and-revival structure better captured by an absolute sinc/Fourier window than by scalar monotone exponential dephasing. In this setting, `Theta` is best treated as inaccessible conjugate-record bandwidth, not just generic entropy load.
 

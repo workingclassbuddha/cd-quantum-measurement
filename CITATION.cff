@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use this scaffold, please cite the repository and the original experimental papers whose data are analyzed."
+title: "Constraint Dynamics Quantum Measurement Test"
+authors:
+  - family-names: "Cator"
+    given-names: "Matthew A."
+type: software
+license: MIT
+repository-code: "https://github.com/workingclassbuddha/constraint-dynamics-quantum-test"
+abstract: "Exploratory research scaffold testing whether record accessibility, record bandwidth, and durable environmental record load organize visibility loss across standard quantum measurement and decoherence experiments."
+keywords:
+  - quantum measurement
+  - decoherence
+  - quantum eraser
+  - visibility
+  - record bandwidth
+  - Constraint Dynamics
+date-released: "2026-05-11"
+preferred-citation:
+  type: generic
+  title: "Constraint Dynamics quantum-measurement test scaffold"
+  authors:
+    - family-names: "Cator"
+      given-names: "Matthew A."
+  year: 2026
