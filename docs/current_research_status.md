@@ -23,6 +23,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
 | Author-data request tracker prepared | `outputs/author_data_requests/author_data_request_tracker.csv`; issues #2-#5 | Pass, drafts ready but not sent |
+| Author contact route candidates recorded | `outputs/author_data_requests/author_contact_candidate_register.csv` | Pass, verify before sending |
 | Author-data intake schemas prepared | `outputs/author_data_intake/` | Pass |
 | Author-data manifest validator prepared | `outputs/author_data_validation/` | Pass, no rows ready for G11 yet |
 | GitHub coordination created | Issues #1-#5 | Pass |

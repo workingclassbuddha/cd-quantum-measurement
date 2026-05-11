@@ -9464,6 +9464,47 @@ def make_breakthrough_author_data_requests(output_dir: Path):
         ]
     ].copy()
     tracker.to_csv(output_dir / "author_data_request_tracker.csv", index=False)
+    contacts = pd.DataFrame(
+        [
+            {
+                "target_id": "xiao_2019_author_data",
+                "study": "Xiao et al. 2019",
+                "contact_status": "candidate_route_verify_before_send",
+                "contact_route": "Griffith repository / arXiv author record / institutional pages",
+                "contact_source_url": "https://research-repository.griffith.edu.au/items/18f6c166-89ac-46c5-a199-701f6c57f6b4",
+                "source_evidence": "repository record lists authors, DOI, version of record, and persistent link",
+                "next_action": "verify current corresponding-author contact before sending request",
+            },
+            {
+                "target_id": "hochrainer_2017_independent_widths",
+                "study": "Hochrainer et al. 2017",
+                "contact_status": "candidate_route_verify_before_send",
+                "contact_route": "PMC correspondence line for Hochrainer/Zeilinger",
+                "contact_source_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5320961/",
+                "source_evidence": "PMC article lists correspondence route for Anton Zeilinger or Armin Hochrainer",
+                "next_action": "verify current addresses and request independent width data",
+            },
+            {
+                "target_id": "mir_2007_visibility_context",
+                "study": "Mir et al. 2007",
+                "contact_status": "candidate_route_verify_before_send",
+                "contact_route": "Lundeen Lab publication page / arXiv author record",
+                "contact_source_url": "https://quantumphotonics.uottawa.ca/Publications/A-double-slit-which-way-experiment-on-the-complementarity-uncertainty-debate",
+                "source_evidence": "lab publication page lists the paper, authors, journal, and DOI",
+                "next_action": "verify current lab contact and ask whether paired visibility data exist",
+            },
+            {
+                "target_id": "eibenberger_2014_recoil_controls",
+                "study": "Eibenberger et al. 2014",
+                "contact_status": "candidate_route_verify_before_send",
+                "contact_route": "University of Vienna publication page / corresponding author route",
+                "contact_source_url": "https://ucrisportal.univie.ac.at/en/publications/absolute-absorption-cross-sections-from-photon-recoil-in-a-matter/",
+                "source_evidence": "University of Vienna record marks Sandra Eibenberger as corresponding author",
+                "next_action": "verify current contact and ask for held-out recoil/load calibration",
+            },
+        ]
+    )
+    contacts.to_csv(output_dir / "author_contact_candidate_register.csv", index=False)
 
     for target in targets:
         body = f"""Subject: Numerical data request for {target['study']} visibility/record-variable analysis
@@ -9519,6 +9560,10 @@ This packet prepares concise data requests for the strongest candidates and near
 
 {chr(10).join(f"- **{row['study']}**: {row['status']}; issue: {row['issue_url']}; G11 use: {row['g11_use_if_received']}" for row in targets)}
 
+## Contact Route Register
+
+`author_contact_candidate_register.csv` records public source pages that can be used to verify current contact routes before sending. It intentionally does not claim that requests have been sent.
+
 ## Strict Boundary
 
 Requested data should support a standard-QM-compatible reproducibility check. Do not frame the request as a breakthrough, collapse solution, or beyond-QM claim.
@@ -9528,6 +9573,7 @@ Requested data should support a standard-QM-compatible reproducibility check. Do
 ```text
 author_data_request_register.csv
 author_data_request_tracker.csv
+author_contact_candidate_register.csv
 {chr(10).join(target['target_id'] + '_request.md' for target in targets)}
 ```
 """

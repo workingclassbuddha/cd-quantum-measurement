@@ -24,6 +24,10 @@ This packet prepares concise data requests for the strongest candidates and near
 - **Mir et al. 2007**: draft_ready_not_sent; issue: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/4; G11 use: possible weak-value no-refit control if paired visibility sweep exists
 - **Eibenberger et al. 2014**: draft_ready_not_sent; issue: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/5; G11 use: possible held-out recoil/load control if sigma_abs calibration is independent
 
+## Contact Route Register
+
+`author_contact_candidate_register.csv` records public source pages that can be used to verify current contact routes before sending. It intentionally does not claim that requests have been sent.
+
 ## Strict Boundary
 
 Requested data should support a standard-QM-compatible reproducibility check. Do not frame the request as a breakthrough, collapse solution, or beyond-QM claim.
@@ -33,6 +37,7 @@ Requested data should support a standard-QM-compatible reproducibility check. Do
 ```text
 author_data_request_register.csv
 author_data_request_tracker.csv
+author_contact_candidate_register.csv
 xiao_2019_author_data_request.md
 hochrainer_2017_independent_widths_request.md
 mir_2007_visibility_context_request.md
