@@ -967,8 +967,12 @@ def test_breakthrough_author_data_requests_outputs_and_cli(tmp_path):
     assert not register.empty
     assert "xiao_2019_author_data" in set(register["target_id"])
     assert (output_dir / "author_data_request_register.csv").exists()
+    assert (output_dir / "author_data_request_tracker.csv").exists()
     assert (output_dir / "author_data_request_packet.md").exists()
     assert (output_dir / "hochrainer_2017_independent_widths_request.md").exists()
+    tracker = pd.read_csv(output_dir / "author_data_request_tracker.csv")
+    assert tracker["issue_url"].str.contains("github.com").all()
+    assert set(tracker["status"]) == {"draft_ready_not_sent"}
 
     cli_output_dir = tmp_path / "author_requests_cli"
     main(
@@ -979,6 +983,7 @@ def test_breakthrough_author_data_requests_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "author_data_request_packet.md").exists()
+    assert (cli_output_dir / "author_data_request_tracker.csv").exists()
 
 
 def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):

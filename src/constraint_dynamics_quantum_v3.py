@@ -9387,6 +9387,10 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "gate": "tighten within-paper no-refit result and enable external replication of the current lead",
             "source_url": XIAO_PAPER_URL,
             "doi": XIAO_DOI,
+            "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/2",
+            "send_priority": 1,
+            "status": "draft_ready_not_sent",
+            "g11_use_if_received": "calibrates current lead but does not close second-experiment gate",
         },
         {
             "target_id": "hochrainer_2017_independent_widths",
@@ -9396,6 +9400,10 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "gate": "could become a second no-refit test if independent momentum widths predict visibility profiles",
             "source_url": HOCHRAINER_PAPER_URL,
             "doi": HOCHRAINER_DOI,
+            "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/3",
+            "send_priority": 2,
+            "status": "draft_ready_not_sent",
+            "g11_use_if_received": "possible G11 closer if independent momentum widths exist",
         },
         {
             "target_id": "mir_2007_visibility_context",
@@ -9405,6 +9413,10 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "gate": "could become a weak-value control if visibility data can be paired to measured P_wv(q)",
             "source_url": MIR_PAPER_URL,
             "doi": MIR_DOI,
+            "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/4",
+            "send_priority": 3,
+            "status": "draft_ready_not_sent",
+            "g11_use_if_received": "possible weak-value no-refit control if paired visibility sweep exists",
         },
         {
             "target_id": "eibenberger_2014_recoil_controls",
@@ -9414,10 +9426,26 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "gate": "stays a control unless recoil/cross-section calibration can be held out from visibility",
             "source_url": "https://arxiv.org/abs/1402.5307",
             "doi": "https://doi.org/10.1103/PhysRevLett.112.250402",
+            "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/5",
+            "send_priority": 4,
+            "status": "draft_ready_not_sent",
+            "g11_use_if_received": "possible held-out recoil/load control if sigma_abs calibration is independent",
         },
     ]
     register = pd.DataFrame(targets)
     register.to_csv(output_dir / "author_data_request_register.csv", index=False)
+    tracker = register[
+        [
+            "target_id",
+            "study",
+            "send_priority",
+            "status",
+            "issue_url",
+            "needed_data",
+            "g11_use_if_received",
+        ]
+    ].copy()
+    tracker.to_csv(output_dir / "author_data_request_tracker.csv", index=False)
 
     for target in targets:
         body = f"""Subject: Numerical data request for {target['study']} visibility/record-variable analysis
@@ -9469,6 +9497,10 @@ This packet prepares concise data requests for the strongest candidates and near
 
 {chr(10).join(f"- **{row['study']}** (`{row['target_id']}`): {row['why']}" for row in targets)}
 
+## Tracking
+
+{chr(10).join(f"- **{row['study']}**: {row['status']}; issue: {row['issue_url']}; G11 use: {row['g11_use_if_received']}" for row in targets)}
+
 ## Strict Boundary
 
 Requested data should support a standard-QM-compatible reproducibility check. Do not frame the request as a breakthrough, collapse solution, or beyond-QM claim.
@@ -9477,6 +9509,7 @@ Requested data should support a standard-QM-compatible reproducibility check. Do
 
 ```text
 author_data_request_register.csv
+author_data_request_tracker.csv
 {chr(10).join(target['target_id'] + '_request.md' for target in targets)}
 ```
 """
