@@ -4,7 +4,7 @@
 
 Exploratory, falsifiable scaffold for testing whether record accessibility, record bandwidth, and durable environmental record load organize apparatus-dependent quantum visibility loss across standard quantum-measurement and decoherence experiments.
 
-[![Tests](https://github.com/workingclassbuddha/constraint-dynamics-quantum-test/actions/workflows/tests.yml/badge.svg)](https://github.com/workingclassbuddha/constraint-dynamics-quantum-test/actions/workflows/tests.yml)
+[![Tests](https://github.com/workingclassbuddha/cd-quantum-measurement/actions/workflows/tests.yml/badge.svg)](https://github.com/workingclassbuddha/cd-quantum-measurement/actions/workflows/tests.yml)
 ![Python](https://img.shields.io/badge/python-3.11%2B-3776ab)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Status](https://img.shields.io/badge/scientific%20claim-conservative-blue)

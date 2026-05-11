@@ -6,7 +6,7 @@ authors:
     given-names: "Matthew A."
 type: software
 license: MIT
-repository-code: "https://github.com/workingclassbuddha/constraint-dynamics-quantum-test"
+repository-code: "https://github.com/workingclassbuddha/cd-quantum-measurement"
 abstract: "Exploratory research scaffold testing whether record accessibility, record bandwidth, and durable environmental record load organize visibility loss across standard quantum measurement and decoherence experiments."
 keywords:
   - quantum measurement
