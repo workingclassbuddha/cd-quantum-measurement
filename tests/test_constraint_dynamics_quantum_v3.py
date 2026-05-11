@@ -64,6 +64,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_xiao_distribution_prediction_stress_outputs,
     make_breakthrough_candidate_outputs,
     make_breakthrough_author_data_requests,
+    make_breakthrough_gap_audit_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_weak_value_scout_outputs,
@@ -977,6 +978,31 @@ def test_breakthrough_author_data_requests_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "author_data_request_packet.md").exists()
+
+
+def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "gap_audit"
+    audit, blockers, summary = make_breakthrough_gap_audit_outputs(output_dir)
+    assert not audit.empty
+    assert not blockers.empty
+    assert not summary.empty
+    assert "XIAO_2019_INTERNAL_LEAD" in set(audit["candidate_id"])
+    assert "G11 still failed" == summary["verdict"].iloc[0]
+    assert int(summary["eligible_second_no_refit_targets"].iloc[0]) == 0
+    assert "paired_visibility_curve_missing" in set(audit["blocker_class"])
+    assert (output_dir / "g11_gap_audit.csv").exists()
+    assert (output_dir / "g11_blocker_summary.csv").exists()
+    assert (output_dir / "g11_gap_audit_report.md").exists()
+
+    cli_output_dir = tmp_path / "gap_audit_cli"
+    main(
+        [
+            "audit-breakthrough-gaps",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "g11_gap_audit_report.md").exists()
 
 
 def test_eibenberger_recoil_reduction_is_bounded():

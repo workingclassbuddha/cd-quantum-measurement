@@ -1,0 +1,2 @@
+verdict,candidate_count,eligible_second_no_refit_targets,top_candidate,top_blocker_class,recommended_next_evidence
+G11 still failed,8,0,XIAO_2019_INTERNAL_LEAD,internal_lead_not_second_experiment,keep as lead benchmark; use it to validate extraction and stress-test standards

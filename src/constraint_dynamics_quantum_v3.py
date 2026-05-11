@@ -8603,6 +8603,181 @@ Build `scout-eibenberger-recoil-absorption` only as a recoil-control lane, while
     return register, summary
 
 
+def make_breakthrough_gap_audit_outputs(output_dir: Path):
+    """Write a strict G11 gap audit from the no-refit candidate register.
+
+    The audit is intentionally a bookkeeping layer, not a new model. It spells
+    out which candidate has which pieces of the held-out record-distribution
+    gate and what evidence would actually close the blocker.
+    """
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    register = no_refit_target_candidate_register()
+    rows = []
+    for _, row in register.iterrows():
+        is_xiao = row["candidate_id"] == "XIAO_2019_INTERNAL_LEAD"
+        record_independent = bool(row["record_distribution_independent_of_visibility_fit"])
+        visibility_available = bool(row["visibility_curve_available"])
+        phase_available = bool(row["phase_available"])
+        source_available = bool(row["local_source_available"])
+        source_data_available = source_available or row["implementation_status"] in {
+            "implemented",
+            "scout implemented",
+        }
+        clears_g11 = bool(
+            (not is_xiao)
+            and record_independent
+            and visibility_available
+            and source_data_available
+        )
+        if clears_g11:
+            blocker_class = "none"
+            next_evidence = "promote to full no-refit distribution-to-visibility implementation"
+        elif is_xiao:
+            blocker_class = "internal_lead_not_second_experiment"
+            next_evidence = "keep as lead benchmark; use it to validate extraction and stress-test standards"
+        elif not record_independent and visibility_available:
+            blocker_class = "record_variable_not_independent"
+            next_evidence = "obtain author/supplemental record distribution or calibration not inferred from visibility"
+        elif record_independent and not visibility_available:
+            blocker_class = "paired_visibility_curve_missing"
+            next_evidence = "obtain paired visibility or contrast sweep for the measured record distribution"
+        elif not source_data_available:
+            blocker_class = "source_or_numeric_data_missing"
+            next_evidence = "retrieve source package, supplementary data, or author numerical table"
+        else:
+            blocker_class = "not_distribution_to_visibility_target"
+            next_evidence = "retain as control; keep searching for a Xiao-like held-out record distribution"
+
+        evidence_score = (
+            0.30 * record_independent
+            + 0.30 * visibility_available
+            + 0.20 * source_data_available
+            + 0.10 * (not is_xiao)
+            + 0.10 * phase_available
+        )
+        rows.append(
+            {
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "clears_g11": clears_g11,
+                "record_distribution_independent_of_visibility_fit": record_independent,
+                "visibility_curve_available": visibility_available,
+                "source_data_available": source_data_available,
+                "phase_available": phase_available,
+                "blocker_class": blocker_class,
+                "next_evidence_needed": next_evidence,
+                "current_blocker": row["blocker"],
+                "candidate_role": row["candidate_role"],
+                "implementation_status": row["implementation_status"],
+                "next_command": row["next_command"],
+                "no_refit_gate_score": float(row["no_refit_gate_score"]),
+                "g11_evidence_score": float(evidence_score),
+                "primary_url": row["primary_url"],
+                "doi": row["doi"],
+            }
+        )
+
+    audit = pd.DataFrame(rows).sort_values(
+        ["clears_g11", "g11_evidence_score", "no_refit_gate_score", "candidate_id"],
+        ascending=[False, False, False, True],
+    ).reset_index(drop=True)
+    audit.to_csv(output_dir / "g11_gap_audit.csv", index=False)
+
+    blocker_summary = (
+        audit.groupby("blocker_class", dropna=False)
+        .agg(candidate_count=("candidate_id", "count"))
+        .reset_index()
+        .sort_values(["candidate_count", "blocker_class"], ascending=[False, True])
+    )
+    blocker_summary.to_csv(output_dir / "g11_blocker_summary.csv", index=False)
+
+    write_bar_svg(
+        output_dir / "figures" / "figure_g11_evidence_scores.svg",
+        audit["candidate_id"].to_list(),
+        audit["g11_evidence_score"].to_numpy(dtype=float),
+        "G11 Evidence Readiness",
+        "readiness score",
+    )
+
+    eligible = audit[audit["clears_g11"]]
+    second_count = int(len(eligible))
+    top = audit.iloc[0]
+    if second_count:
+        verdict = "second independent no-refit candidate found"
+        next_move = str(eligible.iloc[0]["next_evidence_needed"])
+    else:
+        verdict = "G11 still failed"
+        next_move = str(top["next_evidence_needed"])
+
+    report_rows = "\n".join(
+        "- **{study}** (`{candidate}`): {blocker}. Next: {next_evidence}".format(
+            study=row["study"],
+            candidate=row["candidate_id"],
+            blocker=row["blocker_class"],
+            next_evidence=row["next_evidence_needed"],
+        )
+        for _, row in audit.head(8).iterrows()
+    )
+    blocker_rows = "\n".join(
+        "- `{klass}`: {count}".format(
+            klass=row["blocker_class"],
+            count=int(row["candidate_count"]),
+        )
+        for _, row in blocker_summary.iterrows()
+    )
+    report = f"""# G11 Breakthrough Gap Audit
+
+Verdict: {verdict}
+
+This audit checks the missing gate directly: can a second experiment, independent of Xiao, provide a measured record distribution that predicts a visibility/decoherence curve without refitting the key record-bandwidth/load parameter?
+
+## Current Answer
+
+- Candidates audited: {len(audit)}
+- Eligible second no-refit targets: {second_count}
+- Top current candidate: {top['candidate_id']}
+- Top blocker class: {top['blocker_class']}
+- Next move: {next_move}
+
+## Candidate Readout
+
+{report_rows}
+
+## Blocker Summary
+
+{blocker_rows}
+
+## Strict Interpretation
+
+G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. Chapman, Hackermueller, Hornberger, Eibenberger, Mir, Hochrainer, and Cormann are useful controls or near misses, but they do not yet give a second held-out distribution-to-visibility prediction.
+
+## Non-Claims
+
+- No collapse solution.
+- No beyond-QM claim.
+- No Lambda/Gamma/Theta product-law validation.
+- No claim that a control dataset closes G11.
+"""
+    (output_dir / "g11_gap_audit_report.md").write_text(report, encoding="utf-8")
+
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "candidate_count": int(len(audit)),
+                "eligible_second_no_refit_targets": second_count,
+                "top_candidate": str(top["candidate_id"]),
+                "top_blocker_class": str(top["blocker_class"]),
+                "recommended_next_evidence": next_move,
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "g11_gap_audit_summary.csv", index=False)
+    return audit, blocker_summary, summary
+
+
 def resolve_mir_source_dir(source_dir: Path | None):
     candidates = []
     if source_dir is not None:
@@ -13102,6 +13277,10 @@ def run_prepare_author_data_requests(output_dir: Path):
     make_breakthrough_author_data_requests(output_dir)
 
 
+def run_audit_breakthrough_gaps(output_dir: Path):
+    make_breakthrough_gap_audit_outputs(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -13517,6 +13696,14 @@ def build_parser():
         "--output-dir",
         default="outputs/author_data_requests",
     )
+    gap_audit = sub.add_parser(
+        "audit-breakthrough-gaps",
+        help="audit which evidence is still missing for the second no-refit gate",
+    )
+    gap_audit.add_argument(
+        "--output-dir",
+        default="outputs/breakthrough_gap_audit",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -13757,6 +13944,8 @@ def main(argv=None):
             run_scout_no_refit_targets(Path(args.output_dir))
         elif command == "prepare-author-data-requests":
             run_prepare_author_data_requests(Path(args.output_dir))
+        elif command == "audit-breakthrough-gaps":
+            run_audit_breakthrough_gaps(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(
