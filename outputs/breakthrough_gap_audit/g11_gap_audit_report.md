@@ -6,7 +6,7 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 ## Current Answer
 
-- Candidates audited: 9
+- Candidates audited: 13
 - Eligible second no-refit targets: 0
 - Top current candidate: XIAO_2019_INTERNAL_LEAD
 - Top blocker class: internal_lead_not_second_experiment
@@ -25,13 +25,13 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 ## Blocker Summary
 
-- `record_variable_not_independent`: 6
-- `paired_visibility_curve_missing`: 2
+- `record_variable_not_independent`: 8
+- `paired_visibility_curve_missing`: 4
 - `internal_lead_not_second_experiment`: 1
 
 ## Strict Interpretation
 
-G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. Chapman, Hackermueller, Hornberger, Eibenberger, Mir, Hochrainer, Cormann, and Ding are useful controls or near misses, but they do not yet give a second held-out distribution-to-visibility prediction.
+G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. The audited Chapman-adjacent, Xiao-adjacent, decoherence, duality, weak-measurement, and entanglement-memory controls do not yet give a second held-out distribution-to-visibility prediction.
 
 ## Non-Claims
 

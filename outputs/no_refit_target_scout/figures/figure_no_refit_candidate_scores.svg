@@ -14,23 +14,31 @@
 <text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.85</text>
 <line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
 <text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.1</text>
-<rect x="100.20" y="88.07" width="50.49" height="283.93" fill="#2962ff" fill-opacity="0.82"/>
-<text x="125.44" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 125.44 390.00)">XIAO 2019 INTERNAL LEA</text>
-<rect x="179.09" y="162.79" width="50.49" height="209.21" fill="#00897b" fill-opacity="0.82"/>
-<text x="204.33" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 204.33 390.00)">EIBENBERGER 2014 RECOI</text>
-<rect x="257.98" y="168.77" width="50.49" height="203.23" fill="#d84315" fill-opacity="0.82"/>
-<text x="283.22" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 283.22 390.00)">HORNBERGER 2003 COLLIS</text>
-<rect x="336.87" y="192.68" width="50.49" height="179.32" fill="#6a1b9a" fill-opacity="0.82"/>
-<text x="362.11" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 362.11 390.00)">HOCHRAINER 2017 INDUCE</text>
-<rect x="415.76" y="216.59" width="50.49" height="155.41" fill="#f9a825" fill-opacity="0.82"/>
-<text x="441.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 441.00 390.00)">MIR 2007 WEAK VALUE MO</text>
-<rect x="494.64" y="222.56" width="50.49" height="149.44" fill="#455a64" fill-opacity="0.82"/>
-<text x="519.89" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 519.89 390.00)">DING 2025 WAVE PARTICL</text>
-<rect x="573.53" y="237.51" width="50.49" height="134.49" fill="#c2185b" fill-opacity="0.82"/>
-<text x="598.78" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 598.78 390.00)">KOCSIS 2011 AVERAGE TR</text>
-<rect x="652.42" y="246.47" width="50.49" height="125.53" fill="#2e7d32" fill-opacity="0.82"/>
-<text x="677.67" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 677.67 390.00)">CORMANN 2016 MODULAR V</text>
-<rect x="731.31" y="267.39" width="50.49" height="104.61" fill="#2962ff" fill-opacity="0.82"/>
-<text x="756.56" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 756.56 390.00)">DURR 1998 COMPLEMENTAR</text>
+<rect x="95.83" y="88.07" width="34.95" height="283.93" fill="#2962ff" fill-opacity="0.82"/>
+<text x="113.31" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 113.31 390.00)">XIAO 2019 INTERNAL LEA</text>
+<rect x="150.45" y="162.79" width="34.95" height="209.21" fill="#00897b" fill-opacity="0.82"/>
+<text x="167.92" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 167.92 390.00)">EIBENBERGER 2014 RECOI</text>
+<rect x="205.06" y="168.77" width="34.95" height="203.23" fill="#d84315" fill-opacity="0.82"/>
+<text x="222.54" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 222.54 390.00)">HORNBERGER 2003 COLLIS</text>
+<rect x="259.68" y="192.68" width="34.95" height="179.32" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="277.15" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 277.15 390.00)">HOCHRAINER 2017 INDUCE</text>
+<rect x="314.29" y="216.59" width="34.95" height="155.41" fill="#f9a825" fill-opacity="0.82"/>
+<text x="331.77" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 331.77 390.00)">MIR 2007 WEAK VALUE MO</text>
+<rect x="368.91" y="222.56" width="34.95" height="149.44" fill="#455a64" fill-opacity="0.82"/>
+<text x="386.38" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 386.38 390.00)">DING 2025 WAVE PARTICL</text>
+<rect x="423.52" y="228.54" width="34.95" height="143.46" fill="#c2185b" fill-opacity="0.82"/>
+<text x="441.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 441.00 390.00)">CHEN 2022 ASYMMETRIC B</text>
+<rect x="478.14" y="231.53" width="34.95" height="140.47" fill="#2e7d32" fill-opacity="0.82"/>
+<text x="495.62" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 495.62 390.00)">YOON 2021 QUANTITATIVE</text>
+<rect x="532.75" y="237.51" width="34.95" height="134.49" fill="#2962ff" fill-opacity="0.82"/>
+<text x="550.23" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 550.23 390.00)">KOCSIS 2011 AVERAGE TR</text>
+<rect x="587.37" y="240.50" width="34.95" height="131.50" fill="#00897b" fill-opacity="0.82"/>
+<text x="604.85" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 604.85 390.00)">ROZEMA 2012 WEAK MEASU</text>
+<rect x="641.98" y="243.48" width="34.95" height="128.52" fill="#d84315" fill-opacity="0.82"/>
+<text x="659.46" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 659.46 390.00)">KANEDA 2014 ERROR DIST</text>
+<rect x="696.60" y="246.47" width="34.95" height="125.53" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="714.08" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 714.08 390.00)">CORMANN 2016 MODULAR V</text>
+<rect x="751.22" y="267.39" width="34.95" height="104.61" fill="#f9a825" fill-opacity="0.82"/>
+<text x="768.69" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 768.69 390.00)">DURR 1998 COMPLEMENTAR</text>
 <text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">gate score</text>
 </svg>

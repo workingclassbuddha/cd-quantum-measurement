@@ -6,7 +6,7 @@ This scout asks a narrow question: is there a second experiment, independent of 
 
 ## Result
 
-- Candidate count: 9
+- Candidate count: 13
 - Eligible second distribution targets: 0
 - Recommended next candidate: `EIBENBERGER_2014_RECOIL_ABSORPTION`
 - Recommended next command: `scout-eibenberger-recoil-absorption`
@@ -21,7 +21,11 @@ The answer is currently negative for the strict Xiao-like gate. The best next pr
 - **Hochrainer et al. 2017** (`HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION`): score 0.60. Role: strong inverse-problem near miss. Blocker: visibility profiles are used to infer the momentum-correlation width, so the record variable is not independent of the visibility observable
 - **Mir et al. 2007** (`MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER`): score 0.52. Role: closest pre-Xiao measured momentum-transfer candidate. Blocker: directly measures a momentum-transfer distribution but does not yet provide the paired visibility curve needed for the no-refit gate
 - **Ding et al. 2025** (`DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD`): score 0.50. Role: modern entanglement-memory control, not record-distribution gate. Blocker: tests wave-particle-entanglement conservation, but not a measured momentum/record distribution that predicts visibility without refit
+- **Chen et al. 2022** (`CHEN_2022_ASYMMETRIC_BEAM_DUALITY`): score 0.48. Role: modern duality-relation control. Blocker: measures distinguishability/visibility duality, not a measured conjugate record distribution held out from visibility
+- **Yoon and Cho 2021** (`YOON_2021_QUANTITATIVE_COMPLEMENTARITY`): score 0.47. Role: source-purity complementarity control. Blocker: useful record-accessibility analogue, but the variable is source purity/entanglement rather than a measured momentum-transfer distribution
 - **Kocsis et al. 2011** (`KOCSIS_2011_AVERAGE_TRAJECTORIES`): score 0.45. Role: conceptual kin, weak no-refit target. Blocker: measures momentum/trajectories but does not provide a visibility-loss curve to predict
+- **Rozema et al. 2012** (`ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE`): score 0.44. Role: measurement-disturbance control, not visibility target. Blocker: characterizes measurement disturbance with weak values but does not provide a paired interference-visibility loss curve
+- **Kaneda et al. 2014** (`KANEDA_2014_ERROR_DISTURBANCE`): score 0.43. Role: measurement-strength disturbance control. Blocker: tests error-disturbance uncertainty relations rather than record-distribution prediction of visibility
 - **Cormann et al. 2016** (`CORMANN_2016_MODULAR_VALUE`): score 0.42. Role: phase-control dataset, not record-distribution gate. Blocker: useful visibility-plus-phase target but no independent measured record distribution
 - **Duerr/Nonn/Rempe 1998** (`DURR_1998_COMPLEMENTARITY`): score 0.35. Role: complementarity control. Blocker: distinguishability/visibility duality is not a measured record-bandwidth distribution
 
