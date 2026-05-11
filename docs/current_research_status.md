@@ -20,6 +20,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Hornberger collisional guardrail implemented | `outputs/hornberger_collisional_scout/` | Pass |
 | Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
+| Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
 | GitHub coordination created | Issues #1-#5 | Pass |
 | Second independent measured-distribution-to-visibility validation found | `outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv` reports `eligible_second_no_refit_targets = 0` | Fail |

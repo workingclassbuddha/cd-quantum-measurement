@@ -8868,6 +8868,124 @@ G11 remains the central missing breakthrough gate unless `eligible_second_no_ref
     return audit, blocker_summary, summary
 
 
+def make_public_data_availability_outputs(output_dir: Path):
+    """Audit whether public source records already close the G11 data gap."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    rows = [
+        {
+            "candidate_id": "XIAO_2019_INTERNAL_LEAD",
+            "study": "Xiao et al. 2019",
+            "checked_url": "https://pubmed.ncbi.nlm.nih.gov/31214649/",
+            "public_full_text_or_record": True,
+            "public_source_package_or_figures": True,
+            "numerical_tables_found": False,
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "PubMed/PMC record exposes abstract, figures, and captions for Fig. 3/Fig. 4; no numerical Fig. 3 branch distributions or Fig. 4 table were found in the accessible record.",
+            "next_action": "request author-level Fig. 3/Fig. 4 numerical data; retain current vector digitization as provisional lead",
+        },
+        {
+            "candidate_id": "HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION",
+            "study": "Hochrainer et al. 2017",
+            "checked_url": "https://arxiv.org/abs/1610.05529",
+            "public_full_text_or_record": True,
+            "public_source_package_or_figures": True,
+            "numerical_tables_found": False,
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "arXiv source package is useful, but the momentum-correlation width remains visibility-derived in the local scout.",
+            "next_action": "request independent coincidence-based or simulation-calibrated momentum widths",
+        },
+        {
+            "candidate_id": "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER",
+            "study": "Mir et al. 2007",
+            "checked_url": "https://arxiv.org/abs/0706.3966",
+            "public_full_text_or_record": True,
+            "public_source_package_or_figures": True,
+            "numerical_tables_found": False,
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "arXiv source includes the weak-valued momentum-transfer figure, but the scout did not find a paired controlled visibility-loss sweep.",
+            "next_action": "request P_wv(q) numerical data plus raw/conditioned visibility or contrast settings",
+        },
+        {
+            "candidate_id": "EIBENBERGER_2014_RECOIL_ABSORPTION",
+            "study": "Eibenberger et al. 2014",
+            "checked_url": "https://arxiv.org/abs/1402.5307",
+            "public_full_text_or_record": True,
+            "public_source_package_or_figures": True,
+            "numerical_tables_found": False,
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "arXiv source supports the recoil-control scout, but absorption cross section is extracted from visibility rather than held out.",
+            "next_action": "request raw Fig. 2b values and independent sigma_abs or recoil/load calibration",
+        },
+        {
+            "candidate_id": "DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD",
+            "study": "Ding et al. 2025",
+            "checked_url": "https://www.nature.com/articles/s41377-025-01759-4",
+            "public_full_text_or_record": True,
+            "public_source_package_or_figures": False,
+            "numerical_tables_found": False,
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "public article is relevant to visibility/predictability/entanglement, but not a measured momentum-record distribution target.",
+            "next_action": "retain as duality/entanglement-memory control, not a G11 closer",
+        },
+    ]
+    availability = pd.DataFrame(rows)
+    availability.to_csv(output_dir / "public_data_availability.csv", index=False)
+    support_count = int(availability["supports_g11_without_author_contact"].sum())
+    numeric_count = int(availability["numerical_tables_found"].sum())
+    summary = pd.DataFrame(
+        [
+            {
+                "candidate_count": int(len(availability)),
+                "numerical_public_tables_found": numeric_count,
+                "supports_g11_without_author_contact": support_count,
+                "verdict": (
+                    "public data closes G11"
+                    if support_count > 0
+                    else "public data does not close G11"
+                ),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "public_data_availability_summary.csv", index=False)
+
+    report_rows = "\n".join(
+        "- **{study}** (`{candidate_id}`): tables found = {tables}; G11 without author contact = {g11}. {evidence}".format(
+            study=row["study"],
+            candidate_id=row["candidate_id"],
+            tables=bool(row["numerical_tables_found"]),
+            g11=bool(row["supports_g11_without_author_contact"]),
+            evidence=row["evidence_summary"],
+        )
+        for _, row in availability.iterrows()
+    )
+    report = f"""# Public Data Availability Audit
+
+Verdict: {summary['verdict'].iloc[0]}
+
+This audit asks whether public records, source packages, or article pages already contain enough numerical data to close G11 without author contact.
+
+## Summary
+
+- Candidates checked: {len(availability)}
+- Public numerical tables found: {numeric_count}
+- Candidates that close G11 without author contact: {support_count}
+
+## Candidate Checks
+
+{report_rows}
+
+## Interpretation
+
+The public record supports continued reproducibility work, especially for Xiao figure extraction and arXiv source-package scouts. It does not currently supply the missing second independent measured-distribution-to-visibility validation. The live next step remains author/numerical-data acquisition.
+"""
+    (output_dir / "public_data_availability_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return availability, summary
+
+
 def resolve_mir_source_dir(source_dir: Path | None):
     candidates = []
     if source_dir is not None:
@@ -13371,6 +13489,10 @@ def run_audit_breakthrough_gaps(output_dir: Path):
     make_breakthrough_gap_audit_outputs(output_dir)
 
 
+def run_audit_public_data_availability(output_dir: Path):
+    make_public_data_availability_outputs(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -13794,6 +13916,14 @@ def build_parser():
         "--output-dir",
         default="outputs/breakthrough_gap_audit",
     )
+    public_data = sub.add_parser(
+        "audit-public-data-availability",
+        help="audit whether public records already contain data to close G11",
+    )
+    public_data.add_argument(
+        "--output-dir",
+        default="outputs/public_data_availability",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -14036,6 +14166,8 @@ def main(argv=None):
             run_prepare_author_data_requests(Path(args.output_dir))
         elif command == "audit-breakthrough-gaps":
             run_audit_breakthrough_gaps(Path(args.output_dir))
+        elif command == "audit-public-data-availability":
+            run_audit_public_data_availability(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(

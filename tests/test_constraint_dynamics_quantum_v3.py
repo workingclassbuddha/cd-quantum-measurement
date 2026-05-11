@@ -65,6 +65,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_breakthrough_candidate_outputs,
     make_breakthrough_author_data_requests,
     make_breakthrough_gap_audit_outputs,
+    make_public_data_availability_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_weak_value_scout_outputs,
@@ -1003,6 +1004,28 @@ def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "g11_gap_audit_report.md").exists()
+
+
+def test_public_data_availability_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "public_data"
+    availability, summary = make_public_data_availability_outputs(output_dir)
+    assert not availability.empty
+    assert not summary.empty
+    assert "XIAO_2019_INTERNAL_LEAD" in set(availability["candidate_id"])
+    assert int(summary["supports_g11_without_author_contact"].iloc[0]) == 0
+    assert summary["verdict"].iloc[0] == "public data does not close G11"
+    assert (output_dir / "public_data_availability.csv").exists()
+    assert (output_dir / "public_data_availability_report.md").exists()
+
+    cli_output_dir = tmp_path / "public_data_cli"
+    main(
+        [
+            "audit-public-data-availability",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "public_data_availability_report.md").exists()
 
 
 def test_eibenberger_recoil_reduction_is_bounded():
