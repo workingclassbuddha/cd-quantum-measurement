@@ -18,7 +18,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Xiao result kept conservative | `outputs/breakthrough_candidate/breakthrough_candidate_report.md` | Pass |
 | Hackermueller thermal durable-record lane implemented | `outputs/hackermueller_thermal/`; `outputs/hackermueller_thermal_stress/` | Pass |
 | Hornberger collisional guardrail implemented | `outputs/hornberger_collisional_scout/` | Pass |
-| Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass |
+| Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass, 14 candidates and zero eligible second targets |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |

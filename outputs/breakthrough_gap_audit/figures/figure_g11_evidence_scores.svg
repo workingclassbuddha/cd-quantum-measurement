@@ -14,31 +14,33 @@
 <text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.8</text>
 <line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
 <text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1</text>
-<rect x="95.83" y="117.60" width="34.95" height="254.40" fill="#2962ff" fill-opacity="0.82"/>
-<text x="113.31" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 113.31 390.00)">XIAO_2019_INTERNAL_LEAD</text>
-<rect x="150.45" y="149.40" width="34.95" height="222.60" fill="#00897b" fill-opacity="0.82"/>
-<text x="167.92" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 167.92 390.00)">CORMANN_2016_MODULAR_VALUE</text>
-<rect x="205.06" y="181.20" width="34.95" height="190.80" fill="#d84315" fill-opacity="0.82"/>
-<text x="222.54" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 222.54 390.00)">EIBENBERGER_2014_RECOIL_ABSORPTION</text>
-<rect x="259.68" y="181.20" width="34.95" height="190.80" fill="#6a1b9a" fill-opacity="0.82"/>
-<text x="277.15" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 277.15 390.00)">HORNBERGER_2003_COLLISIONAL_DECOHERENCE</text>
-<rect x="314.29" y="181.20" width="34.95" height="190.80" fill="#f9a825" fill-opacity="0.82"/>
-<text x="331.77" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 331.77 390.00)">HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION</text>
-<rect x="368.91" y="181.20" width="34.95" height="190.80" fill="#455a64" fill-opacity="0.82"/>
-<text x="386.38" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 386.38 390.00)">MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER</text>
-<rect x="423.52" y="181.20" width="34.95" height="190.80" fill="#c2185b" fill-opacity="0.82"/>
-<text x="441.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 441.00 390.00)">DURR_1998_COMPLEMENTARITY</text>
-<rect x="478.14" y="244.80" width="34.95" height="127.20" fill="#2e7d32" fill-opacity="0.82"/>
-<text x="495.62" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 495.62 390.00)">DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD</text>
-<rect x="532.75" y="244.80" width="34.95" height="127.20" fill="#2962ff" fill-opacity="0.82"/>
-<text x="550.23" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 550.23 390.00)">CHEN_2022_ASYMMETRIC_BEAM_DUALITY</text>
-<rect x="587.37" y="244.80" width="34.95" height="127.20" fill="#00897b" fill-opacity="0.82"/>
-<text x="604.85" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 604.85 390.00)">YOON_2021_QUANTITATIVE_COMPLEMENTARITY</text>
-<rect x="641.98" y="244.80" width="34.95" height="127.20" fill="#d84315" fill-opacity="0.82"/>
-<text x="659.46" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 659.46 390.00)">KOCSIS_2011_AVERAGE_TRAJECTORIES</text>
-<rect x="696.60" y="244.80" width="34.95" height="127.20" fill="#6a1b9a" fill-opacity="0.82"/>
-<text x="714.08" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 714.08 390.00)">ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE</text>
-<rect x="751.22" y="244.80" width="34.95" height="127.20" fill="#f9a825" fill-opacity="0.82"/>
-<text x="768.69" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 768.69 390.00)">KANEDA_2014_ERROR_DISTURBANCE</text>
+<rect x="95.13" y="117.60" width="32.46" height="254.40" fill="#2962ff" fill-opacity="0.82"/>
+<text x="111.36" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 111.36 390.00)">XIAO_2019_INTERNAL_LEAD</text>
+<rect x="145.84" y="149.40" width="32.46" height="222.60" fill="#00897b" fill-opacity="0.82"/>
+<text x="162.07" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 162.07 390.00)">CORMANN_2016_MODULAR_VALUE</text>
+<rect x="196.56" y="181.20" width="32.46" height="190.80" fill="#d84315" fill-opacity="0.82"/>
+<text x="212.79" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 212.79 390.00)">EIBENBERGER_2014_RECOIL_ABSORPTION</text>
+<rect x="247.27" y="181.20" width="32.46" height="190.80" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="263.50" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 263.50 390.00)">HORNBERGER_2003_COLLISIONAL_DECOHERENCE</text>
+<rect x="297.99" y="181.20" width="32.46" height="190.80" fill="#f9a825" fill-opacity="0.82"/>
+<text x="314.21" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 314.21 390.00)">HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION</text>
+<rect x="348.70" y="181.20" width="32.46" height="190.80" fill="#455a64" fill-opacity="0.82"/>
+<text x="364.93" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 364.93 390.00)">MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER</text>
+<rect x="399.41" y="181.20" width="32.46" height="190.80" fill="#c2185b" fill-opacity="0.82"/>
+<text x="415.64" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 415.64 390.00)">DURR_1998_COMPLEMENTARITY</text>
+<rect x="450.13" y="213.00" width="32.46" height="159.00" fill="#2e7d32" fill-opacity="0.82"/>
+<text x="466.36" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 466.36 390.00)">LAHIRI_2017_TWIN_PHOTON_CORRELATIONS</text>
+<rect x="500.84" y="244.80" width="32.46" height="127.20" fill="#2962ff" fill-opacity="0.82"/>
+<text x="517.07" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 517.07 390.00)">DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD</text>
+<rect x="551.56" y="244.80" width="32.46" height="127.20" fill="#00897b" fill-opacity="0.82"/>
+<text x="567.79" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 567.79 390.00)">CHEN_2022_ASYMMETRIC_BEAM_DUALITY</text>
+<rect x="602.27" y="244.80" width="32.46" height="127.20" fill="#d84315" fill-opacity="0.82"/>
+<text x="618.50" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 618.50 390.00)">YOON_2021_QUANTITATIVE_COMPLEMENTARITY</text>
+<rect x="652.99" y="244.80" width="32.46" height="127.20" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="669.21" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 669.21 390.00)">KOCSIS_2011_AVERAGE_TRAJECTORIES</text>
+<rect x="703.70" y="244.80" width="32.46" height="127.20" fill="#f9a825" fill-opacity="0.82"/>
+<text x="719.93" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 719.93 390.00)">ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE</text>
+<rect x="754.41" y="244.80" width="32.46" height="127.20" fill="#455a64" fill-opacity="0.82"/>
+<text x="770.64" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 770.64 390.00)">KANEDA_2014_ERROR_DISTURBANCE</text>
 <text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">readiness score</text>
 </svg>

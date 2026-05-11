@@ -6,7 +6,7 @@ This scout asks a narrow question: is there a second experiment, independent of 
 
 ## Result
 
-- Candidate count: 13
+- Candidate count: 14
 - Eligible second distribution targets: 0
 - Recommended next candidate: `EIBENBERGER_2014_RECOIL_ABSORPTION`
 - Recommended next command: `scout-eibenberger-recoil-absorption`
@@ -19,6 +19,7 @@ The answer is currently negative for the strict Xiao-like gate. The best next pr
 - **Eibenberger et al. 2014** (`EIBENBERGER_2014_RECOIL_ABSORPTION`): score 0.70. Role: best next recoil-control scout. Blocker: visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense
 - **Hackermueller/Hornberger et al. 2003** (`HORNBERGER_2003_COLLISIONAL_DECOHERENCE`): score 0.68. Role: best standard-decoherence no-adjustable-parameter control. Blocker: excellent record-load control but not an independently measured record distribution
 - **Hochrainer et al. 2017** (`HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION`): score 0.60. Role: strong inverse-problem near miss. Blocker: visibility profiles are used to infer the momentum-correlation width, so the record variable is not independent of the visibility observable
+- **Lahiri et al. 2017** (`LAHIRI_2017_TWIN_PHOTON_CORRELATIONS`): score 0.58. Role: theory/inverse-method near miss for momentum-correlation visibility. Blocker: visibility is used to determine the momentum correlation rather than an independently measured correlation predicting visibility
 - **Mir et al. 2007** (`MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER`): score 0.52. Role: closest pre-Xiao measured momentum-transfer candidate. Blocker: directly measures a momentum-transfer distribution but does not yet provide the paired visibility curve needed for the no-refit gate
 - **Ding et al. 2025** (`DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD`): score 0.50. Role: modern entanglement-memory control, not record-distribution gate. Blocker: tests wave-particle-entanglement conservation, but not a measured momentum/record distribution that predicts visibility without refit
 - **Chen et al. 2022** (`CHEN_2022_ASYMMETRIC_BEAM_DUALITY`): score 0.48. Role: modern duality-relation control. Blocker: measures distinguishability/visibility duality, not a measured conjugate record distribution held out from visibility
