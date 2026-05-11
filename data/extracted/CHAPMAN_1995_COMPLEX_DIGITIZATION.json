@@ -1,0 +1,348 @@
+{
+  "study_id": "CHAPMAN_1995_SCATTER_PHASE",
+  "source_title": "Photon Scattering from Atoms in an Atom Interferometer: Coherence Lost and Regained",
+  "source_url": "https://chapmanlabs.gatech.edu/papers/scattering_ifm_prl95.pdf",
+  "doi": "https://doi.org/10.1103/PhysRevLett.75.3783",
+  "render_dpi": 220,
+  "extraction_method": "rough_phase_digitization_v1",
+  "extracted_by": "Codex",
+  "extraction_date": "2026-04-24",
+  "coordinate_system": "pdftoppm grayscale PGM pixels, origin at top left",
+  "phase_unwrap_policy": "Fig. 2 displayed phase is wrapped near contrast zeros; phase_rad stores a deterministic unwrapped target consistent with the small-d 2*pi slope described in Chapman. Fig. 3 phase points are treated as already unwrapped.",
+  "figures": [
+    {
+      "figure": "Fig.2",
+      "page": 2,
+      "source_panel": "phase_shift",
+      "axis": {
+        "x_name": "d_over_lambda",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 2.0,
+        "x_pixel_min": [
+          1176.5,
+          642.0
+        ],
+        "x_pixel_max": [
+          1601.5,
+          642.0
+        ],
+        "y_name": "phase_shift",
+        "y_units": "rad",
+        "y_min": -1.2,
+        "y_max": 3.2,
+        "y_pixel_min": [
+          1176.5,
+          642.0
+        ],
+        "y_pixel_max": [
+          1176.5,
+          452.0
+        ]
+      },
+      "series": [
+        {
+          "phase_type": "raw",
+          "visibility_type": "raw",
+          "conditioned_on": "",
+          "phase_se": 0.3,
+          "notes": "Rough phase picks from Fig. 2 lower panel. The plot wraps at raw contrast zeros, so both displayed and unwrapped phases are retained.",
+          "points": [
+            {
+              "x_pixel": 1176.5,
+              "y_pixel": 590.182,
+              "x_value": 0.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 0.0
+            },
+            {
+              "x_pixel": 1197.75,
+              "y_pixel": 563.05,
+              "x_value": 0.1,
+              "phase_display_rad": 0.6283185307179586,
+              "phase_rad": 0.6283185307179586
+            },
+            {
+              "x_pixel": 1219.0,
+              "y_pixel": 535.918,
+              "x_value": 0.2,
+              "phase_display_rad": 1.2566370614359172,
+              "phase_rad": 1.2566370614359172
+            },
+            {
+              "x_pixel": 1240.25,
+              "y_pixel": 508.786,
+              "x_value": 0.3,
+              "phase_display_rad": 1.8849555921538759,
+              "phase_rad": 1.8849555921538759
+            },
+            {
+              "x_pixel": 1261.5,
+              "y_pixel": 481.654,
+              "x_value": 0.4,
+              "phase_display_rad": 2.5132741228718345,
+              "phase_rad": 2.5132741228718345
+            },
+            {
+              "x_pixel": 1304.0,
+              "y_pixel": 563.05,
+              "x_value": 0.6,
+              "phase_display_rad": 0.6283185307179586,
+              "phase_rad": 3.7699111843077517
+            },
+            {
+              "x_pixel": 1346.5,
+              "y_pixel": 508.786,
+              "x_value": 0.8,
+              "phase_display_rad": 1.8849555921538759,
+              "phase_rad": 5.026548245743669
+            },
+            {
+              "x_pixel": 1389.0,
+              "y_pixel": 590.182,
+              "x_value": 1.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 6.283185307179586
+            },
+            {
+              "x_pixel": 1431.5,
+              "y_pixel": 535.918,
+              "x_value": 1.2,
+              "phase_display_rad": 1.2566370614359172,
+              "phase_rad": 7.5398223686155035
+            },
+            {
+              "x_pixel": 1474.0,
+              "y_pixel": 481.654,
+              "x_value": 1.4,
+              "phase_display_rad": 2.5132741228718345,
+              "phase_rad": 8.79645943005142
+            },
+            {
+              "x_pixel": 1516.5,
+              "y_pixel": 563.05,
+              "x_value": 1.6,
+              "phase_display_rad": 0.6283185307179586,
+              "phase_rad": 10.053096491487338
+            },
+            {
+              "x_pixel": 1559.0,
+              "y_pixel": 508.786,
+              "x_value": 1.8,
+              "phase_display_rad": 1.8849555921538759,
+              "phase_rad": 11.309733552923255
+            },
+            {
+              "x_pixel": 1601.5,
+              "y_pixel": 590.182,
+              "x_value": 2.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 12.566370614359172
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "figure": "Fig.3",
+      "page": 4,
+      "source_panel": "phase_shift",
+      "axis": {
+        "x_name": "d_over_lambda",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 2.0,
+        "x_pixel_min": [
+          337.6,
+          914.0
+        ],
+        "x_pixel_max": [
+          806.5,
+          914.0
+        ],
+        "y_name": "phase_shift",
+        "y_units": "rad",
+        "y_min": 0.0,
+        "y_max": 9.0,
+        "y_pixel_min": [
+          337.6,
+          914.0
+        ],
+        "y_pixel_max": [
+          337.6,
+          545.0
+        ]
+      },
+      "series": [
+        {
+          "phase_type": "conditioned",
+          "visibility_type": "conditioned",
+          "conditioned_on": "case_I_forward",
+          "phase_se": 0.4,
+          "notes": "Rough phase picks from Fig. 3 lower panel; case I asymptotes toward forward-scattering slope near zero.",
+          "points": [
+            {
+              "x_pixel": 337.6,
+              "y_pixel": 914.0,
+              "x_value": 0.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 0.0
+            },
+            {
+              "x_pixel": 384.49,
+              "y_pixel": 902.93,
+              "x_value": 0.2,
+              "phase_display_rad": 0.27,
+              "phase_rad": 0.27
+            },
+            {
+              "x_pixel": 431.38,
+              "y_pixel": 891.45,
+              "x_value": 0.4,
+              "phase_display_rad": 0.55,
+              "phase_rad": 0.55
+            },
+            {
+              "x_pixel": 478.27,
+              "y_pixel": 880.38,
+              "x_value": 0.6,
+              "phase_display_rad": 0.82,
+              "phase_rad": 0.82
+            },
+            {
+              "x_pixel": 525.16,
+              "y_pixel": 872.18,
+              "x_value": 0.8,
+              "phase_display_rad": 1.02,
+              "phase_rad": 1.02
+            },
+            {
+              "x_pixel": 572.05,
+              "y_pixel": 868.08,
+              "x_value": 1.0,
+              "phase_display_rad": 1.12,
+              "phase_rad": 1.12
+            },
+            {
+              "x_pixel": 618.94,
+              "y_pixel": 871.36,
+              "x_value": 1.2,
+              "phase_display_rad": 1.04,
+              "phase_rad": 1.04
+            },
+            {
+              "x_pixel": 665.83,
+              "y_pixel": 876.28,
+              "x_value": 1.4,
+              "phase_display_rad": 0.92,
+              "phase_rad": 0.92
+            },
+            {
+              "x_pixel": 712.72,
+              "y_pixel": 878.74,
+              "x_value": 1.6,
+              "phase_display_rad": 0.86,
+              "phase_rad": 0.86
+            },
+            {
+              "x_pixel": 759.61,
+              "y_pixel": 876.69,
+              "x_value": 1.8,
+              "phase_display_rad": 0.91,
+              "phase_rad": 0.91
+            },
+            {
+              "x_pixel": 806.5,
+              "y_pixel": 874.64,
+              "x_value": 2.0,
+              "phase_display_rad": 0.96,
+              "phase_rad": 0.96
+            }
+          ]
+        },
+        {
+          "phase_type": "conditioned",
+          "visibility_type": "conditioned",
+          "conditioned_on": "case_III_backward",
+          "phase_se": 0.45,
+          "notes": "Rough phase picks from Fig. 3 lower panel; case III tracks the nearly 4*pi backward-scattering slope.",
+          "points": [
+            {
+              "x_pixel": 337.6,
+              "y_pixel": 914.0,
+              "x_value": 0.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 0.0
+            },
+            {
+              "x_pixel": 361.045,
+              "y_pixel": 864.8,
+              "x_value": 0.1,
+              "phase_display_rad": 1.2,
+              "phase_rad": 1.2
+            },
+            {
+              "x_pixel": 384.49,
+              "y_pixel": 813.55,
+              "x_value": 0.2,
+              "phase_display_rad": 2.45,
+              "phase_rad": 2.45
+            },
+            {
+              "x_pixel": 407.935,
+              "y_pixel": 760.25,
+              "x_value": 0.3,
+              "phase_display_rad": 3.75,
+              "phase_rad": 3.75
+            },
+            {
+              "x_pixel": 431.38,
+              "y_pixel": 709.0,
+              "x_value": 0.4,
+              "phase_display_rad": 5.0,
+              "phase_rad": 5.0
+            },
+            {
+              "x_pixel": 454.825,
+              "y_pixel": 659.8,
+              "x_value": 0.5,
+              "phase_display_rad": 6.2,
+              "phase_rad": 6.2
+            },
+            {
+              "x_pixel": 478.27,
+              "y_pixel": 608.55,
+              "x_value": 0.6,
+              "phase_display_rad": 7.45,
+              "phase_rad": 7.45
+            },
+            {
+              "x_pixel": 501.715,
+              "y_pixel": 567.55,
+              "x_value": 0.7,
+              "phase_display_rad": 8.45,
+              "phase_rad": 8.45
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pdf_sha256": "27c288986e414efb43a776bd7c02b79208cba51beb1598e40915ceaa3c3f5b72",
+  "rendered_pages": {
+    "2": {
+      "path": "outputs/tmp/chapman_complex_mixture/chapman_page-2.pgm",
+      "width": 1870,
+      "height": 2420,
+      "min_pixel": 0,
+      "max_pixel": 255
+    },
+    "4": {
+      "path": "outputs/tmp/chapman_complex_mixture/chapman_page-4.pgm",
+      "width": 1870,
+      "height": 2420,
+      "min_pixel": 0,
+      "max_pixel": 255
+    }
+  }
+}

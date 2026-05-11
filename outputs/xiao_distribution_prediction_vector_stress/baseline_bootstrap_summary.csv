@@ -1,0 +1,2 @@
+baseline_method,n_samples,no_refit_rmse_median,no_refit_rmse_mean,p_no_refit_beats_published_bound,p_no_refit_rmse_lt_025,phi0_mean_median,phipi_mean_median
+edge_median,1000,0.019213521278066456,0.01931150515569269,1.0,0.957,0.06721291384962598,1.4112232833169687

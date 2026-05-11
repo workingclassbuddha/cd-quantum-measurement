@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="500" viewBox="0 0 820 500">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="410.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Bootstrap: Raw Sinc RMSE Minus Exponential RMSE</text>
+<rect x="86" y="54" width="710" height="318" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="86" y1="372.00" x2="796" y2="372.00" stroke="#eceff1"/>
+<text x="76.00" y="376.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0</text>
+<line x1="86" y1="308.40" x2="796" y2="308.40" stroke="#eceff1"/>
+<text x="76.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">22</text>
+<line x1="86" y1="244.80" x2="796" y2="244.80" stroke="#eceff1"/>
+<text x="76.00" y="248.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">45</text>
+<line x1="86" y1="181.20" x2="796" y2="181.20" stroke="#eceff1"/>
+<text x="76.00" y="185.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">67</text>
+<line x1="86" y1="117.60" x2="796" y2="117.60" stroke="#eceff1"/>
+<text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">90</text>
+<line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
+<text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.1e+02</text>
+<rect x="90.56" y="360.64" width="16.23" height="11.36" fill="#2962ff" fill-opacity="0.82"/>
+<text x="98.68" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 98.68 390.00)">-0.0596</text>
+<rect x="115.92" y="360.64" width="16.23" height="11.36" fill="#00897b" fill-opacity="0.82"/>
+<text x="124.04" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 124.04 390.00)">-0.058</text>
+<rect x="141.28" y="357.80" width="16.23" height="14.20" fill="#d84315" fill-opacity="0.82"/>
+<text x="149.39" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 149.39 390.00)">-0.0563</text>
+<rect x="166.64" y="318.05" width="16.23" height="53.95" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="174.75" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 174.75 390.00)">-0.0546</text>
+<rect x="191.99" y="281.14" width="16.23" height="90.86" fill="#f9a825" fill-opacity="0.82"/>
+<text x="200.11" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 200.11 390.00)">-0.053</text>
+<rect x="217.35" y="255.59" width="16.23" height="116.41" fill="#455a64" fill-opacity="0.82"/>
+<text x="225.46" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 225.46 390.00)">-0.0513</text>
+<rect x="242.71" y="204.48" width="16.23" height="167.52" fill="#c2185b" fill-opacity="0.82"/>
+<text x="250.82" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 250.82 390.00)">-0.0496</text>
+<rect x="268.06" y="195.96" width="16.23" height="176.04" fill="#2e7d32" fill-opacity="0.82"/>
+<text x="276.18" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 276.18 390.00)">-0.048</text>
+<rect x="293.42" y="164.73" width="16.23" height="207.27" fill="#2962ff" fill-opacity="0.82"/>
+<text x="301.54" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 301.54 390.00)">-0.0463</text>
+<rect x="318.78" y="102.27" width="16.23" height="269.73" fill="#00897b" fill-opacity="0.82"/>
+<text x="326.89" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 326.89 390.00)">-0.0446</text>
+<rect x="344.14" y="127.82" width="16.23" height="244.18" fill="#d84315" fill-opacity="0.82"/>
+<text x="352.25" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 352.25 390.00)">-0.043</text>
+<rect x="369.49" y="107.95" width="16.23" height="264.05" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="377.61" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 377.61 390.00)">-0.0413</text>
+<rect x="394.85" y="88.07" width="16.23" height="283.93" fill="#f9a825" fill-opacity="0.82"/>
+<text x="402.96" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 402.96 390.00)">-0.0397</text>
+<rect x="420.21" y="161.89" width="16.23" height="210.11" fill="#455a64" fill-opacity="0.82"/>
+<text x="428.32" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 428.32 390.00)">-0.038</text>
+<rect x="445.56" y="204.48" width="16.23" height="167.52" fill="#c2185b" fill-opacity="0.82"/>
+<text x="453.68" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 453.68 390.00)">-0.0363</text>
+<rect x="470.92" y="249.91" width="16.23" height="122.09" fill="#2e7d32" fill-opacity="0.82"/>
+<text x="479.04" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 479.04 390.00)">-0.0347</text>
+<rect x="496.28" y="266.95" width="16.23" height="105.05" fill="#2962ff" fill-opacity="0.82"/>
+<text x="504.39" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 504.39 390.00)">-0.033</text>
+<rect x="521.64" y="261.27" width="16.23" height="110.73" fill="#00897b" fill-opacity="0.82"/>
+<text x="529.75" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 529.75 390.00)">-0.0313</text>
+<rect x="546.99" y="312.38" width="16.23" height="59.62" fill="#d84315" fill-opacity="0.82"/>
+<text x="555.11" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 555.11 390.00)">-0.0297</text>
+<rect x="572.35" y="329.41" width="16.23" height="42.59" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="580.46" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 580.46 390.00)">-0.028</text>
+<rect x="597.71" y="329.41" width="16.23" height="42.59" fill="#f9a825" fill-opacity="0.82"/>
+<text x="605.82" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 605.82 390.00)">-0.0263</text>
+<rect x="623.06" y="340.77" width="16.23" height="31.23" fill="#455a64" fill-opacity="0.82"/>
+<text x="631.18" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 631.18 390.00)">-0.0247</text>
+<rect x="648.42" y="354.96" width="16.23" height="17.04" fill="#c2185b" fill-opacity="0.82"/>
+<text x="656.54" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 656.54 390.00)">-0.023</text>
+<rect x="673.78" y="360.64" width="16.23" height="11.36" fill="#2e7d32" fill-opacity="0.82"/>
+<text x="681.89" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 681.89 390.00)">-0.0213</text>
+<rect x="699.14" y="369.16" width="16.23" height="2.84" fill="#2962ff" fill-opacity="0.82"/>
+<text x="707.25" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 707.25 390.00)">-0.0197</text>
+<rect x="724.49" y="369.16" width="16.23" height="2.84" fill="#00897b" fill-opacity="0.82"/>
+<text x="732.61" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 732.61 390.00)">-0.018</text>
+<rect x="749.85" y="372.00" width="16.23" height="0.00" fill="#d84315" fill-opacity="0.82"/>
+<text x="757.96" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 757.96 390.00)">-0.0163</text>
+<rect x="775.21" y="369.16" width="16.23" height="2.84" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="783.32" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 783.32 390.00)">-0.0147</text>
+<text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">count (negative favors sinc)</text>
+</svg>

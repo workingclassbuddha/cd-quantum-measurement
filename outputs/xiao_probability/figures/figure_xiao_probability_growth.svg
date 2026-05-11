@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="460.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Xiao Momentum Disturbance Growth</text>
+<rect x="82" y="54" width="810" height="384" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="438" stroke="#eceff1"/>
+<text x="82.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1.2</text>
+<line x1="244.00" y1="54" x2="244.00" y2="438" stroke="#eceff1"/>
+<text x="244.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">2.7</text>
+<line x1="406.00" y1="54" x2="406.00" y2="438" stroke="#eceff1"/>
+<text x="406.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">4.3</text>
+<line x1="568.00" y1="54" x2="568.00" y2="438" stroke="#eceff1"/>
+<text x="568.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">5.8</text>
+<line x1="730.00" y1="54" x2="730.00" y2="438" stroke="#eceff1"/>
+<text x="730.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">7.3</text>
+<line x1="892.00" y1="54" x2="892.00" y2="438" stroke="#eceff1"/>
+<text x="892.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">8.8</text>
+<line x1="82" y1="438.00" x2="892" y2="438.00" stroke="#eceff1"/>
+<text x="72.00" y="442.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0</text>
+<line x1="82" y1="361.20" x2="892" y2="361.20" stroke="#eceff1"/>
+<text x="72.00" y="365.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.16</text>
+<line x1="82" y1="284.40" x2="892" y2="284.40" stroke="#eceff1"/>
+<text x="72.00" y="288.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.31</text>
+<line x1="82" y1="207.60" x2="892" y2="207.60" stroke="#eceff1"/>
+<text x="72.00" y="211.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.47</text>
+<line x1="82" y1="130.80" x2="892" y2="130.80" stroke="#eceff1"/>
+<text x="72.00" y="134.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.62</text>
+<line x1="82" y1="54.00" x2="892" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.78</text>
+<polyline fill="none" stroke="#2962ff" stroke-width="2.5" points="97.58,382.69 104.90,382.36 114.67,377.01 123.21,368.31 133.59,348.92 145.19,346.25 153.73,336.22 164.72,311.48 174.48,304.79 185.47,290.42 195.24,263.34 205.00,250.64 215.38,247.29 225.76,232.58 235.52,225.90 245.29,216.54 256.28,199.82 266.04,188.45 275.81,179.76 285.57,173.08 297.78,156.36 305.11,157.03 318.53,147.67 327.08,144.99 338.07,143.32 347.83,138.98 358.21,136.97 369.20,136.97 378.35,138.98 390.56,128.95 397.88,124.27 410.09,122.26 419.86,118.92 429.62,116.91 440.00,110.89 449.16,119.58 457.70,117.58 470.52,115.57 480.90,120.25 493.10,118.92 501.65,116.24 512.64,116.24 521.79,114.90 529.73,103.54 543.16,114.90 551.70,110.89 562.69,112.90 571.23,117.58 582.22,115.57 593.21,112.90 602.97,112.90 612.74,112.90 623.73,110.22 633.49,107.55 643.26,105.54 653.63,108.22 664.01,109.56 673.78,113.57 683.54,116.91 694.53,114.90 704.30,108.89 715.28,107.55 726.88,110.89 734.81,108.22 745.80,106.88 756.79,104.88 766.55,105.54 776.32,107.55 787.31,107.55 797.07,105.54 806.84,106.88 816.61,109.89 827.59,108.89 837.36,107.55 848.35,106.21 856.89,103.54 867.88,102.87 876.42,102.87"/>
+<line x1="94" y1="72" x2="122" y2="72" stroke="#2962ff" stroke-width="3"/>
+<text x="130.00" y="76.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">mean |p|</text>
+<text x="487.00" y="492.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">z (m)</text>
+<text x="22.00" y="246.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 246.00)">mean |p| (hbar/d)</text>
+</svg>

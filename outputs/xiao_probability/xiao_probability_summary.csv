@@ -1,0 +1,9 @@
+metric,branch,value,x_at_value,notes
+mean_abs_growth,eta_half_mean_abs,0.5683853118712274,8.640718562874252,increase from earliest to latest digitized z point
+late_mean_abs,eta_half_mean_abs,0.6807344064386318,8.640718562874252,late propagation mean absolute disturbance
+peak_density,phi_0_far,5.557142857142857,-0.022091310751104487,largest digitized far-field distribution peak
+peak_density,phi_pi_far,1.234285714285714,1.736377025036819,largest digitized far-field distribution peak
+negative_side_peak_p,phi_pi_far,-1.4359351988217968,-1.4359351988217968,negative side peak location
+positive_side_peak_p,phi_pi_far,1.736377025036819,1.736377025036819,positive side peak location
+side_peak_abs_mean,phi_pi_far,1.586156111929308,,mean absolute location of the two side peaks
+central_density,phi_pi_far,0.3142857142857143,0.0,density nearest p=0 for the pi branch

@@ -1,9 +1,11 @@
 import math
+import json
 import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
@@ -13,17 +15,68 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     build_accessibility_benchmark_dataset,
     build_joint_density,
     build_synthetic_visibility_dataset,
+    chapman_complex_observables,
+    chapman_default_complex_digitization_metadata,
     chapman_default_digitization_metadata,
+    chapman_default_phase_grade_metadata,
     chapman_digitized_dataframe,
+    chapman_mixture_amplitude,
+    chapman_mixture_weights,
+    chapman_phase_grade_dataframe,
+    chapman_phase_quality_subset,
+    chapman_phase_digitized_dataframe,
+    chapman_characteristic_visibility,
+    chapman_kernel_visibility,
+    chapman_recoil_grid,
+    chapman_sinc_first_zero,
+    chapman_two_photon_amplitude,
+    chapman_uniform_recoil_density,
+    chapman_velocity_smearing,
+    bootstrap_chapman_kernel_stress,
+    cormann_theory_visibility,
     decompose_eraser_dataset,
     design_diagnostics,
     energetic_constraint,
+    fit_xiao_momentum_models,
+    fit_hackermueller_thermal_models,
+    fit_chapman_kernel_models,
+    fit_chapman_complex_kernel_models,
     fit_accessibility_hypotheses,
     fit_visibility_models,
+    jitter_chapman_visibility,
+    jitter_xiao_momentum,
+    jitter_xiao_probability_distribution,
+    main,
+    make_chapman_complex_mixture_outputs,
+    make_chapman_complex_kernel_outputs,
+    make_chapman_phase_grade_outputs,
+    make_chapman_kernel_stress_outputs,
+    make_cormann_visibility_phase_scout_outputs,
+    make_hackermueller_thermal_analysis_outputs,
+    make_hackermueller_thermal_digitization_outputs,
+    make_hackermueller_thermal_stress_outputs,
+    make_xiao_momentum_analysis_outputs,
+    make_xiao_momentum_digitization_outputs,
+    make_xiao_momentum_stress_outputs,
+    make_xiao_probability_outputs,
+    make_xiao_probability_vector_outputs,
+    make_xiao_distribution_prediction_outputs,
+    make_xiao_distribution_prediction_stress_outputs,
+    make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
     path_visibility_from_rho,
     pixel_to_data,
+    predict_xiao_visibility_from_distribution,
     quantum_eraser_observables,
+    hackermueller_default_metadata,
+    hackermueller_digitized_dataframe,
+    jitter_hackermueller_thermal,
+    xiao_default_momentum_metadata,
+    xiao_default_probability_metadata,
+    xiao_distribution_branch_moments,
+    xiao_momentum_digitized_dataframe,
+    xiao_probability_digitized_dataframe,
+    summarize_xiao_probability,
 )
 
 
@@ -125,6 +178,1106 @@ def test_chapman_digitized_decomposition_has_recovery_window():
     peak = decomposition.loc[decomposition["recovery_fraction"].idxmax()]
     assert 0.35 <= peak["x_value"] <= 0.65
     assert peak["recovery_fraction"] > 0.5
+
+
+def test_xiao_calibration_maps_axis_anchors():
+    metadata = xiao_default_momentum_metadata()
+    axis = metadata["figures"][0]["axis"]
+    x_min, y_min = pixel_to_data(
+        axis["x_pixel_min"][0],
+        axis["y_pixel_min"][1],
+        axis,
+    )
+    x_max, y_max = pixel_to_data(
+        axis["x_pixel_max"][0],
+        axis["y_pixel_max"][1],
+        axis,
+    )
+    assert np.isclose(x_min, axis["x_min"])
+    assert np.isclose(y_min, axis["y_min"])
+    assert np.isclose(x_max, axis["x_max"])
+    assert np.isclose(y_max, axis["y_max"])
+
+
+def test_xiao_digitized_dataframe_schema_and_bound():
+    df = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    required = {
+        "study_id",
+        "visibility_V",
+        "visibility_loss",
+        "momentum_abs_hbar_over_d",
+        "published_bound_2_over_pi_loss",
+        "above_bound_margin",
+        "pixel_x",
+        "pixel_y",
+    }
+    assert required.issubset(df.columns)
+    assert len(df) == 6
+    assert df["visibility_V"].between(0.0, 1.0).all()
+    assert (df["momentum_abs_hbar_over_d"] >= 0.0).all()
+    assert (df["above_bound_margin"] >= 0.0).all()
+
+
+def test_xiao_momentum_analysis_finds_tight_bandwidth_relation():
+    df = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    summary, predictions, clean = fit_xiao_momentum_models(df)
+    assert not summary.empty
+    assert not predictions.empty
+    assert len(clean) == 6
+    linear = summary[summary["model"] == "linear_bandwidth"].iloc[0]
+    bound = summary[summary["model"] == "published_bound"].iloc[0]
+    assert linear["rmse_momentum"] < 0.01
+    assert linear["rmse_momentum"] < bound["rmse_momentum"]
+
+
+def test_xiao_momentum_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "xiao_digitize"
+    analysis_dir = tmp_path / "xiao_analysis"
+    cli_dir = tmp_path / "xiao_cli"
+
+    digitized, metadata, digitization_summary = make_xiao_momentum_digitization_outputs(
+        None,
+        output_dir,
+        data_dir,
+        render_pdf=False,
+    )
+    assert not digitized.empty
+    assert metadata["study_id"] == "XIAO_2019_MOMENTUM"
+    assert not digitization_summary.empty
+    assert (data_dir / "XIAO_2019_MOMENTUM_VISIBILITY_DIGITIZED.csv").exists()
+    assert (data_dir / "XIAO_2019_MOMENTUM_DIGITIZATION.json").exists()
+    assert (output_dir / "xiao_digitization_report.md").exists()
+
+    summary, predictions = make_xiao_momentum_analysis_outputs(
+        data_dir / "XIAO_2019_MOMENTUM_VISIBILITY_DIGITIZED.csv",
+        analysis_dir,
+    )
+    assert not summary.empty
+    assert not predictions.empty
+    assert (analysis_dir / "xiao_momentum_report.md").exists()
+    assert (analysis_dir / "xiao_momentum_summary.csv").exists()
+    assert (analysis_dir / "xiao_momentum_predictions.csv").exists()
+
+    main(
+        [
+            "digitize-xiao-momentum",
+            "--output-dir",
+            str(cli_dir),
+            "--data-dir",
+            str(data_dir),
+            "--skip-render",
+        ]
+    )
+    assert (cli_dir / "xiao_digitization_report.md").exists()
+
+
+def test_xiao_jitter_preserves_schema_and_bounds():
+    df = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    jittered = jitter_xiao_momentum(df, np.random.default_rng(123))
+    assert list(jittered.columns) == list(df.columns)
+    assert len(jittered) == len(df)
+    assert jittered["visibility_V"].between(0.0, 1.0).all()
+    assert (jittered["momentum_abs_hbar_over_d"] >= 0.0).all()
+
+
+def test_xiao_momentum_stress_outputs_and_cli(tmp_path):
+    df = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    input_csv = tmp_path / "xiao.csv"
+    metadata_json = tmp_path / "xiao.json"
+    output_dir = tmp_path / "xiao_stress"
+    cli_output_dir = tmp_path / "xiao_stress_cli"
+    df.to_csv(input_csv, index=False)
+    metadata_json.write_text(
+        json.dumps(xiao_default_momentum_metadata()),
+        encoding="utf-8",
+    )
+
+    summary, bootstrap, null_summary, null_samples = make_xiao_momentum_stress_outputs(
+        input_csv,
+        metadata_json,
+        output_dir,
+        n_bootstrap=8,
+        seed=456,
+    )
+    assert "p_linear_beats_published_bound" in summary.columns
+    assert not bootstrap.empty
+    assert not null_summary.empty
+    assert not null_samples.empty
+    assert (output_dir / "xiao_momentum_stress_report.md").exists()
+    assert (output_dir / "stress_summary.csv").exists()
+    assert (output_dir / "bootstrap_samples.csv").exists()
+    assert (output_dir / "null_test_summary.csv").exists()
+
+    main(
+        [
+            "stress-test-xiao-momentum",
+            "--input",
+            str(input_csv),
+            "--digitization-json",
+            str(metadata_json),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "6",
+            "--seed",
+            "789",
+        ]
+    )
+    assert (cli_output_dir / "xiao_momentum_stress_report.md").exists()
+
+
+def test_xiao_probability_dataframe_has_growth_and_side_peaks():
+    df = xiao_probability_digitized_dataframe(xiao_default_probability_metadata())
+    assert not df.empty
+    assert {"mean_abs_momentum_vs_z", "momentum_distribution"}.issubset(
+        set(df["observable"])
+    )
+    summary = summarize_xiao_probability(df)
+    growth = summary[summary["metric"] == "mean_abs_growth"].iloc[0]
+    side = summary[summary["metric"] == "side_peak_abs_mean"].iloc[0]
+    red_peak = summary[
+        (summary["metric"] == "peak_density") & (summary["branch"] == "phi_0_far")
+    ].iloc[0]
+    assert growth["value"] > 0.45
+    assert 1.2 <= side["value"] <= 2.0
+    assert abs(red_peak["x_at_value"]) < 0.25
+
+
+def test_xiao_probability_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "xiao_probability"
+    cli_output_dir = tmp_path / "xiao_probability_cli"
+
+    digitized, metadata, summary = make_xiao_probability_outputs(
+        None,
+        output_dir,
+        data_dir,
+        render_pdf=False,
+    )
+    assert not digitized.empty
+    assert metadata["study_id"] == "XIAO_2019_MOMENTUM_PROBABILITY"
+    assert not summary.empty
+    assert (data_dir / "XIAO_2019_PROBABILITY_DIGITIZED.csv").exists()
+    assert (data_dir / "XIAO_2019_PROBABILITY_DIGITIZATION.json").exists()
+    assert (output_dir / "xiao_probability_report.md").exists()
+    assert (output_dir / "xiao_probability_summary.csv").exists()
+
+    main(
+        [
+            "digitize-xiao-probability",
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+            "--skip-render",
+        ]
+    )
+    assert (cli_output_dir / "xiao_probability_report.md").exists()
+
+
+def test_xiao_probability_vector_outputs_and_cli(tmp_path):
+    source_dir = Path("outputs/tmp/second_hunt_sources/xiao")
+    if not (source_dir / "probability.pdf").exists():
+        pytest.skip("Xiao arXiv source package is not available locally")
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "xiao_probability_vector"
+    prediction_dir = tmp_path / "xiao_prediction_vector"
+    cli_output_dir = tmp_path / "xiao_probability_vector_cli"
+
+    digitized, metadata, summary, moments = make_xiao_probability_vector_outputs(
+        source_dir,
+        output_dir,
+        data_dir,
+    )
+    assert not digitized.empty
+    assert not summary.empty
+    assert not moments.empty
+    assert metadata["extraction_method"] == "vector_path_digitization_v1"
+    assert (data_dir / "XIAO_2019_PROBABILITY_VECTOR_DIGITIZED.csv").exists()
+    assert (data_dir / "XIAO_2019_PROBABILITY_VECTOR_DIGITIZATION.json").exists()
+    assert (output_dir / "xiao_probability_vector_report.md").exists()
+    dist = digitized[digitized["observable"] == "momentum_distribution"]
+    assert {"phi_0_far", "phi_pi_far"}.issubset(set(dist["branch"]))
+    phi0 = moments[moments["branch"] == "phi_0_far"].iloc[0]
+    phipi = moments[moments["branch"] == "phi_pi_far"].iloc[0]
+    assert phipi["mean_abs_momentum_hbar_over_d"] > phi0[
+        "mean_abs_momentum_hbar_over_d"
+    ]
+
+    momentum = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    momentum_csv = tmp_path / "xiao_momentum.csv"
+    momentum.to_csv(momentum_csv, index=False)
+    prediction_summary, _predictions, _moments = make_xiao_distribution_prediction_outputs(
+        momentum_csv,
+        data_dir / "XIAO_2019_PROBABILITY_VECTOR_DIGITIZED.csv",
+        prediction_dir,
+    )
+    no_refit = prediction_summary[
+        prediction_summary["model"] == "distribution_no_refit"
+    ].iloc[0]
+    bound = prediction_summary[
+        prediction_summary["model"] == "published_bound"
+    ].iloc[0]
+    assert no_refit["rmse_momentum"] < bound["rmse_momentum"]
+
+    main(
+        [
+            "digitize-xiao-probability-vector",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "xiao_probability_vector_report.md").exists()
+
+
+def test_xiao_distribution_branch_moments_are_ordered():
+    probability = xiao_probability_digitized_dataframe(xiao_default_probability_metadata())
+    moments = xiao_distribution_branch_moments(probability)
+    phi0 = moments[moments["branch"] == "phi_0_far"].iloc[0]
+    phipi = moments[moments["branch"] == "phi_pi_far"].iloc[0]
+    assert phi0["mean_abs_momentum_hbar_over_d"] >= 0.0
+    assert phipi["mean_abs_momentum_hbar_over_d"] > phi0[
+        "mean_abs_momentum_hbar_over_d"
+    ]
+
+
+def test_xiao_distribution_prediction_beats_published_bound():
+    momentum = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    probability = xiao_probability_digitized_dataframe(xiao_default_probability_metadata())
+    summary, predictions, moments = predict_xiao_visibility_from_distribution(
+        momentum,
+        probability,
+    )
+    assert not predictions.empty
+    assert not moments.empty
+    no_refit = summary[summary["model"] == "distribution_no_refit"].iloc[0]
+    bound = summary[summary["model"] == "published_bound"].iloc[0]
+    assert no_refit["n_fit_params_to_fig4"] == 0
+    assert no_refit["rmse_momentum"] < bound["rmse_momentum"]
+
+
+def test_xiao_distribution_prediction_outputs_and_cli(tmp_path):
+    momentum = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    probability = xiao_probability_digitized_dataframe(xiao_default_probability_metadata())
+    momentum_csv = tmp_path / "xiao_momentum.csv"
+    probability_csv = tmp_path / "xiao_probability.csv"
+    output_dir = tmp_path / "xiao_distribution_prediction"
+    cli_output_dir = tmp_path / "xiao_distribution_prediction_cli"
+    momentum.to_csv(momentum_csv, index=False)
+    probability.to_csv(probability_csv, index=False)
+
+    summary, predictions, moments = make_xiao_distribution_prediction_outputs(
+        momentum_csv,
+        probability_csv,
+        output_dir,
+    )
+    assert not summary.empty
+    assert not predictions.empty
+    assert not moments.empty
+    assert (output_dir / "xiao_distribution_prediction_report.md").exists()
+    assert (output_dir / "xiao_distribution_prediction_summary.csv").exists()
+    assert (output_dir / "xiao_distribution_prediction_predictions.csv").exists()
+    assert (output_dir / "xiao_distribution_moments.csv").exists()
+
+    main(
+        [
+            "predict-xiao-visibility-from-distribution",
+            "--momentum-input",
+            str(momentum_csv),
+            "--probability-input",
+            str(probability_csv),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "xiao_distribution_prediction_report.md").exists()
+
+
+def test_xiao_probability_jitter_preserves_schema_and_bounds():
+    probability = xiao_probability_digitized_dataframe(xiao_default_probability_metadata())
+    jittered = jitter_xiao_probability_distribution(
+        probability,
+        np.random.default_rng(123),
+    )
+    assert len(jittered) == len(probability)
+    assert set(jittered.columns) == set(probability.columns)
+    dist = jittered[jittered["observable"] == "momentum_distribution"]
+    assert (dist["probability_density"] >= 0.0).all()
+    assert dist["p_hbar_over_d"].between(-3.2, 3.2).all()
+
+
+def test_xiao_distribution_prediction_stress_outputs_and_cli(tmp_path):
+    momentum = xiao_momentum_digitized_dataframe(xiao_default_momentum_metadata())
+    probability = xiao_probability_digitized_dataframe(xiao_default_probability_metadata())
+    momentum_csv = tmp_path / "xiao_momentum.csv"
+    probability_csv = tmp_path / "xiao_probability.csv"
+    output_dir = tmp_path / "xiao_distribution_stress"
+    cli_output_dir = tmp_path / "xiao_distribution_stress_cli"
+    momentum.to_csv(momentum_csv, index=False)
+    probability.to_csv(probability_csv, index=False)
+
+    summary, bootstrap, null_summary, baseline = (
+        make_xiao_distribution_prediction_stress_outputs(
+            momentum_csv,
+            probability_csv,
+            output_dir,
+            n_bootstrap=8,
+            seed=456,
+        )
+    )
+    assert not summary.empty
+    assert not bootstrap.empty
+    assert not null_summary.empty
+    assert not baseline.empty
+    assert "p_no_refit_beats_published_bound" in summary.columns
+    assert (output_dir / "xiao_distribution_prediction_stress_report.md").exists()
+    assert (output_dir / "stress_summary.csv").exists()
+    assert (output_dir / "bootstrap_samples.csv").exists()
+    assert (output_dir / "null_test_summary.csv").exists()
+    assert (output_dir / "baseline_sensitivity.csv").exists()
+    assert (output_dir / "baseline_bootstrap_summary.csv").exists()
+
+    main(
+        [
+            "stress-test-xiao-distribution-prediction",
+            "--momentum-input",
+            str(momentum_csv),
+            "--probability-input",
+            str(probability_csv),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "8",
+            "--seed",
+            "789",
+        ]
+    )
+    assert (cli_output_dir / "xiao_distribution_prediction_stress_report.md").exists()
+
+
+def test_record_bandwidth_synthesis_outputs_and_cli(tmp_path):
+    chapman_kernel = pd.DataFrame(
+        [
+            {
+                "branch": "raw",
+                "model": "sinc_fourier",
+                "rmse_visibility": 0.026,
+                "record_bandwidth_proxy": 1.96,
+                "first_zero_d_over_lambda": 0.51,
+            },
+            {
+                "branch": "raw",
+                "model": "exponential",
+                "rmse_visibility": 0.074,
+                "record_bandwidth_proxy": np.nan,
+                "first_zero_d_over_lambda": np.nan,
+            },
+        ]
+    )
+    chapman_physical = pd.DataFrame(
+        [
+            {
+                "branch": "raw",
+                "model": "uniform_recoil",
+                "rmse_visibility": 0.028,
+            }
+        ]
+    )
+    xiao_momentum = pd.DataFrame(
+        [
+            {
+                "model": "linear_bandwidth",
+                "rmse_momentum": 0.0034,
+                "parameters_json": json.dumps([0.043, 0.687]),
+            },
+            {
+                "model": "published_bound",
+                "rmse_momentum": 0.069,
+                "parameters_json": json.dumps([]),
+            },
+        ]
+    )
+    xiao_stress = pd.DataFrame(
+        [
+            {
+                "p_linear_beats_published_bound": 1.0,
+                "pairing_null_p_pearson_ge_observed": 0.004,
+            }
+        ]
+    )
+    xiao_probability = pd.DataFrame(
+        [
+            {
+                "metric": "side_peak_abs_mean",
+                "branch": "phi_pi_far",
+                "value": 1.586,
+            },
+            {
+                "metric": "mean_abs_growth",
+                "branch": "eta_half_mean_abs",
+                "value": 0.568,
+            },
+            {
+                "metric": "late_mean_abs",
+                "branch": "eta_half_mean_abs",
+                "value": 0.681,
+            },
+            {
+                "metric": "central_density",
+                "branch": "phi_pi_far",
+                "value": 0.314,
+            },
+            {
+                "metric": "peak_density",
+                "branch": "phi_pi_far",
+                "value": 1.234,
+            },
+        ]
+    )
+    hack_summary = pd.DataFrame(
+        [
+            {
+                "panel": "combined",
+                "model": "thermal_delta_T4",
+                "beta": 0.016,
+                "rmse_visibility": 0.077,
+                "delta_aicc_panel": 0.0,
+            },
+            {
+                "panel": "combined",
+                "model": "exp_power",
+                "beta": 0.20,
+                "rmse_visibility": 0.092,
+                "delta_aicc_panel": 11.4,
+            },
+        ]
+    )
+    hack_stress = pd.DataFrame(
+        [
+            {
+                "p_thermal_delta_T4_beats_exp_power": 0.91,
+                "p_thermal_delta_T4_best_model": 0.64,
+            }
+        ]
+    )
+    paths = {}
+    for name, frame in [
+        ("chapman_kernel", chapman_kernel),
+        ("chapman_physical", chapman_physical),
+        ("xiao_momentum", xiao_momentum),
+        ("xiao_stress", xiao_stress),
+        ("xiao_probability", xiao_probability),
+        ("hack_summary", hack_summary),
+        ("hack_stress", hack_stress),
+    ]:
+        path = tmp_path / f"{name}.csv"
+        frame.to_csv(path, index=False)
+        paths[name] = path
+
+    output_dir = tmp_path / "synthesis"
+    synthesis = make_record_bandwidth_synthesis_outputs(
+        paths["chapman_kernel"],
+        paths["chapman_physical"],
+        paths["xiao_momentum"],
+        paths["xiao_stress"],
+        paths["xiao_probability"],
+        output_dir,
+        paths["hack_summary"],
+        paths["hack_stress"],
+    )
+    assert not synthesis.empty
+    assert "Hackermueller 2004" in set(synthesis["experiment"])
+    report = output_dir / "record_bandwidth_synthesis_report.md"
+    assert report.exists()
+    assert "three-experiment record-variable structure survives" in report.read_text(
+        encoding="utf-8"
+    )
+
+    cli_output_dir = tmp_path / "synthesis_cli"
+    main(
+        [
+            "synthesize-record-bandwidth",
+            "--chapman-kernel-summary",
+            str(paths["chapman_kernel"]),
+            "--chapman-physical-summary",
+            str(paths["chapman_physical"]),
+            "--xiao-momentum-summary",
+            str(paths["xiao_momentum"]),
+            "--xiao-stress-summary",
+            str(paths["xiao_stress"]),
+            "--xiao-probability-summary",
+            str(paths["xiao_probability"]),
+            "--hackermueller-thermal-summary",
+            str(paths["hack_summary"]),
+            "--hackermueller-thermal-stress-summary",
+            str(paths["hack_stress"]),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "record_bandwidth_synthesis_report.md").exists()
+
+
+def test_cormann_theory_visibility_is_bounded():
+    alpha = np.linspace(-89.0, 89.0, 80)
+    visibility = cormann_theory_visibility(alpha, 0.297, 0.836)
+    assert np.isfinite(visibility).all()
+    assert (visibility >= 0.0).all()
+    assert (visibility <= 1.0).all()
+    assert visibility[np.argmin(np.abs(alpha))] < 0.05
+
+
+def test_cormann_visibility_phase_scout_outputs_and_cli(tmp_path):
+    source_dir = Path("outputs/tmp/third_hunt_sources/cormann")
+    if not (source_dir / "VisibilityPhaseMeasurement.eps").exists():
+        pytest.skip("Cormann arXiv source package is not available locally")
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "cormann_scout"
+    cli_output_dir = tmp_path / "cormann_scout_cli"
+
+    scout, summary, predictions, metadata = make_cormann_visibility_phase_scout_outputs(
+        source_dir,
+        output_dir,
+        data_dir,
+    )
+    assert not scout.empty
+    assert not summary.empty
+    assert not predictions.empty
+    assert metadata["study_id"] == "CORMANN_2016_VISIBILITY_PHASE"
+    assert {"visibility", "phase_sign_pi_units"}.issubset(set(scout["observable"]))
+    assert (data_dir / "CORMANN_2016_VISIBILITY_PHASE_SCOUT.csv").exists()
+    assert (data_dir / "CORMANN_2016_VISIBILITY_PHASE_SCOUT.json").exists()
+    assert (output_dir / "cormann_visibility_phase_scout_report.md").exists()
+    red = summary[
+        (summary["setup"] == "setup_1") & (summary["observable"] == "visibility")
+    ].iloc[0]
+    assert red["rmse"] < 0.08
+
+    main(
+        [
+            "scout-cormann-visibility-phase",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "cormann_visibility_phase_scout_report.md").exists()
+
+
+def test_hackermueller_digitized_dataframe_schema_and_monotone_load():
+    df = hackermueller_digitized_dataframe(hackermueller_default_metadata())
+    required = {
+        "panel",
+        "laser_power_W",
+        "mean_temperature_K",
+        "thermal_load_delta_T4",
+        "normalized_visibility",
+        "visibility_se",
+    }
+    assert required.issubset(df.columns)
+    assert not df.empty
+    assert ((df["normalized_visibility"] >= 0.0) & (df["normalized_visibility"] <= 1.0)).all()
+    for _panel, group in df.groupby("panel"):
+        ordered = group.sort_values("laser_power_W")
+        assert np.all(np.diff(ordered["thermal_load_delta_T4"]) >= -1e-12)
+
+
+def test_hackermueller_thermal_fit_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "hack_digitize"
+    analysis_dir = tmp_path / "hack_analysis"
+    cli_digitize_dir = tmp_path / "hack_digitize_cli"
+    cli_analysis_dir = tmp_path / "hack_analysis_cli"
+
+    digitized, metadata = make_hackermueller_thermal_digitization_outputs(
+        None,
+        output_dir,
+        data_dir,
+        fetch_source=False,
+    )
+    assert metadata["study_id"] == "HACKERMUELLER_2004_THERMAL"
+    assert (data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZED.csv").exists()
+    assert (data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZATION.json").exists()
+    assert (output_dir / "hackermueller_digitization_report.md").exists()
+
+    summary, predictions, clean = fit_hackermueller_thermal_models(digitized)
+    assert not summary.empty
+    assert not predictions.empty
+    assert not clean.empty
+    assert {"exp_power", "thermal_delta_T4"}.issubset(set(summary["model"]))
+    assert np.isfinite(summary["rmse_visibility"]).all()
+
+    make_hackermueller_thermal_analysis_outputs(
+        data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZED.csv",
+        analysis_dir,
+    )
+    assert (analysis_dir / "thermal_decoherence_summary.csv").exists()
+    assert (analysis_dir / "thermal_decoherence_predictions.csv").exists()
+    assert (analysis_dir / "hackermueller_thermal_report.md").exists()
+
+    main(
+        [
+            "digitize-hackermueller-thermal",
+            "--output-dir",
+            str(cli_digitize_dir),
+            "--data-dir",
+            str(data_dir),
+            "--no-fetch-source",
+        ]
+    )
+    main(
+        [
+            "analyze-thermal-decoherence",
+            "--input",
+            str(data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZED.csv"),
+            "--output-dir",
+            str(cli_analysis_dir),
+        ]
+    )
+    assert (cli_digitize_dir / "hackermueller_digitization_report.md").exists()
+    assert (cli_analysis_dir / "hackermueller_thermal_report.md").exists()
+
+
+def test_hackermueller_stress_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "hack_digitize"
+    stress_dir = tmp_path / "hack_stress"
+    cli_stress_dir = tmp_path / "hack_stress_cli"
+    digitized, _metadata = make_hackermueller_thermal_digitization_outputs(
+        None,
+        output_dir,
+        data_dir,
+        fetch_source=False,
+    )
+    jittered = jitter_hackermueller_thermal(digitized, np.random.default_rng(7))
+    assert len(jittered) == len(digitized)
+    assert ((jittered["normalized_visibility"] >= 0.0) & (jittered["normalized_visibility"] <= 1.0)).all()
+
+    summary, bootstrap = make_hackermueller_thermal_stress_outputs(
+        data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZED.csv",
+        data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZATION.json",
+        stress_dir,
+        n_bootstrap=20,
+        seed=20260430,
+    )
+    assert not summary.empty
+    assert not bootstrap.empty
+    assert "p_thermal_delta_T4_beats_exp_power" in summary.columns
+    assert (stress_dir / "stress_summary.csv").exists()
+    assert (stress_dir / "bootstrap_samples.csv").exists()
+    assert (stress_dir / "hackermueller_thermal_stress_report.md").exists()
+
+    main(
+        [
+            "stress-test-hackermueller-thermal",
+            "--input",
+            str(data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZED.csv"),
+            "--digitization-json",
+            str(data_dir / "HACKERMUELLER_2004_THERMAL_DIGITIZATION.json"),
+            "--output-dir",
+            str(cli_stress_dir),
+            "--n-bootstrap",
+            "20",
+            "--seed",
+            "20260430",
+        ]
+    )
+    assert (cli_stress_dir / "hackermueller_thermal_stress_report.md").exists()
+
+
+def test_chapman_sinc_first_zero_uses_normalized_sinc_width():
+    assert np.isclose(chapman_sinc_first_zero(2.0), 0.5)
+
+
+def test_chapman_kernel_predictors_are_bounded():
+    x = np.linspace(0.0, 2.0, 25)
+    for model, shape in [
+        ("exponential", 2.0),
+        ("sinc_fourier", 1.8),
+        ("gaussian_kernel", 2.0),
+    ]:
+        pred = chapman_kernel_visibility(x, model, amp=1.1, floor=0.08, shape=shape)
+        assert np.all(pred >= 0.0)
+        assert np.all(pred <= 1.0)
+
+
+def test_chapman_kernel_analysis_finds_fourier_raw_signal():
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    summary, predictions, _ = fit_chapman_kernel_models(df)
+    assert not summary.empty
+    assert not predictions.empty
+    raw = summary[summary["branch"] == "raw"]
+    raw_sinc = raw[raw["model"] == "sinc_fourier"].iloc[0]
+    raw_exp = raw[raw["model"] == "exponential"].iloc[0]
+    case_i_sinc = summary[
+        (summary["branch"] == "case_I_forward")
+        & (summary["model"] == "sinc_fourier")
+    ].iloc[0]
+    assert raw_sinc["rmse_visibility"] < raw_exp["rmse_visibility"]
+    assert raw_sinc["first_zero_d_over_lambda"] < case_i_sinc["first_zero_d_over_lambda"]
+    assert raw_sinc["record_bandwidth_proxy"] > case_i_sinc["record_bandwidth_proxy"]
+
+
+def test_chapman_visibility_jitter_preserves_schema_and_bounds():
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    jittered = jitter_chapman_visibility(df, np.random.default_rng(123))
+    assert list(jittered.columns) == list(df.columns)
+    assert len(jittered) == len(df)
+    assert jittered["visibility_obs"].between(0.0, 1.0).all()
+
+
+def test_chapman_kernel_stress_summary_contains_core_probability():
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    samples = bootstrap_chapman_kernel_stress(df, n_bootstrap=4, seed=123)
+    assert not samples.empty
+    assert "raw_sinc_beats_exp" in samples.columns
+    probability = float(samples["raw_sinc_beats_exp"].mean())
+    assert 0.0 <= probability <= 1.0
+
+
+def test_chapman_kernel_stress_outputs_and_cli_write_files(tmp_path):
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    input_csv = tmp_path / "chapman.csv"
+    metadata_json = tmp_path / "chapman.json"
+    output_dir = tmp_path / "stress"
+    cli_output_dir = tmp_path / "stress_cli"
+    df.to_csv(input_csv, index=False)
+    metadata_json.write_text(
+        json.dumps(chapman_default_digitization_metadata()),
+        encoding="utf-8",
+    )
+
+    summary, bootstrap, null_summary, _ = make_chapman_kernel_stress_outputs(
+        input_csv,
+        metadata_json,
+        output_dir,
+        n_bootstrap=3,
+        seed=456,
+    )
+    assert "p_raw_sinc_beats_exponential" in summary.columns
+    assert not bootstrap.empty
+    assert not null_summary.empty
+    assert (output_dir / "chapman_kernel_stress_report.md").exists()
+    assert (output_dir / "stress_summary.csv").exists()
+    assert (output_dir / "bootstrap_samples.csv").exists()
+    assert (output_dir / "null_test_summary.csv").exists()
+
+    main(
+        [
+            "stress-test-chapman-kernel",
+            "--input",
+            str(input_csv),
+            "--digitization-json",
+            str(metadata_json),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "2",
+            "--seed",
+            "789",
+        ]
+    )
+    assert (cli_output_dir / "chapman_kernel_stress_report.md").exists()
+
+
+def test_chapman_recoil_distribution_normalizes():
+    q = chapman_recoil_grid(401)
+    density = chapman_uniform_recoil_density(q)
+    assert np.isclose(np.trapezoid(density, q), 1.0, atol=1e-6)
+
+
+def test_chapman_characteristic_visibility_is_bounded_and_uniform_zero():
+    q = chapman_recoil_grid(801)
+    density = chapman_uniform_recoil_density(q)
+    x = np.array([0.0, 0.5, 1.0])
+    visibility = chapman_characteristic_visibility(x, q, density)
+    assert np.all(visibility >= 0.0)
+    assert np.all(visibility <= 1.0)
+    assert visibility[0] > 0.99
+    assert visibility[1] < 0.01
+
+
+def test_chapman_complex_observables_are_bounded_and_finite():
+    q = chapman_recoil_grid(801)
+    density = chapman_uniform_recoil_density(q)
+    x = np.linspace(0.0, 0.45, 10)
+    visibility, phase = chapman_complex_observables(x, q, density)
+    assert np.all(visibility >= 0.0)
+    assert np.all(visibility <= 1.0)
+    assert np.isfinite(phase).all()
+    assert visibility[0] > 0.99
+
+
+def test_chapman_complex_phase_slope_tracks_narrow_q_center():
+    q = chapman_recoil_grid(801)
+    center = 1.65
+    density = np.exp(-0.5 * ((q - center) / 0.035) ** 2)
+    x = np.linspace(0.0, 0.25, 12)
+    _visibility, phase = chapman_complex_observables(x, q, density)
+    slope, _intercept = np.polyfit(x, phase, deg=1)
+    assert np.isclose(slope / (2.0 * math.pi), center, atol=0.05)
+
+
+def test_chapman_mixture_weights_are_normalized_and_nonnegative():
+    weights = chapman_mixture_weights(-1.0, 2.0, 3.0)
+    assert np.all(weights >= 0.0)
+    assert np.isclose(weights.sum(), 1.0)
+
+
+def test_chapman_two_photon_and_smearing_are_bounded():
+    one = np.array([1.0 + 0.0j, 0.5 + 0.2j, -0.1 + 0.1j])
+    two = chapman_two_photon_amplitude(one)
+    assert np.isfinite(two).all()
+    assert np.all(np.abs(two) <= np.abs(one) + 1e-12)
+    x = np.linspace(0.0, 2.0, 10)
+    smear = chapman_velocity_smearing(x, 0.7)
+    assert np.all(smear <= 1.0)
+    assert np.all(smear > 0.0)
+
+
+def test_chapman_mixture_amplitude_returns_finite_observables():
+    q = chapman_recoil_grid(401)
+    density = chapman_uniform_recoil_density(q)
+    x = np.linspace(0.0, 2.0, 20)
+    amplitude = chapman_mixture_amplitude(
+        x,
+        q,
+        density,
+        chapman_mixture_weights(0.05, 0.77, 0.18),
+        velocity_sigma=0.4,
+    )
+    assert np.isfinite(amplitude).all()
+    assert np.all(np.abs(amplitude) <= 1.0 + 1e-9)
+
+
+def test_chapman_phase_digitization_schema():
+    phase = chapman_phase_digitized_dataframe(
+        chapman_default_complex_digitization_metadata()
+    )
+    required = {
+        "study_id",
+        "source_figure",
+        "x_value",
+        "phase_rad",
+        "phase_display_rad",
+        "phase_se",
+        "visibility_type",
+        "conditioned_on",
+    }
+    assert required.issubset(phase.columns)
+    assert set(phase["conditioned_on"]) >= {"", "case_I_forward", "case_III_backward"}
+
+
+def test_chapman_phase_grade_schema_and_quality_subset():
+    phase = chapman_phase_grade_dataframe(chapman_default_phase_grade_metadata())
+    required = {
+        "phase_rad",
+        "phase_display_rad",
+        "phase_unwrapped_rad",
+        "phase_quality",
+        "unwrap_group",
+        "wrap_ambiguous",
+        "low_contrast_ambiguous",
+    }
+    assert required.issubset(phase.columns)
+    raw = phase[phase["visibility_type"] == "raw"]
+    assert {"high", "medium", "low"}.issubset(set(raw["phase_quality"]))
+    high = chapman_phase_quality_subset(phase, "high_confidence_raw")
+    high_raw = high[high["visibility_type"] == "raw"]
+    assert len(high_raw) < len(raw)
+    assert not high_raw["wrap_ambiguous"].any()
+
+
+def test_chapman_physical_kernel_analysis_outputs_ordered_centers(tmp_path):
+    df = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    input_csv = tmp_path / "chapman.csv"
+    metadata_json = tmp_path / "chapman.json"
+    cli_output_dir = tmp_path / "physical_cli"
+    df.to_csv(input_csv, index=False)
+    metadata_json.write_text(
+        json.dumps(chapman_default_digitization_metadata()),
+        encoding="utf-8",
+    )
+    main(
+        [
+            "analyze-chapman-physical-kernel",
+            "--input",
+            str(input_csv),
+            "--digitization-json",
+            str(metadata_json),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "chapman_physical_kernel_report.md").exists()
+    assert (cli_output_dir / "physical_kernel_summary.csv").exists()
+    assert (cli_output_dir / "physical_kernel_predictions.csv").exists()
+    summary = pd.read_csv(cli_output_dir / "physical_kernel_summary.csv")
+    predictions = pd.read_csv(cli_output_dir / "physical_kernel_predictions.csv")
+    assert not summary.empty
+    assert not predictions.empty
+    case_i = summary[
+        (summary["branch"] == "case_I_forward")
+        & (summary["model"] == "accepted_beta_recoil")
+    ].iloc[0]
+    case_iii = summary[
+        (summary["branch"] == "case_III_backward")
+        & (summary["model"] == "accepted_beta_recoil")
+    ].iloc[0]
+    assert np.isfinite(case_i["acceptance_center"])
+    assert np.isfinite(case_iii["acceptance_center"])
+    assert case_i["acceptance_center"] < case_iii["acceptance_center"]
+
+
+def test_chapman_complex_kernel_analysis_writes_outputs(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "complex"
+    data_dir.mkdir()
+    visibility = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    visibility.to_csv(data_dir / "CHAPMAN_1995_SCATTER_DIGITIZED.csv", index=False)
+
+    summary, predictions, distributions, phase, _metadata = make_chapman_complex_kernel_outputs(
+        None,
+        data_dir,
+        output_dir,
+        render_pdf=False,
+    )
+
+    assert not summary.empty
+    assert not predictions.empty
+    assert not distributions.empty
+    assert not phase.empty
+    assert (data_dir / "CHAPMAN_1995_PHASE_DIGITIZED.csv").exists()
+    assert (data_dir / "CHAPMAN_1995_COMPLEX_DIGITIZATION.json").exists()
+    assert (output_dir / "complex_kernel_summary.csv").exists()
+    assert (output_dir / "complex_kernel_predictions.csv").exists()
+    assert (output_dir / "chapman_complex_kernel_report.md").exists()
+    case_i = summary[
+        (summary["branch"] == "case_I_forward")
+        & (summary["model"] == "accepted_beta_recoil_complex")
+    ].iloc[0]
+    case_iii = summary[
+        (summary["branch"] == "case_III_backward")
+        & (summary["model"] == "accepted_beta_recoil_complex")
+    ].iloc[0]
+    assert np.isfinite(case_i["acceptance_center"])
+    assert np.isfinite(case_iii["acceptance_center"])
+    assert case_i["acceptance_center"] < case_iii["acceptance_center"]
+
+
+def test_chapman_complex_kernel_fit_returns_phase_predictions():
+    visibility = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    phase = chapman_phase_digitized_dataframe(
+        chapman_default_complex_digitization_metadata()
+    )
+    summary, predictions, _distributions = fit_chapman_complex_kernel_models(
+        visibility,
+        phase,
+    )
+    assert not summary.empty
+    phase_predictions = predictions[predictions["observable"] == "phase"]
+    assert not phase_predictions.empty
+    assert np.isfinite(phase_predictions["pred_phase_rad"]).all()
+
+
+def test_chapman_complex_mixture_outputs_and_verdict(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "mixture"
+    data_dir.mkdir()
+    visibility = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    visibility.to_csv(data_dir / "CHAPMAN_1995_SCATTER_DIGITIZED.csv", index=False)
+
+    summary, predictions, distributions, phase, _metadata = (
+        make_chapman_complex_mixture_outputs(
+            None,
+            data_dir,
+            output_dir,
+            render_pdf=False,
+            grid_mode="test",
+        )
+    )
+
+    assert not summary.empty
+    assert not predictions.empty
+    assert not distributions.empty
+    assert not phase.empty
+    assert (output_dir / "complex_mixture_summary.csv").exists()
+    assert (output_dir / "complex_mixture_predictions.csv").exists()
+    assert (output_dir / "complex_mixture_distributions.csv").exists()
+    report_path = output_dir / "chapman_complex_mixture_report.md"
+    assert report_path.exists()
+    report = report_path.read_text(encoding="utf-8")
+    assert any(
+        verdict in report
+        for verdict in ["raw phase repaired", "model still fails", "digitization-limited"]
+    )
+    raw_mixture = summary[
+        (summary["branch"] == "raw")
+        & summary["model"].isin(
+            ["complex_mixture_no_smear", "complex_mixture_with_smear"]
+        )
+    ]
+    assert not raw_mixture.empty
+
+
+def test_chapman_phase_grade_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "phase_grade"
+    cli_output_dir = tmp_path / "phase_grade_cli"
+    data_dir.mkdir()
+    visibility = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    visibility.to_csv(data_dir / "CHAPMAN_1995_SCATTER_DIGITIZED.csv", index=False)
+
+    complex_summary, mixture_summary, *_ = make_chapman_phase_grade_outputs(
+        None,
+        data_dir,
+        output_dir,
+        render_pdf=False,
+        grid_mode="test",
+    )
+    assert not complex_summary.empty
+    assert not mixture_summary.empty
+    assert (data_dir / "CHAPMAN_1995_PHASE_GRADED.csv").exists()
+    assert (data_dir / "CHAPMAN_1995_PHASE_GRADE_DIGITIZATION.json").exists()
+    assert (output_dir / "phase_grade_complex_summary.csv").exists()
+    assert (output_dir / "phase_grade_mixture_summary.csv").exists()
+    assert (output_dir / "chapman_phase_grade_report.md").exists()
+    assert set(complex_summary["analysis_scope"]) == {
+        "all_phase_points",
+        "high_confidence_raw",
+    }
+
+    main(
+        [
+            "digitize-chapman-phase-grade",
+            "--data-dir",
+            str(data_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--grid-mode",
+            "test",
+            "--skip-render",
+        ]
+    )
+    report = cli_output_dir / "chapman_phase_grade_report.md"
+    assert report.exists()
+    text = report.read_text(encoding="utf-8")
+    assert any(
+        verdict in text
+        for verdict in [
+            "phase-grade repairs full raw phase",
+            "phase failure is wrap-limited",
+            "phase still fails",
+        ]
+    )
 
 
 def test_decompose_eraser_recovers_known_synthetic_values():

@@ -1,0 +1,641 @@
+{
+  "study_id": "CHAPMAN_1995_SCATTER_PHASE_GRADED",
+  "source_title": "Photon Scattering from Atoms in an Atom Interferometer: Coherence Lost and Regained",
+  "source_url": "https://chapmanlabs.gatech.edu/papers/scattering_ifm_prl95.pdf",
+  "doi": "https://doi.org/10.1103/PhysRevLett.75.3783",
+  "render_dpi": 220,
+  "extraction_method": "calibrated_phase_pixel_digitization_v1",
+  "extracted_by": "Codex",
+  "extraction_date": "2026-04-24",
+  "coordinate_system": "pdftoppm grayscale PGM pixels, origin at top left",
+  "phase_unwrap_policy": "phase_display_rad follows the plotted Fig. 2 phase panel. phase_unwrapped_rad adds unwrap_group*pi. Low-quality points near contrast zeros or visible wraps are retained but excluded from the high-confidence phase-grade analysis.",
+  "figures": [
+    {
+      "figure": "Fig.2",
+      "page": 2,
+      "source_panel": "raw_phase_shift",
+      "axis": {
+        "x_name": "d_over_lambda",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 2.0,
+        "x_pixel_min": [
+          1176.5,
+          642.0
+        ],
+        "x_pixel_max": [
+          1601.5,
+          642.0
+        ],
+        "y_name": "phase_shift_displayed",
+        "y_units": "rad",
+        "y_min": -1.2,
+        "y_max": 3.2,
+        "y_pixel_min": [
+          1176.5,
+          642.0
+        ],
+        "y_pixel_max": [
+          1176.5,
+          452.0
+        ]
+      },
+      "series": [
+        {
+          "phase_type": "raw",
+          "visibility_type": "raw",
+          "conditioned_on": "",
+          "notes": "Calibrated manual pixel-grade picks from the Fig. 2 raw phase panel with explicit wrap/quality labels.",
+          "points": [
+            {
+              "x_pixel": 1176.5,
+              "y_pixel": 588.023,
+              "x_value": 0.0,
+              "phase_display_rad": 0.05,
+              "phase_rad": 0.05,
+              "phase_unwrapped_rad": 0.05,
+              "unwrap_group": 0,
+              "phase_quality": "high",
+              "phase_se": 0.18,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1197.75,
+              "y_pixel": 582.409,
+              "x_value": 0.1,
+              "phase_display_rad": 0.18,
+              "phase_rad": 0.18,
+              "phase_unwrapped_rad": 0.18,
+              "unwrap_group": 0,
+              "phase_quality": "high",
+              "phase_se": 0.18,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1219.0,
+              "y_pixel": 549.159,
+              "x_value": 0.2,
+              "phase_display_rad": 0.95,
+              "phase_rad": 0.95,
+              "phase_unwrapped_rad": 0.95,
+              "unwrap_group": 0,
+              "phase_quality": "high",
+              "phase_se": 0.18,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1240.25,
+              "y_pixel": 523.25,
+              "x_value": 0.3,
+              "phase_display_rad": 1.55,
+              "phase_rad": 1.55,
+              "phase_unwrapped_rad": 1.55,
+              "unwrap_group": 0,
+              "phase_quality": "high",
+              "phase_se": 0.18,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1257.25,
+              "y_pixel": 501.659,
+              "x_value": 0.38,
+              "phase_display_rad": 2.05,
+              "phase_rad": 2.05,
+              "phase_unwrapped_rad": 2.05,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.3,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1267.875,
+              "y_pixel": 523.25,
+              "x_value": 0.43,
+              "phase_display_rad": 1.55,
+              "phase_rad": 1.55,
+              "phase_unwrapped_rad": 1.55,
+              "unwrap_group": 0,
+              "phase_quality": "low",
+              "phase_se": 0.65,
+              "wrap_ambiguous": true,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1282.75,
+              "y_pixel": 592.341,
+              "x_value": 0.5,
+              "phase_display_rad": -0.05,
+              "phase_rad": 3.0915926535897933,
+              "phase_unwrapped_rad": 3.0915926535897933,
+              "unwrap_group": 1,
+              "phase_quality": "low",
+              "phase_se": 0.65,
+              "wrap_ambiguous": true,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1299.75,
+              "y_pixel": 581.545,
+              "x_value": 0.58,
+              "phase_display_rad": 0.2,
+              "phase_rad": 3.3415926535897933,
+              "phase_unwrapped_rad": 3.3415926535897933,
+              "unwrap_group": 1,
+              "phase_quality": "medium",
+              "phase_se": 0.3,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1321.0,
+              "y_pixel": 553.477,
+              "x_value": 0.68,
+              "phase_display_rad": 0.85,
+              "phase_rad": 3.991592653589793,
+              "phase_unwrapped_rad": 3.991592653589793,
+              "unwrap_group": 1,
+              "phase_quality": "high",
+              "phase_se": 0.2,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1342.25,
+              "y_pixel": 527.568,
+              "x_value": 0.78,
+              "phase_display_rad": 1.45,
+              "phase_rad": 4.591592653589793,
+              "phase_unwrapped_rad": 4.591592653589793,
+              "unwrap_group": 1,
+              "phase_quality": "high",
+              "phase_se": 0.2,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1363.5,
+              "y_pixel": 508.136,
+              "x_value": 0.88,
+              "phase_display_rad": 1.9,
+              "phase_rad": 5.0415926535897935,
+              "phase_unwrapped_rad": 5.0415926535897935,
+              "unwrap_group": 1,
+              "phase_quality": "medium",
+              "phase_se": 0.3,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1380.5,
+              "y_pixel": 581.545,
+              "x_value": 0.96,
+              "phase_display_rad": 0.2,
+              "phase_rad": 6.483185307179586,
+              "phase_unwrapped_rad": 6.483185307179586,
+              "unwrap_group": 2,
+              "phase_quality": "low",
+              "phase_se": 0.65,
+              "wrap_ambiguous": true,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1401.75,
+              "y_pixel": 583.705,
+              "x_value": 1.06,
+              "phase_display_rad": 0.15,
+              "phase_rad": 6.433185307179587,
+              "phase_unwrapped_rad": 6.433185307179587,
+              "unwrap_group": 2,
+              "phase_quality": "medium",
+              "phase_se": 0.35,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1427.25,
+              "y_pixel": 562.114,
+              "x_value": 1.18,
+              "phase_display_rad": 0.65,
+              "phase_rad": 6.933185307179587,
+              "phase_unwrapped_rad": 6.933185307179587,
+              "unwrap_group": 2,
+              "phase_quality": "high",
+              "phase_se": 0.24,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1452.75,
+              "y_pixel": 540.523,
+              "x_value": 1.3,
+              "phase_display_rad": 1.15,
+              "phase_rad": 7.433185307179587,
+              "phase_unwrapped_rad": 7.433185307179587,
+              "unwrap_group": 2,
+              "phase_quality": "high",
+              "phase_se": 0.24,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1478.25,
+              "y_pixel": 523.25,
+              "x_value": 1.42,
+              "phase_display_rad": 1.55,
+              "phase_rad": 7.833185307179586,
+              "phase_unwrapped_rad": 7.833185307179586,
+              "unwrap_group": 2,
+              "phase_quality": "medium",
+              "phase_se": 0.35,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1495.25,
+              "y_pixel": 588.023,
+              "x_value": 1.5,
+              "phase_display_rad": 0.05,
+              "phase_rad": 9.47477796076938,
+              "phase_unwrapped_rad": 9.47477796076938,
+              "unwrap_group": 3,
+              "phase_quality": "low",
+              "phase_se": 0.7,
+              "wrap_ambiguous": true,
+              "low_contrast_ambiguous": true
+            },
+            {
+              "x_pixel": 1520.75,
+              "y_pixel": 575.068,
+              "x_value": 1.62,
+              "phase_display_rad": 0.35,
+              "phase_rad": 9.774777960769379,
+              "phase_unwrapped_rad": 9.774777960769379,
+              "unwrap_group": 3,
+              "phase_quality": "medium",
+              "phase_se": 0.35,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1546.25,
+              "y_pixel": 551.318,
+              "x_value": 1.74,
+              "phase_display_rad": 0.9,
+              "phase_rad": 10.32477796076938,
+              "phase_unwrapped_rad": 10.32477796076938,
+              "unwrap_group": 3,
+              "phase_quality": "high",
+              "phase_se": 0.26,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1571.75,
+              "y_pixel": 534.045,
+              "x_value": 1.86,
+              "phase_display_rad": 1.3,
+              "phase_rad": 10.72477796076938,
+              "phase_unwrapped_rad": 10.72477796076938,
+              "unwrap_group": 3,
+              "phase_quality": "medium",
+              "phase_se": 0.35,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 1597.25,
+              "y_pixel": 577.227,
+              "x_value": 1.98,
+              "phase_display_rad": 0.3,
+              "phase_rad": 12.866370614359173,
+              "phase_unwrapped_rad": 12.866370614359173,
+              "unwrap_group": 4,
+              "phase_quality": "low",
+              "phase_se": 0.7,
+              "wrap_ambiguous": true,
+              "low_contrast_ambiguous": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "figure": "Fig.3",
+      "page": 4,
+      "source_panel": "conditioned_phase_shift",
+      "axis": {
+        "x_name": "d_over_lambda",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 2.0,
+        "x_pixel_min": [
+          337.6,
+          914.0
+        ],
+        "x_pixel_max": [
+          806.5,
+          914.0
+        ],
+        "y_name": "phase_shift",
+        "y_units": "rad",
+        "y_min": 0.0,
+        "y_max": 9.0,
+        "y_pixel_min": [
+          337.6,
+          914.0
+        ],
+        "y_pixel_max": [
+          337.6,
+          545.0
+        ]
+      },
+      "series": [
+        {
+          "phase_type": "conditioned",
+          "visibility_type": "conditioned",
+          "conditioned_on": "case_I_forward",
+          "notes": "Conditioned branch points retained from rough phase pass; focus of this grade pass is raw Fig. 2 phase.",
+          "points": [
+            {
+              "x_pixel": 337.6,
+              "y_pixel": 914.0,
+              "x_value": 0.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 0.0,
+              "phase_unwrapped_rad": 0.0,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 384.49,
+              "y_pixel": 902.93,
+              "x_value": 0.2,
+              "phase_display_rad": 0.27,
+              "phase_rad": 0.27,
+              "phase_unwrapped_rad": 0.27,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 431.38,
+              "y_pixel": 891.45,
+              "x_value": 0.4,
+              "phase_display_rad": 0.55,
+              "phase_rad": 0.55,
+              "phase_unwrapped_rad": 0.55,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 478.27,
+              "y_pixel": 880.38,
+              "x_value": 0.6,
+              "phase_display_rad": 0.82,
+              "phase_rad": 0.82,
+              "phase_unwrapped_rad": 0.82,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 525.16,
+              "y_pixel": 872.18,
+              "x_value": 0.8,
+              "phase_display_rad": 1.02,
+              "phase_rad": 1.02,
+              "phase_unwrapped_rad": 1.02,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 572.05,
+              "y_pixel": 868.08,
+              "x_value": 1.0,
+              "phase_display_rad": 1.12,
+              "phase_rad": 1.12,
+              "phase_unwrapped_rad": 1.12,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 618.94,
+              "y_pixel": 871.36,
+              "x_value": 1.2,
+              "phase_display_rad": 1.04,
+              "phase_rad": 1.04,
+              "phase_unwrapped_rad": 1.04,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 665.83,
+              "y_pixel": 876.28,
+              "x_value": 1.4,
+              "phase_display_rad": 0.92,
+              "phase_rad": 0.92,
+              "phase_unwrapped_rad": 0.92,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 712.72,
+              "y_pixel": 878.74,
+              "x_value": 1.6,
+              "phase_display_rad": 0.86,
+              "phase_rad": 0.86,
+              "phase_unwrapped_rad": 0.86,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 759.61,
+              "y_pixel": 876.69,
+              "x_value": 1.8,
+              "phase_display_rad": 0.91,
+              "phase_rad": 0.91,
+              "phase_unwrapped_rad": 0.91,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 806.5,
+              "y_pixel": 874.64,
+              "x_value": 2.0,
+              "phase_display_rad": 0.96,
+              "phase_rad": 0.96,
+              "phase_unwrapped_rad": 0.96,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.4,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            }
+          ]
+        },
+        {
+          "phase_type": "conditioned",
+          "visibility_type": "conditioned",
+          "conditioned_on": "case_III_backward",
+          "notes": "Conditioned branch points retained from rough phase pass; focus of this grade pass is raw Fig. 2 phase.",
+          "points": [
+            {
+              "x_pixel": 337.6,
+              "y_pixel": 914.0,
+              "x_value": 0.0,
+              "phase_display_rad": 0.0,
+              "phase_rad": 0.0,
+              "phase_unwrapped_rad": 0.0,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 361.045,
+              "y_pixel": 864.8,
+              "x_value": 0.1,
+              "phase_display_rad": 1.2,
+              "phase_rad": 1.2,
+              "phase_unwrapped_rad": 1.2,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 384.49,
+              "y_pixel": 813.55,
+              "x_value": 0.2,
+              "phase_display_rad": 2.45,
+              "phase_rad": 2.45,
+              "phase_unwrapped_rad": 2.45,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 407.935,
+              "y_pixel": 760.25,
+              "x_value": 0.3,
+              "phase_display_rad": 3.75,
+              "phase_rad": 3.75,
+              "phase_unwrapped_rad": 3.75,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 431.38,
+              "y_pixel": 709.0,
+              "x_value": 0.4,
+              "phase_display_rad": 5.0,
+              "phase_rad": 5.0,
+              "phase_unwrapped_rad": 5.0,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 454.825,
+              "y_pixel": 659.8,
+              "x_value": 0.5,
+              "phase_display_rad": 6.2,
+              "phase_rad": 6.2,
+              "phase_unwrapped_rad": 6.2,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 478.27,
+              "y_pixel": 608.55,
+              "x_value": 0.6,
+              "phase_display_rad": 7.45,
+              "phase_rad": 7.45,
+              "phase_unwrapped_rad": 7.45,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            },
+            {
+              "x_pixel": 501.715,
+              "y_pixel": 567.55,
+              "x_value": 0.7,
+              "phase_display_rad": 8.45,
+              "phase_rad": 8.45,
+              "phase_unwrapped_rad": 8.45,
+              "unwrap_group": 0,
+              "phase_quality": "medium",
+              "phase_se": 0.45,
+              "wrap_ambiguous": false,
+              "low_contrast_ambiguous": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "pdf_sha256": "27c288986e414efb43a776bd7c02b79208cba51beb1598e40915ceaa3c3f5b72",
+  "rendered_pages": {
+    "2": {
+      "path": "outputs/tmp/chapman_phase_grade/chapman_page-2.pgm",
+      "width": 1870,
+      "height": 2420,
+      "min_pixel": 0,
+      "max_pixel": 255
+    },
+    "4": {
+      "path": "outputs/tmp/chapman_phase_grade/chapman_page-4.pgm",
+      "width": 1870,
+      "height": 2420,
+      "min_pixel": 0,
+      "max_pixel": 255
+    }
+  }
+}

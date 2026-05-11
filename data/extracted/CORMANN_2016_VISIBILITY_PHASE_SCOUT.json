@@ -1,0 +1,131 @@
+{
+  "study_id": "CORMANN_2016_VISIBILITY_PHASE",
+  "source_title": "Revealing geometric phases in modular and weak values with a quantum eraser",
+  "source_url": "https://arxiv.org/abs/1508.01353",
+  "arxiv_source_url": "https://arxiv.org/e-print/1508.01353",
+  "doi": "https://doi.org/10.1103/PhysRevA.93.042124",
+  "render_dpi": 250,
+  "extraction_method": "calibrated_component_scout_v1",
+  "extracted_by": "Codex",
+  "extraction_date": "2026-04-28",
+  "source_file": "VisibilityPhaseMeasurement.eps",
+  "source_file_sha256": "d9807edf7e9e2c13a2905223df3d80d403d7bf6ee8e169c6323183c85e64820a",
+  "coordinate_system": "Ghostscript EPSCrop PPM pixels, origin at top left",
+  "setups": {
+    "setup_1": {
+      "color": "red",
+      "marker": "square",
+      "theta_pi": 0.499,
+      "purity": 0.882
+    },
+    "setup_2": {
+      "color": "blue",
+      "marker": "circle",
+      "theta_pi": 0.297,
+      "purity": 0.836
+    },
+    "setup_3": {
+      "color": "black",
+      "marker": "triangle",
+      "theta_pi": 0.092,
+      "purity": 0.956
+    }
+  },
+  "figures": [
+    {
+      "figure": "Fig.2a",
+      "source_panel": "visibility_vs_postselected_angle",
+      "observable": "visibility",
+      "axis": {
+        "x_name": "postselected_angle_alpha_deg",
+        "x_units": "deg",
+        "x_min": -90.0,
+        "x_max": 90.0,
+        "x_pixel_min": [
+          232.0,
+          1210.0
+        ],
+        "x_pixel_max": [
+          3370.0,
+          1210.0
+        ],
+        "y_name": "visibility",
+        "y_units": "dimensionless",
+        "y_min": 0.0,
+        "y_max": 1.0,
+        "y_pixel_min": [
+          232.0,
+          1210.0
+        ],
+        "y_pixel_max": [
+          232.0,
+          69.0
+        ]
+      },
+      "exclusion_windows": [
+        {
+          "name": "legend",
+          "x_min": 1550,
+          "x_max": 2070,
+          "y_min": 90,
+          "y_max": 640
+        }
+      ]
+    },
+    {
+      "figure": "Fig.2b",
+      "source_panel": "weak_value_phase_sign",
+      "observable": "phase_sign_pi_units",
+      "axis": {
+        "x_name": "postselected_angle_alpha_deg",
+        "x_units": "deg",
+        "x_min": -90.0,
+        "x_max": 90.0,
+        "x_pixel_min": [
+          232.0,
+          2460.0
+        ],
+        "x_pixel_max": [
+          3370.0,
+          2460.0
+        ],
+        "y_name": "arg_sigma_x_w_pi_units",
+        "y_units": "pi",
+        "y_min": -1.5,
+        "y_max": 1.5,
+        "y_pixel_min": [
+          232.0,
+          2460.0
+        ],
+        "y_pixel_max": [
+          232.0,
+          1330.0
+        ]
+      },
+      "exclusion_windows": [
+        {
+          "name": "left_bloch_inset",
+          "x_min": 535,
+          "x_max": 1450,
+          "y_min": 1395,
+          "y_max": 2415
+        },
+        {
+          "name": "right_bloch_inset",
+          "x_min": 2050,
+          "x_max": 3200,
+          "y_min": 1515,
+          "y_max": 2425
+        }
+      ]
+    }
+  ],
+  "source_dir": "outputs/tmp/third_hunt_sources/cormann",
+  "rendered_figure": {
+    "path": "outputs/tmp/third_hunt_render/cormann/VisibilityPhaseMeasurement.ppm",
+    "width": 3441,
+    "height": 3670,
+    "min_pixel": 0,
+    "max_pixel": 255
+  }
+}

@@ -1,0 +1,7 @@
+setup,observable,n_points,theta_pi,purity,rmse,mae,pearson_r,phase_sign_accuracy,notes
+setup_1,visibility,54,0.499,0.882,0.03570220036553785,0.032295606569735125,0.9858869607699646,,no-refit caption theta/purity visibility prediction
+setup_2,visibility,22,0.297,0.836,0.06554833404894264,0.06077961253247833,0.9579786028975457,,no-refit caption theta/purity visibility prediction
+setup_3,visibility,19,0.092,0.956,0.25384548988706973,0.20322813973905401,0.38475895075496697,,no-refit caption theta/purity visibility prediction
+setup_1,phase_sign_pi_units,43,0.499,0.882,,,,1.0,"sign of arg(sigma_x,w) compared with sign(tan alpha)"
+setup_2,phase_sign_pi_units,42,0.297,0.836,,,,1.0,"sign of arg(sigma_x,w) compared with sign(tan alpha)"
+setup_3,phase_sign_pi_units,31,0.092,0.956,,,,0.6296296296296297,"sign of arg(sigma_x,w) compared with sign(tan alpha)"

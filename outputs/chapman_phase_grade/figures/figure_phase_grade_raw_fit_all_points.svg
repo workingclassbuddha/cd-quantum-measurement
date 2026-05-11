@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="520" viewBox="0 0 920 520">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="460.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Chapman Phase-Grade Raw Fit: All Phase Points</text>
+<rect x="82" y="54" width="810" height="384" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="438" stroke="#eceff1"/>
+<text x="82.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">-0.04</text>
+<line x1="244.00" y1="54" x2="244.00" y2="438" stroke="#eceff1"/>
+<text x="244.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.37</text>
+<line x1="406.00" y1="54" x2="406.00" y2="438" stroke="#eceff1"/>
+<text x="406.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.78</text>
+<line x1="568.00" y1="54" x2="568.00" y2="438" stroke="#eceff1"/>
+<text x="568.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1.2</text>
+<line x1="730.00" y1="54" x2="730.00" y2="438" stroke="#eceff1"/>
+<text x="730.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1.6</text>
+<line x1="892.00" y1="54" x2="892.00" y2="438" stroke="#eceff1"/>
+<text x="892.00" y="462.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">2</text>
+<line x1="82" y1="438.00" x2="892" y2="438.00" stroke="#eceff1"/>
+<text x="72.00" y="442.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">-4</text>
+<line x1="82" y1="361.20" x2="892" y2="361.20" stroke="#eceff1"/>
+<text x="72.00" y="365.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">-0.092</text>
+<line x1="82" y1="284.40" x2="892" y2="284.40" stroke="#eceff1"/>
+<text x="72.00" y="288.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">3.8</text>
+<line x1="82" y1="207.60" x2="892" y2="207.60" stroke="#eceff1"/>
+<text x="72.00" y="211.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">7.6</text>
+<line x1="82" y1="130.80" x2="892" y2="130.80" stroke="#eceff1"/>
+<text x="72.00" y="134.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">12</text>
+<line x1="82" y1="54.00" x2="892" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">15</text>
+<polyline fill="none" stroke="#263238" stroke-width="2.5" points="97.58,358.37 136.91,355.79 176.25,340.49 215.58,328.56 247.05,318.62 266.72,328.56 294.26,297.92 325.72,292.96 365.06,280.04 404.40,268.11 443.73,259.17 475.20,230.52 514.53,231.52 561.74,221.58 608.94,211.64 656.14,203.69 687.61,171.07 734.81,165.11 782.02,154.18 829.22,146.23 876.42,103.67"/>
+<polyline fill="none" stroke="#2962ff" stroke-width="2.5" points="97.58,394.77 136.91,381.85 176.25,368.88 215.58,355.81 247.05,345.17 266.72,338.32 294.26,327.98 325.72,306.71 365.06,249.63 404.40,234.38 443.73,220.40 475.20,208.88 514.53,189.99 561.74,250.99 608.94,231.85 656.14,214.65 687.61,202.25 734.81,150.13 782.02,116.24 829.22,98.45 876.42,80.48"/>
+<polyline fill="none" stroke="#d84315" stroke-width="2.5" stroke-dasharray="7 5" points="97.58,411.52 136.91,394.69 176.25,379.19 215.58,365.93 247.05,353.74 266.72,340.98 294.26,315.32 325.72,293.83 365.06,275.63 404.40,260.75 443.73,241.28 475.20,184.45 514.53,169.84 561.74,155.13 608.94,144.58 656.14,169.40 687.61,172.26 734.81,162.43 782.02,152.64 829.22,154.61 876.42,169.61"/>
+<line x1="94" y1="72" x2="122" y2="72" stroke="#263238" stroke-width="3"/>
+<text x="130.00" y="76.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">graded phase</text>
+<line x1="94" y1="94" x2="122" y2="94" stroke="#2962ff" stroke-width="3"/>
+<text x="130.00" y="98.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">simple complex</text>
+<line x1="94" y1="116" x2="122" y2="116" stroke="#d84315" stroke-width="3" stroke-dasharray="7 5"/>
+<text x="130.00" y="120.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#263238">best mixture</text>
+<text x="487.00" y="492.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">d/lambda</text>
+<text x="22.00" y="246.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 246.00)">phase (rad)</text>
+</svg>

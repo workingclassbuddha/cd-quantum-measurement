@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="360.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Xiao Fig. 3 Distribution Predicts Fig. 4</text>
+<rect x="82" y="54" width="606" height="424" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="478" stroke="#eceff1"/>
+<text x="82.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.0067</text>
+<line x1="203.20" y1="54" x2="203.20" y2="478" stroke="#eceff1"/>
+<text x="203.20" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.21</text>
+<line x1="324.40" y1="54" x2="324.40" y2="478" stroke="#eceff1"/>
+<text x="324.40" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.41</text>
+<line x1="445.60" y1="54" x2="445.60" y2="478" stroke="#eceff1"/>
+<text x="445.60" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.61</text>
+<line x1="566.80" y1="54" x2="566.80" y2="478" stroke="#eceff1"/>
+<text x="566.80" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.8</text>
+<line x1="688.00" y1="54" x2="688.00" y2="478" stroke="#eceff1"/>
+<text x="688.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1</text>
+<line x1="82" y1="478.00" x2="688" y2="478.00" stroke="#eceff1"/>
+<text x="72.00" y="482.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.036</text>
+<line x1="82" y1="393.20" x2="688" y2="393.20" stroke="#eceff1"/>
+<text x="72.00" y="397.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.17</text>
+<line x1="82" y1="308.40" x2="688" y2="308.40" stroke="#eceff1"/>
+<text x="72.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.31</text>
+<line x1="82" y1="223.60" x2="688" y2="223.60" stroke="#eceff1"/>
+<text x="72.00" y="227.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.45</text>
+<line x1="82" y1="138.80" x2="688" y2="138.80" stroke="#eceff1"/>
+<text x="72.00" y="142.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.59</text>
+<line x1="82" y1="54.00" x2="688" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.73</text>
+<circle cx="114.46" cy="76.71" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="220.04" cy="152.60" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="331.95" cy="228.20" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="446.39" cy="303.94" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="552.25" cy="379.84" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="655.54" cy="455.29" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<polyline fill="none" stroke="#d84315" stroke-width="2.5" points="77.92,47.62 83.99,51.77 90.07,55.92 96.15,60.07 102.22,64.22 108.30,68.36 114.38,72.51 120.45,76.66 126.53,80.81 132.61,84.96 138.68,89.11 144.76,93.25 150.84,97.40 156.91,101.55 162.99,105.70 169.07,109.85 175.14,114.00 181.22,118.14 187.30,122.29 193.37,126.44 199.45,130.59 205.53,134.74 211.60,138.89 217.68,143.03 223.76,147.18 229.83,151.33 235.91,155.48 241.99,159.63 248.06,163.77 254.14,167.92 260.22,172.07 266.29,176.22 272.37,180.37 278.45,184.52 284.52,188.66 290.60,192.81 296.68,196.96 302.75,201.11 308.83,205.26 314.90,209.41 320.98,213.55 327.06,217.70 333.13,221.85 339.21,226.00 345.29,230.15 351.36,234.30 357.44,238.44 363.52,242.59 369.59,246.74 375.67,250.89 381.75,255.04 387.82,259.19 393.90,263.33 399.98,267.48 406.05,271.63 412.13,275.78 418.21,279.93 424.28,284.07 430.36,288.22 436.44,292.37 442.51,296.52 448.59,300.67 454.67,304.82 460.74,308.96 466.82,313.11 472.90,317.26 478.97,321.41 485.05,325.56 491.13,329.71 497.20,333.85 503.28,338.00 509.36,342.15 515.43,346.30 521.51,350.45 527.59,354.60 533.66,358.74 539.74,362.89 545.82,367.04 551.89,371.19 557.97,375.34 564.05,379.49 570.12,383.63 576.20,387.78 582.28,391.93 588.35,396.08 594.43,400.23 600.51,404.38 606.58,408.52 612.66,412.67 618.74,416.82 624.81,420.97 630.89,425.12 636.97,429.26 643.04,433.41 649.12,437.56 655.20,441.71 661.27,445.86 667.35,450.01 673.43,454.15 679.50,458.30 685.58,462.45"/>
+<text x="100.00" y="74.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#d84315">Fig. 3 no-refit prediction</text>
+<text x="385.00" y="532.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">visibility V</text>
+<text x="22.00" y="266.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 266.00)">mean |p| disturbance (hbar/d)</text>
+</svg>

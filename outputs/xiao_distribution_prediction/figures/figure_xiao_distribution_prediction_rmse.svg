@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="500" viewBox="0 0 820 500">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="410.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Xiao Distribution Prediction RMSE</text>
+<rect x="86" y="54" width="710" height="318" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="86" y1="372.00" x2="796" y2="372.00" stroke="#eceff1"/>
+<text x="76.00" y="376.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0</text>
+<line x1="86" y1="308.40" x2="796" y2="308.40" stroke="#eceff1"/>
+<text x="76.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.2</text>
+<line x1="86" y1="244.80" x2="796" y2="244.80" stroke="#eceff1"/>
+<text x="76.00" y="248.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.4</text>
+<line x1="86" y1="181.20" x2="796" y2="181.20" stroke="#eceff1"/>
+<text x="76.00" y="185.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.6</text>
+<line x1="86" y1="117.60" x2="796" y2="117.60" stroke="#eceff1"/>
+<text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.8</text>
+<line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
+<text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1</text>
+<rect x="117.95" y="370.93" width="113.60" height="1.07" fill="#2962ff" fill-opacity="0.82"/>
+<text x="174.75" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 174.75 390.00)">linear fig4 refit</text>
+<rect x="295.45" y="367.08" width="113.60" height="4.92" fill="#00897b" fill-opacity="0.82"/>
+<text x="352.25" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 352.25 390.00)">distribution no refit</text>
+<rect x="472.95" y="363.85" width="113.60" height="8.15" fill="#d84315" fill-opacity="0.82"/>
+<text x="529.75" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 529.75 390.00)">distribution panel a scaled</text>
+<rect x="650.45" y="349.96" width="113.60" height="22.04" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="707.25" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 707.25 390.00)">published bound</text>
+<text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">RMSE (hbar/d)</text>
+</svg>

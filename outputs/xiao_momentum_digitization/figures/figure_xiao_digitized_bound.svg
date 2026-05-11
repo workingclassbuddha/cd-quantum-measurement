@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="360.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Xiao Fig. 4 Digitized Points</text>
+<rect x="82" y="54" width="606" height="424" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="478" stroke="#eceff1"/>
+<text x="82.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.0067</text>
+<line x1="203.20" y1="54" x2="203.20" y2="478" stroke="#eceff1"/>
+<text x="203.20" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.21</text>
+<line x1="324.40" y1="54" x2="324.40" y2="478" stroke="#eceff1"/>
+<text x="324.40" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.41</text>
+<line x1="445.60" y1="54" x2="445.60" y2="478" stroke="#eceff1"/>
+<text x="445.60" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.61</text>
+<line x1="566.80" y1="54" x2="566.80" y2="478" stroke="#eceff1"/>
+<text x="566.80" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.8</text>
+<line x1="688.00" y1="54" x2="688.00" y2="478" stroke="#eceff1"/>
+<text x="688.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1</text>
+<line x1="82" y1="478.00" x2="688" y2="478.00" stroke="#eceff1"/>
+<text x="72.00" y="482.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.036</text>
+<line x1="82" y1="393.20" x2="688" y2="393.20" stroke="#eceff1"/>
+<text x="72.00" y="397.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.17</text>
+<line x1="82" y1="308.40" x2="688" y2="308.40" stroke="#eceff1"/>
+<text x="72.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.31</text>
+<line x1="82" y1="223.60" x2="688" y2="223.60" stroke="#eceff1"/>
+<text x="72.00" y="227.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.45</text>
+<line x1="82" y1="138.80" x2="688" y2="138.80" stroke="#eceff1"/>
+<text x="72.00" y="142.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.59</text>
+<line x1="82" y1="54.00" x2="688" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.73</text>
+<circle cx="114.46" cy="76.71" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="220.04" cy="152.60" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="331.95" cy="228.20" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="446.39" cy="303.94" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="552.25" cy="379.84" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="655.54" cy="455.29" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<polyline fill="none" stroke="#d84315" stroke-width="2.5" points="77.92,108.76 83.99,112.67 90.07,116.58 96.15,120.49 102.22,124.41 108.30,128.32 114.38,132.23 120.45,136.14 126.53,140.05 132.61,143.96 138.68,147.88 144.76,151.79 150.84,155.70 156.91,159.61 162.99,163.52 169.07,167.43 175.14,171.35 181.22,175.26 187.30,179.17 193.37,183.08 199.45,186.99 205.53,190.90 211.60,194.82 217.68,198.73 223.76,202.64 229.83,206.55 235.91,210.46 241.99,214.37 248.06,218.29 254.14,222.20 260.22,226.11 266.29,230.02 272.37,233.93 278.45,237.84 284.52,241.76 290.60,245.67 296.68,249.58 302.75,253.49 308.83,257.40 314.90,261.31 320.98,265.23 327.06,269.14 333.13,273.05 339.21,276.96 345.29,280.87 351.36,284.78 357.44,288.70 363.52,292.61 369.59,296.52 375.67,300.43 381.75,304.34 387.82,308.25 393.90,312.17 399.98,316.08 406.05,319.99 412.13,323.90 418.21,327.81 424.28,331.72 430.36,335.64 436.44,339.55 442.51,343.46 448.59,347.37 454.67,351.28 460.74,355.19 466.82,359.11 472.90,363.02 478.97,366.93 485.05,370.84 491.13,374.75 497.20,378.66 503.28,382.58 509.36,386.49 515.43,390.40 521.51,394.31 527.59,398.22 533.66,402.14 539.74,406.05 545.82,409.96 551.89,413.87 557.97,417.78 564.05,421.69 570.12,425.61 576.20,429.52 582.28,433.43 588.35,437.34 594.43,441.25 600.51,445.16 606.58,449.08 612.66,452.99 618.74,456.90 624.81,460.81 630.89,464.72 636.97,468.63 643.04,472.55 649.12,476.46 655.20,480.37 661.27,484.28 667.35,488.19 673.43,492.10 679.50,496.02 685.58,499.93"/>
+<text x="100.00" y="74.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#d84315">published bound</text>
+<text x="385.00" y="532.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">visibility V</text>
+<text x="22.00" y="266.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 266.00)">mean |p| disturbance (hbar/d)</text>
+</svg>

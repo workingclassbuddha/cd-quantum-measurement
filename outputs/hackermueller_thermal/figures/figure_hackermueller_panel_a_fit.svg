@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="360.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Hackermueller Fig. 4a</text>
+<rect x="82" y="54" width="606" height="424" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="478" stroke="#eceff1"/>
+<text x="82.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">-0.6</text>
+<line x1="203.20" y1="54" x2="203.20" y2="478" stroke="#eceff1"/>
+<text x="203.20" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">1.6</text>
+<line x1="324.40" y1="54" x2="324.40" y2="478" stroke="#eceff1"/>
+<text x="324.40" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">3.9</text>
+<line x1="445.60" y1="54" x2="445.60" y2="478" stroke="#eceff1"/>
+<text x="445.60" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">6.1</text>
+<line x1="566.80" y1="54" x2="566.80" y2="478" stroke="#eceff1"/>
+<text x="566.80" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">8.4</text>
+<line x1="688.00" y1="54" x2="688.00" y2="478" stroke="#eceff1"/>
+<text x="688.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">11</text>
+<line x1="82" y1="478.00" x2="688" y2="478.00" stroke="#eceff1"/>
+<text x="72.00" y="482.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">-0.049</text>
+<line x1="82" y1="393.20" x2="688" y2="393.20" stroke="#eceff1"/>
+<text x="72.00" y="397.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.17</text>
+<line x1="82" y1="308.40" x2="688" y2="308.40" stroke="#eceff1"/>
+<text x="72.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.39</text>
+<line x1="82" y1="223.60" x2="688" y2="223.60" stroke="#eceff1"/>
+<text x="72.00" y="227.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.62</text>
+<line x1="82" y1="138.80" x2="688" y2="138.80" stroke="#eceff1"/>
+<text x="72.00" y="142.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.84</text>
+<line x1="82" y1="54.00" x2="688" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.1</text>
+<circle cx="114.46" cy="76.71" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="141.52" cy="103.48" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="168.57" cy="122.60" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="195.62" cy="114.95" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="222.68" cy="168.49" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="249.73" cy="202.90" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="276.79" cy="225.85" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="303.84" cy="244.97" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="330.89" cy="302.33" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="357.95" cy="294.68" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="385.00" cy="359.69" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="412.05" cy="363.51" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="439.11" cy="405.57" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="466.16" cy="409.40" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="493.21" cy="428.52" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="520.27" cy="447.64" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="547.32" cy="428.52" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="574.37" cy="439.99" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="628.48" cy="455.29" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<circle cx="655.54" cy="447.64" r="3.4" fill="#2962ff" fill-opacity="0.62"/>
+<polyline fill="none" stroke="#d84315" stroke-width="2.5" points="114.46,92.68 119.01,92.81 123.56,93.19 128.10,93.82 132.65,94.70 137.20,95.83 141.75,97.21 146.29,98.84 150.84,100.70 155.39,102.80 159.93,105.13 164.48,107.69 169.03,110.48 173.57,113.48 178.12,116.69 182.67,120.10 187.21,123.71 191.76,127.51 196.31,131.50 200.85,135.66 205.40,139.98 209.95,144.47 214.49,149.10 219.04,153.88 223.59,158.79 228.13,163.82 232.68,168.97 237.23,174.22 241.78,179.57 246.32,185.01 250.87,190.52 255.42,196.10 259.96,201.75 264.51,207.44 269.06,213.17 273.60,218.94 278.15,224.73 282.70,230.53 287.24,236.34 291.79,242.15 296.34,247.95 300.88,253.73 305.43,259.49 309.98,265.21 314.52,270.90 319.07,276.54 323.62,282.13 328.16,287.66 332.71,293.13 337.26,298.53 341.81,303.85 346.35,309.10 350.90,314.26 355.45,319.33 359.99,324.31 364.54,329.20 369.09,333.99 373.63,338.67 378.18,343.26 382.73,347.74 387.27,352.11 391.82,356.37 396.37,360.52 400.91,364.56 405.46,368.48 410.01,372.30 414.55,376.00 419.10,379.59 423.65,383.06 428.19,386.42 432.74,389.67 437.29,392.81 441.84,395.85 446.38,398.77 450.93,401.58 455.48,404.29 460.02,406.90 464.57,409.40 469.12,411.80 473.66,414.11 478.21,416.31 482.76,418.43 487.30,420.45 491.85,422.38 496.40,424.23 500.94,425.99 505.49,427.67 510.04,429.27 514.58,430.79 519.13,432.24 523.68,433.62 528.22,434.93 532.77,436.17 537.32,437.34 541.87,438.45 546.41,439.51 550.96,440.50 555.51,441.44 560.05,442.33 564.60,443.17 569.15,443.96 573.69,444.70 578.24,445.40 582.79,446.06 587.33,446.68 591.88,447.26 596.43,447.81 600.97,448.32 605.52,448.80 610.07,449.24 614.61,449.66 619.16,450.05 623.71,450.42 628.25,450.76 632.80,451.08 637.35,451.37 641.90,451.65 646.44,451.90 650.99,452.14 655.54,452.36"/>
+<text x="100.00" y="74.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#d84315">exp power2</text>
+<text x="385.00" y="532.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">incident laser power (W)</text>
+<text x="22.00" y="266.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 266.00)">normalized visibility</text>
+</svg>

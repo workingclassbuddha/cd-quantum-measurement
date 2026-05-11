@@ -1,0 +1,127 @@
+{
+  "study_id": "XIAO_2019_MOMENTUM",
+  "source_title": "Observing momentum disturbance in double-slit which-way measurements",
+  "source_url": "https://arxiv.org/abs/1805.02059",
+  "arxiv_source_url": "https://arxiv.org/e-print/1805.02059",
+  "doi": "https://doi.org/10.1126/sciadv.aav9547",
+  "render_dpi": 250,
+  "extraction_method": "calibrated_component_digitization_v1",
+  "extracted_by": "Codex",
+  "extraction_date": "2026-04-24",
+  "coordinate_system": "pdftoppm raw PPM pixels, origin at top left",
+  "source_file": "visibility.pdf",
+  "source_file_sha256": "d2d51429e956de450ad66029e16ebdbdd8f162b0cd39a458f8ac4bf35f028213",
+  "component_detection": {
+    "blue_min": 150,
+    "red_max": 130,
+    "green_max": 170,
+    "min_component_size": 40,
+    "notes": "Blue experimental markers are isolated from the Fig. 4 vector PDF render."
+  },
+  "figures": [
+    {
+      "figure": "Fig.4",
+      "source_panel": "visibility_momentum",
+      "axis": {
+        "x_name": "visibility_V",
+        "x_units": "dimensionless",
+        "x_min": 0.0,
+        "x_max": 1.0,
+        "x_pixel_min": [
+          174.0,
+          591.0
+        ],
+        "x_pixel_max": [
+          963.0,
+          591.0
+        ],
+        "y_name": "mean_absolute_bohmian_momentum_disturbance",
+        "y_units": "hbar_over_d",
+        "y_min": 0.0,
+        "y_max": 0.75,
+        "y_pixel_min": [
+          174.0,
+          591.0
+        ],
+        "y_pixel_max": [
+          174.0,
+          5.0
+        ]
+      },
+      "series": [
+        {
+          "series_name": "blue_experimental_points",
+          "visibility_se": null,
+          "momentum_se": null,
+          "estimated_extraction_uncertainty_visibility": 0.006,
+          "estimated_extraction_uncertainty_momentum": 0.006,
+          "notes": "Fast scout component centers from Fig. 4; error bars are not separately digitized.",
+          "points": [
+            {
+              "x_pixel": 221.45535714285714,
+              "y_pixel": 52.839285714285715,
+              "component_size": 112,
+              "x_pixel_min": 213,
+              "x_pixel_max": 230,
+              "y_pixel_min": 44,
+              "y_pixel_max": 62
+            },
+            {
+              "x_pixel": 358.5405405405405,
+              "y_pixel": 149.34234234234233,
+              "component_size": 111,
+              "x_pixel_min": 350,
+              "x_pixel_max": 367,
+              "y_pixel_min": 141,
+              "y_pixel_max": 158
+            },
+            {
+              "x_pixel": 503.8363636363636,
+              "y_pixel": 245.46363636363637,
+              "component_size": 110,
+              "x_pixel_min": 496,
+              "x_pixel_max": 512,
+              "y_pixel_min": 237,
+              "y_pixel_max": 254
+            },
+            {
+              "x_pixel": 652.433962264151,
+              "y_pixel": 341.7830188679245,
+              "component_size": 106,
+              "x_pixel_min": 646,
+              "x_pixel_max": 659,
+              "y_pixel_min": 334,
+              "y_pixel_max": 350
+            },
+            {
+              "x_pixel": 789.88,
+              "y_pixel": 438.3,
+              "component_size": 100,
+              "x_pixel_min": 784,
+              "x_pixel_max": 795,
+              "y_pixel_min": 432,
+              "y_pixel_max": 445
+            },
+            {
+              "x_pixel": 923.9893617021277,
+              "y_pixel": 534.2340425531914,
+              "component_size": 94,
+              "x_pixel_min": 918,
+              "x_pixel_max": 930,
+              "y_pixel_min": 529,
+              "y_pixel_max": 540
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "source_dir": "outputs/tmp/second_hunt_sources/xiao",
+  "rendered_figure": {
+    "path": "outputs/tmp/xiao_momentum_digitization/xiao_visibility-1.ppm",
+    "width": 984,
+    "height": 701,
+    "min_pixel": 0,
+    "max_pixel": 255
+  }
+}

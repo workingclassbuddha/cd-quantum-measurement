@@ -1,0 +1,2 @@
+null_type,n_samples,observed_pearson,null_pearson_mean,null_pearson_p95,p_pearson_ge_observed,observed_linear_rmse,null_linear_rmse_mean,null_linear_rmse_p05,p_linear_rmse_le_observed
+momentum_pairing_shuffle,1000,0.9998711083884346,-0.02050065544849354,0.7687359259833275,0.004,0.0033791199380243174,0.18435450137997342,0.11971658044082885,0.004

@@ -1,0 +1,3 @@
+null_type,n_samples,observed_no_refit_rmse,null_rmse_mean,null_rmse_p05,p_rmse_le_observed
+fig4_momentum_pairing_shuffle,1000,0.01334336655995004,0.2877702031156415,0.1546494955080374,0.003
+fig3_branch_label_swap,496,0.01334336655995004,0.8138787356527005,0.8138787356527009,0.0

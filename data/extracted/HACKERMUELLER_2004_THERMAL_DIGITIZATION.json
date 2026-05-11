@@ -1,0 +1,389 @@
+{
+  "study_id": "HACKERMUELLER_2004_THERMAL",
+  "source_title": "Decoherence of matter waves by thermal emission of radiation",
+  "source_authors": "Hackermueller; Hornberger; Brezger; Zeilinger; Arndt",
+  "year": 2004,
+  "source_url": "https://arxiv.org/abs/quant-ph/0402146",
+  "arxiv_source_url": "https://arxiv.org/e-print/quant-ph/0402146",
+  "doi": "https://doi.org/10.1038/nature02276",
+  "source_file": "Figure4.eps",
+  "source_file_sha256": "cfba7756525a972f6e5d5775f4a7e510fa815364bf4539b723db93c00f7ec7fd",
+  "digitization_date": "2026-04-30",
+  "extraction_method": "calibrated_eps_render_digitization_v2",
+  "notes": "Calibrated EPS-rendered Fig. 4 points with fixed axis anchors; seeded scout points remain the fallback comparison until fully automated vector extraction is added.",
+  "figures": [
+    {
+      "figure": "Figure 4a",
+      "panel": "a",
+      "velocity_m_s": 190.0,
+      "heating_beams": 16,
+      "height_delimiter_um": 50.0,
+      "max_unheated_visibility": 0.47,
+      "axis_bounds": {
+        "x_min": 0.0,
+        "x_max": 10.0,
+        "y_min": 0.0,
+        "y_max": 1.0,
+        "x_pixel_min": [
+          105.0,
+          420
+        ],
+        "x_pixel_max": [
+          610.0,
+          420
+        ],
+        "y_pixel_min": [
+          105.0,
+          420
+        ],
+        "y_pixel_max": [
+          105.0,
+          110
+        ]
+      },
+      "temperature_axis_anchors": [
+        [
+          0.0,
+          1180.0
+        ],
+        [
+          1.0,
+          1360.0
+        ],
+        [
+          3.0,
+          2270.0
+        ],
+        [
+          5.0,
+          2850.0
+        ],
+        [
+          7.0,
+          3070.0
+        ],
+        [
+          9.0,
+          3140.0
+        ],
+        [
+          10.0,
+          3140.0
+        ]
+      ],
+      "points": [
+        {
+          "laser_power_W": 0.0,
+          "normalized_visibility": 1.0,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 1180.0,
+          "x_pixel": 105.0,
+          "y_pixel": 110.0
+        },
+        {
+          "laser_power_W": 0.5,
+          "normalized_visibility": 0.93,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 1270.0,
+          "x_pixel": 130.25,
+          "y_pixel": 131.7
+        },
+        {
+          "laser_power_W": 1.0,
+          "normalized_visibility": 0.88,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 1360.0,
+          "x_pixel": 155.5,
+          "y_pixel": 147.2
+        },
+        {
+          "laser_power_W": 1.5,
+          "normalized_visibility": 0.9,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 1587.5,
+          "x_pixel": 180.75,
+          "y_pixel": 141.0
+        },
+        {
+          "laser_power_W": 2.0,
+          "normalized_visibility": 0.76,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 1815.0,
+          "x_pixel": 206.0,
+          "y_pixel": 184.4
+        },
+        {
+          "laser_power_W": 2.5,
+          "normalized_visibility": 0.67,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2042.5,
+          "x_pixel": 231.25,
+          "y_pixel": 212.3
+        },
+        {
+          "laser_power_W": 3.0,
+          "normalized_visibility": 0.61,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2270.0,
+          "x_pixel": 256.5,
+          "y_pixel": 230.9
+        },
+        {
+          "laser_power_W": 3.5,
+          "normalized_visibility": 0.56,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2415.0,
+          "x_pixel": 281.75,
+          "y_pixel": 246.4
+        },
+        {
+          "laser_power_W": 4.0,
+          "normalized_visibility": 0.41,
+          "visibility_se": 0.04,
+          "mean_temperature_K": 2560.0,
+          "x_pixel": 307.0,
+          "y_pixel": 292.9
+        },
+        {
+          "laser_power_W": 4.5,
+          "normalized_visibility": 0.43,
+          "visibility_se": 0.04,
+          "mean_temperature_K": 2705.0,
+          "x_pixel": 332.25,
+          "y_pixel": 286.7
+        },
+        {
+          "laser_power_W": 5.0,
+          "normalized_visibility": 0.26,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2850.0,
+          "x_pixel": 357.5,
+          "y_pixel": 339.4
+        },
+        {
+          "laser_power_W": 5.5,
+          "normalized_visibility": 0.25,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2905.0,
+          "x_pixel": 382.75,
+          "y_pixel": 342.5
+        },
+        {
+          "laser_power_W": 6.0,
+          "normalized_visibility": 0.14,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 2960.0,
+          "x_pixel": 408.0,
+          "y_pixel": 376.6
+        },
+        {
+          "laser_power_W": 6.5,
+          "normalized_visibility": 0.13,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 3015.0,
+          "x_pixel": 433.25,
+          "y_pixel": 379.7
+        },
+        {
+          "laser_power_W": 7.0,
+          "normalized_visibility": 0.08,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 3070.0,
+          "x_pixel": 458.5,
+          "y_pixel": 395.2
+        },
+        {
+          "laser_power_W": 7.5,
+          "normalized_visibility": 0.03,
+          "visibility_se": 0.025,
+          "mean_temperature_K": 3087.5,
+          "x_pixel": 483.75,
+          "y_pixel": 410.7
+        },
+        {
+          "laser_power_W": 8.0,
+          "normalized_visibility": 0.08,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 3105.0,
+          "x_pixel": 509.0,
+          "y_pixel": 395.2
+        },
+        {
+          "laser_power_W": 8.5,
+          "normalized_visibility": 0.05,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 3122.5,
+          "x_pixel": 534.25,
+          "y_pixel": 404.5
+        },
+        {
+          "laser_power_W": 9.5,
+          "normalized_visibility": 0.01,
+          "visibility_se": 0.025,
+          "mean_temperature_K": 3140.0,
+          "x_pixel": 584.75,
+          "y_pixel": 416.9
+        },
+        {
+          "laser_power_W": 10.0,
+          "normalized_visibility": 0.03,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 3140.0,
+          "x_pixel": 610.0,
+          "y_pixel": 410.7
+        }
+      ]
+    },
+    {
+      "figure": "Figure 4b",
+      "panel": "b",
+      "velocity_m_s": 100.0,
+      "heating_beams": 10,
+      "height_delimiter_um": 150.0,
+      "max_unheated_visibility": 0.19,
+      "axis_bounds": {
+        "x_min": 0.0,
+        "x_max": 10.0,
+        "y_min": 0.0,
+        "y_max": 1.0,
+        "x_pixel_min": [
+          105.0,
+          780
+        ],
+        "x_pixel_max": [
+          610.0,
+          780
+        ],
+        "y_pixel_min": [
+          105.0,
+          780
+        ],
+        "y_pixel_max": [
+          105.0,
+          470
+        ]
+      },
+      "temperature_axis_anchors": [
+        [
+          0.0,
+          1320.0
+        ],
+        [
+          0.8,
+          1540.0
+        ],
+        [
+          3.0,
+          2580.0
+        ],
+        [
+          5.0,
+          2880.0
+        ],
+        [
+          7.0,
+          2930.0
+        ],
+        [
+          9.5,
+          2940.0
+        ],
+        [
+          10.0,
+          2940.0
+        ]
+      ],
+      "points": [
+        {
+          "laser_power_W": 0.0,
+          "normalized_visibility": 1.0,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 1320.0,
+          "x_pixel": 105.0,
+          "y_pixel": 470.0
+        },
+        {
+          "laser_power_W": 1.0,
+          "normalized_visibility": 0.96,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 1634.5454545454545,
+          "x_pixel": 155.5,
+          "y_pixel": 482.4
+        },
+        {
+          "laser_power_W": 2.0,
+          "normalized_visibility": 0.8,
+          "visibility_se": 0.04,
+          "mean_temperature_K": 2107.272727272727,
+          "x_pixel": 206.0,
+          "y_pixel": 532.0
+        },
+        {
+          "laser_power_W": 3.0,
+          "normalized_visibility": 0.32,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2580.0,
+          "x_pixel": 256.5,
+          "y_pixel": 680.8
+        },
+        {
+          "laser_power_W": 4.0,
+          "normalized_visibility": 0.12,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 2730.0,
+          "x_pixel": 307.0,
+          "y_pixel": 742.8
+        },
+        {
+          "laser_power_W": 5.0,
+          "normalized_visibility": 0.1,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 2880.0,
+          "x_pixel": 357.5,
+          "y_pixel": 749.0
+        },
+        {
+          "laser_power_W": 6.0,
+          "normalized_visibility": 0.06,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 2905.0,
+          "x_pixel": 408.0,
+          "y_pixel": 761.4
+        },
+        {
+          "laser_power_W": 7.0,
+          "normalized_visibility": 0.0,
+          "visibility_se": 0.025,
+          "mean_temperature_K": 2930.0,
+          "x_pixel": 458.5,
+          "y_pixel": 780.0
+        },
+        {
+          "laser_power_W": 8.0,
+          "normalized_visibility": 0.06,
+          "visibility_se": 0.035,
+          "mean_temperature_K": 2934.0,
+          "x_pixel": 509.0,
+          "y_pixel": 761.4
+        },
+        {
+          "laser_power_W": 9.0,
+          "normalized_visibility": 0.0,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 2938.0,
+          "x_pixel": 559.5,
+          "y_pixel": 780.0
+        },
+        {
+          "laser_power_W": 10.0,
+          "normalized_visibility": 0.0,
+          "visibility_se": 0.03,
+          "mean_temperature_K": 2940.0,
+          "x_pixel": 610.0,
+          "y_pixel": 780.0
+        }
+      ]
+    }
+  ],
+  "source_dir": "outputs/tmp/third_hunt_sources/hackermueller/extracted"
+}

@@ -1,0 +1,15 @@
+metric,value
+xiao_row_count,6
+xiao_monotone_momentum_decreases_with_visibility,True
+xiao_all_points_above_bound,True
+xiao_loss_momentum_pearson_r,0.999871
+xiao_linear_bandwidth_intercept,0.042925
+xiao_linear_bandwidth_slope,0.686610
+xiao_linear_bandwidth_rmse,0.003379
+xiao_linear_bandwidth_mae,0.002721
+xiao_linear_bandwidth_r2,0.999742
+xiao_published_bound_rmse,0.069307
+xiao_published_bound_mae,0.067507
+cormann_visibility_row_count,41
+cormann_phase_sign_row_count,18
+winner_recommendation,Xiao full implementation
