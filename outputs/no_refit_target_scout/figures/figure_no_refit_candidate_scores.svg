@@ -14,17 +14,19 @@
 <text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.85</text>
 <line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
 <text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.1</text>
-<rect x="107.30" y="88.07" width="75.73" height="283.93" fill="#2962ff" fill-opacity="0.82"/>
-<text x="145.17" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 145.17 390.00)">XIAO 2019 INTERNAL LEA</text>
-<rect x="225.63" y="162.79" width="75.73" height="209.21" fill="#00897b" fill-opacity="0.82"/>
-<text x="263.50" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 263.50 390.00)">EIBENBERGER 2014 RECOI</text>
-<rect x="343.97" y="168.77" width="75.73" height="203.23" fill="#d84315" fill-opacity="0.82"/>
-<text x="381.83" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 381.83 390.00)">HORNBERGER 2003 COLLIS</text>
-<rect x="462.30" y="237.51" width="75.73" height="134.49" fill="#6a1b9a" fill-opacity="0.82"/>
-<text x="500.17" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 500.17 390.00)">KOCSIS 2011 AVERAGE TR</text>
-<rect x="580.63" y="246.47" width="75.73" height="125.53" fill="#f9a825" fill-opacity="0.82"/>
-<text x="618.50" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 618.50 390.00)">CORMANN 2016 MODULAR V</text>
-<rect x="698.97" y="267.39" width="75.73" height="104.61" fill="#455a64" fill-opacity="0.82"/>
-<text x="736.83" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 736.83 390.00)">DURR 1998 COMPLEMENTAR</text>
+<rect x="104.26" y="88.07" width="64.91" height="283.93" fill="#2962ff" fill-opacity="0.82"/>
+<text x="136.71" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 136.71 390.00)">XIAO 2019 INTERNAL LEA</text>
+<rect x="205.69" y="162.79" width="64.91" height="209.21" fill="#00897b" fill-opacity="0.82"/>
+<text x="238.14" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 238.14 390.00)">EIBENBERGER 2014 RECOI</text>
+<rect x="307.11" y="168.77" width="64.91" height="203.23" fill="#d84315" fill-opacity="0.82"/>
+<text x="339.57" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 339.57 390.00)">HORNBERGER 2003 COLLIS</text>
+<rect x="408.54" y="216.59" width="64.91" height="155.41" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="441.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 441.00 390.00)">MIR 2007 WEAK VALUE MO</text>
+<rect x="509.97" y="237.51" width="64.91" height="134.49" fill="#f9a825" fill-opacity="0.82"/>
+<text x="542.43" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 542.43 390.00)">KOCSIS 2011 AVERAGE TR</text>
+<rect x="611.40" y="246.47" width="64.91" height="125.53" fill="#455a64" fill-opacity="0.82"/>
+<text x="643.86" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 643.86 390.00)">CORMANN 2016 MODULAR V</text>
+<rect x="712.83" y="267.39" width="64.91" height="104.61" fill="#c2185b" fill-opacity="0.82"/>
+<text x="745.29" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 745.29 390.00)">DURR 1998 COMPLEMENTAR</text>
 <text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">gate score</text>
 </svg>

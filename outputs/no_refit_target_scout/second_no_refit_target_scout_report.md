@@ -6,7 +6,7 @@ This scout asks a narrow question: is there a second experiment, independent of 
 
 ## Result
 
-- Candidate count: 6
+- Candidate count: 7
 - Eligible second distribution targets: 0
 - Recommended next candidate: `EIBENBERGER_2014_RECOIL_ABSORPTION`
 - Recommended next command: `scout-eibenberger-recoil-absorption`
@@ -18,6 +18,7 @@ The answer is currently negative for the strict Xiao-like gate. The best next pr
 - **Xiao et al. 2019** (`XIAO_2019_INTERNAL_LEAD`): score 0.95. Role: current lead, not independent second experiment. Blocker: within-paper cross-figure result; cannot satisfy independent second-experiment gate
 - **Eibenberger et al. 2014** (`EIBENBERGER_2014_RECOIL_ABSORPTION`): score 0.70. Role: best next recoil-control scout. Blocker: visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense
 - **Hackermueller/Hornberger et al. 2003** (`HORNBERGER_2003_COLLISIONAL_DECOHERENCE`): score 0.68. Role: best standard-decoherence no-adjustable-parameter control. Blocker: excellent record-load control but not an independently measured record distribution
+- **Mir et al. 2007** (`MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER`): score 0.52. Role: closest pre-Xiao measured momentum-transfer candidate. Blocker: directly measures a momentum-transfer distribution but does not yet provide the paired visibility curve needed for the no-refit gate
 - **Kocsis et al. 2011** (`KOCSIS_2011_AVERAGE_TRAJECTORIES`): score 0.45. Role: conceptual kin, weak no-refit target. Blocker: measures momentum/trajectories but does not provide a visibility-loss curve to predict
 - **Cormann et al. 2016** (`CORMANN_2016_MODULAR_VALUE`): score 0.42. Role: phase-control dataset, not record-distribution gate. Blocker: useful visibility-plus-phase target but no independent measured record distribution
 - **Duerr/Nonn/Rempe 1998** (`DURR_1998_COMPLEMENTARITY`): score 0.35. Role: complementarity control. Blocker: distinguishability/visibility duality is not a measured record-bandwidth distribution
