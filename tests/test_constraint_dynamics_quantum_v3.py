@@ -66,6 +66,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_breakthrough_author_data_requests,
     make_author_data_intake_outputs,
     make_breakthrough_gap_audit_outputs,
+    make_current_goal_completion_audit_outputs,
     make_public_data_availability_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
@@ -934,6 +935,59 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
     )
     assert (cli_output_dir / "breakthrough_candidate_scorecard.csv").exists()
     assert (cli_output_dir / "next_breakthrough_steps.csv").exists()
+
+
+def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
+    scorecard = pd.DataFrame(
+        [
+            {"gate_id": "G10", "passed": False},
+            {"gate_id": "G12", "passed": False},
+        ]
+    )
+    g11_summary = pd.DataFrame(
+        [{"eligible_second_no_refit_targets": 0}]
+    )
+    public_summary = pd.DataFrame(
+        [{"supports_g11_without_author_contact": 0}]
+    )
+    author_summary = pd.DataFrame(
+        [{"g11_ready_rows": 0}]
+    )
+    paths = {}
+    for name, frame in [
+        ("scorecard", scorecard),
+        ("g11", g11_summary),
+        ("public", public_summary),
+        ("author", author_summary),
+    ]:
+        path = tmp_path / f"{name}.csv"
+        frame.to_csv(path, index=False)
+        paths[name] = path
+    output_dir = tmp_path / "goal_audit"
+    checklist, summary = make_current_goal_completion_audit_outputs(
+        output_dir,
+        paths["scorecard"],
+        paths["g11"],
+        paths["public"],
+        paths["author"],
+    )
+    assert not checklist.empty
+    assert not bool(summary["objective_achieved"].iloc[0])
+    assert "second_independent_distribution_to_visibility_validation" in set(
+        checklist["requirement"]
+    )
+    assert (output_dir / "current_goal_completion_audit.md").exists()
+
+    cli_output_dir = tmp_path / "goal_audit_cli"
+    # The CLI uses default repo paths; this checks parser dispatch.
+    main(
+        [
+            "audit-current-goal-status",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "current_goal_completion_summary.csv").exists()
 
 
 def test_no_refit_target_scout_outputs_and_cli(tmp_path):

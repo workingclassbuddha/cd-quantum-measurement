@@ -91,6 +91,7 @@ python src/constraint_dynamics_quantum_v3.py audit-breakthrough-gaps --output-di
 python src/constraint_dynamics_quantum_v3.py audit-public-data-availability --output-dir outputs/public_data_availability
 python src/constraint_dynamics_quantum_v3.py prepare-author-data-intake --output-dir outputs/author_data_intake
 python src/constraint_dynamics_quantum_v3.py validate-author-data-manifest --manifest outputs/author_data_intake/author_data_received_manifest_template.csv --schema outputs/author_data_intake/author_data_intake_schema.csv --output-dir outputs/author_data_validation
+python src/constraint_dynamics_quantum_v3.py audit-current-goal-status --output-dir outputs/current_goal_audit
 ```
 
 Current verdict:
@@ -108,6 +109,8 @@ The public-data audit checks the lead source records for immediately usable nume
 The author-data intake plan writes target-specific schemas and manifest templates. Its key rule is strict: a response can affect G11 only if the record distribution, record width, or load calibration is independent of the visibility/decoherence curve being predicted.
 
 The validator turns that rule into a gate. With the committed empty manifest template, it reports `no author data ready for G11 analysis`.
+
+The current-goal audit is the stoplight for this thread. It currently reports `objective not complete: breakthrough path still blocked`, with G10, G11, and G12 open.
 
 Live tracking:
 

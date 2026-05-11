@@ -215,6 +215,7 @@ python src/constraint_dynamics_quantum_v3.py audit-breakthrough-gaps --output-di
 python src/constraint_dynamics_quantum_v3.py audit-public-data-availability --output-dir outputs/public_data_availability
 python src/constraint_dynamics_quantum_v3.py prepare-author-data-intake --output-dir outputs/author_data_intake
 python src/constraint_dynamics_quantum_v3.py validate-author-data-manifest --manifest outputs/author_data_intake/author_data_received_manifest_template.csv --schema outputs/author_data_intake/author_data_intake_schema.csv --output-dir outputs/author_data_validation
+python src/constraint_dynamics_quantum_v3.py audit-current-goal-status --output-dir outputs/current_goal_audit
 python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_weak_value_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
@@ -367,6 +368,8 @@ The live G11 coordination thread is [issue #1](https://github.com/workingclassbu
 The author-data intake command writes schemas and manifest templates for received numerical data. It explicitly marks Xiao as lead calibration only, while Hochrainer, Mir, and Eibenberger can affect G11 only if their record-width/distribution/load variable is independent of the visibility curve being predicted.
 
 The manifest validator checks received rows against those schemas. The committed empty-template validation currently reports `g11_ready_rows = 0`.
+
+The current-goal audit writes `outputs/current_goal_audit/current_goal_completion_audit.md`; it currently reports `objective_achieved = False` with G10, G11, and G12 still open.
 
 The Mir weak-value scout is the closest historical near miss. The arXiv source includes Fig. 3, an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 quantum-eraser conditional patterns. The scout verdict is `measured momentum-transfer distribution found, visibility sweep missing`: useful as a weak-value/momentum-transfer control, but it does not clear the missing second no-refit distribution-to-visibility gate.
 

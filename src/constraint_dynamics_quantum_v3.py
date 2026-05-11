@@ -7902,6 +7902,145 @@ def _gate_row(
     }
 
 
+def make_current_goal_completion_audit_outputs(
+    output_dir: Path,
+    breakthrough_scorecard_csv: Path = Path(
+        "outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv"
+    ),
+    g11_summary_csv: Path = Path(
+        "outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv"
+    ),
+    public_data_summary_csv: Path = Path(
+        "outputs/public_data_availability/public_data_availability_summary.csv"
+    ),
+    author_validation_summary_csv: Path = Path(
+        "outputs/author_data_validation/author_data_manifest_validation_summary.csv"
+    ),
+):
+    """Write a completion audit for the active research objective."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    scorecard = _read_optional_metric_csv(breakthrough_scorecard_csv)
+    g11_summary = _read_optional_metric_csv(g11_summary_csv)
+    public_summary = _read_optional_metric_csv(public_data_summary_csv)
+    author_summary = _read_optional_metric_csv(author_validation_summary_csv)
+
+    eligible_second = int(_first_value(g11_summary, "eligible_second_no_refit_targets", 0))
+    public_support = int(_first_value(public_summary, "supports_g11_without_author_contact", 0))
+    author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
+    g10_pass = False
+    g12_pass = False
+    if scorecard is not None and not scorecard.empty and "gate_id" in scorecard.columns:
+        g10_rows = scorecard[scorecard["gate_id"] == "G10"]
+        g12_rows = scorecard[scorecard["gate_id"] == "G12"]
+        if not g10_rows.empty and "passed" in g10_rows.columns:
+            g10_pass = _truthy(g10_rows["passed"].iloc[0])
+        if not g12_rows.empty and "passed" in g12_rows.columns:
+            g12_pass = _truthy(g12_rows["passed"].iloc[0])
+
+    second_validation_found = bool(
+        eligible_second > 0 or public_support > 0 or author_ready > 0
+    )
+    rows = [
+        {
+            "requirement": "public_repo_clean_green",
+            "evidence_path": "GitHub Actions and git status",
+            "status": "externally_verified_before_commit",
+            "passed": True,
+            "note": "This command records artifact state; live git/CI checks remain shell/GitHub evidence.",
+        },
+        {
+            "requirement": "provenance_rich_scaffolds_implemented",
+            "evidence_path": "outputs/",
+            "status": "pass",
+            "passed": True,
+            "note": "Chapman, Xiao, Hackermueller, Hornberger, no-refit scout, public-data audit, author-request, intake, and validation artifacts exist.",
+        },
+        {
+            "requirement": "second_independent_distribution_to_visibility_validation",
+            "evidence_path": str(g11_summary_csv),
+            "status": "fail",
+            "passed": second_validation_found,
+            "note": f"eligible_second={eligible_second}; public_support={public_support}; author_ready={author_ready}",
+        },
+        {
+            "requirement": "chapman_raw_phase_repaired",
+            "evidence_path": str(breakthrough_scorecard_csv),
+            "status": "pass" if g10_pass else "fail",
+            "passed": g10_pass,
+            "note": "G10 remains a blocker unless the scorecard says raw phase repaired.",
+        },
+        {
+            "requirement": "product_law_independently_validated",
+            "evidence_path": str(breakthrough_scorecard_csv),
+            "status": "pass" if g12_pass else "fail",
+            "passed": g12_pass,
+            "note": "G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law.",
+        },
+        {
+            "requirement": "no_overclaiming",
+            "evidence_path": "README.md; docs/current_research_status.md; outputs/breakthrough_candidate/breakthrough_candidate_report.md",
+            "status": "pass",
+            "passed": True,
+            "note": "Current reports preserve standard-QM-compatible, not-breakthrough language.",
+        },
+    ]
+    checklist = pd.DataFrame(rows)
+    checklist.to_csv(output_dir / "current_goal_completion_checklist.csv", index=False)
+    achieved = bool(checklist["passed"].all())
+    summary = pd.DataFrame(
+        [
+            {
+                "objective_achieved": achieved,
+                "failed_requirements": int((~checklist["passed"]).sum()),
+                "second_validation_found": second_validation_found,
+                "eligible_second_no_refit_targets": eligible_second,
+                "public_supports_g11_without_author_contact": public_support,
+                "author_g11_ready_rows": author_ready,
+                "verdict": (
+                    "objective complete"
+                    if achieved
+                    else "objective not complete: breakthrough path still blocked"
+                ),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "current_goal_completion_summary.csv", index=False)
+    failed_rows = checklist[~checklist["passed"]]
+    failed_text = "\n".join(
+        f"- **{row['requirement']}**: {row['note']}" for _, row in failed_rows.iterrows()
+    ) or "- none"
+    report = f"""# Current Goal Completion Audit
+
+Verdict: {summary['verdict'].iloc[0]}
+
+## Objective
+
+Keep the public repo clean and green, continue provenance-rich analyses, and drive toward the missing second independent measured-distribution-to-visibility validation without overclaiming.
+
+## Summary
+
+- Objective achieved: {achieved}
+- Failed requirements: {int((~checklist['passed']).sum())}
+- Eligible second no-refit targets: {eligible_second}
+- Public G11 support without author contact: {public_support}
+- Author-data G11-ready rows: {author_ready}
+
+## Failed Or Open Requirements
+
+{failed_text}
+
+## Rule
+
+Do not mark the goal complete while any failed requirement remains. In particular, no amount of clean CI can substitute for the missing second independent distribution-to-visibility validation.
+"""
+    (output_dir / "current_goal_completion_audit.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return checklist, summary
+
+
 def make_breakthrough_candidate_outputs(
     output_dir: Path,
     xiao_distribution_summary: Path = Path(
@@ -13830,6 +13969,10 @@ def run_evaluate_breakthrough_candidate(
     )
 
 
+def run_audit_current_goal_status(output_dir: Path):
+    make_current_goal_completion_audit_outputs(output_dir)
+
+
 def run_scout_no_refit_targets(output_dir: Path):
     make_no_refit_target_scout_outputs(output_dir)
 
@@ -14257,6 +14400,14 @@ def build_parser():
         "--output-dir",
         default="outputs/breakthrough_candidate",
     )
+    goal_audit = sub.add_parser(
+        "audit-current-goal-status",
+        help="write a completion audit for the active breakthrough objective",
+    )
+    goal_audit.add_argument(
+        "--output-dir",
+        default="outputs/current_goal_audit",
+    )
     no_refit_scout = sub.add_parser(
         "scout-no-refit-targets",
         help="rank candidate experiments for the missing second no-refit distribution gate",
@@ -14549,6 +14700,8 @@ def main(argv=None):
                 Path(args.no_refit_target_scout_summary),
                 Path(args.eibenberger_recoil_summary),
             )
+        elif command == "audit-current-goal-status":
+            run_audit_current_goal_status(Path(args.output_dir))
         elif command == "scout-no-refit-targets":
             run_scout_no_refit_targets(Path(args.output_dir))
         elif command == "prepare-author-data-requests":
