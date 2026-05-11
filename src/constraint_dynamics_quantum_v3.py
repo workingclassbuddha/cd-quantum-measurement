@@ -50,6 +50,11 @@ CORMANN_DOI = "https://doi.org/10.1103/PhysRevA.93.042124"
 CORMANN_RENDER_DPI = 250
 CORMANN_DIGITIZATION_DATE = "2026-04-28"
 CORMANN_SCOUT_EXTRACTION_METHOD = "calibrated_component_scout_v1"
+MIR_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/0706.3966"
+MIR_PAPER_URL = "https://arxiv.org/abs/0706.3966"
+MIR_DOI = "https://doi.org/10.1088/1367-2630/9/8/287"
+MIR_DIGITIZATION_DATE = "2026-05-11"
+MIR_SCOUT_EXTRACTION_METHOD = "source_figure_availability_scout_v1"
 HACKERMUELLER_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/quant-ph/0402146"
 HACKERMUELLER_PAPER_URL = "https://arxiv.org/abs/quant-ph/0402146"
 HACKERMUELLER_DOI = "https://doi.org/10.1038/nature02276"
@@ -8424,10 +8429,12 @@ def no_refit_target_candidate_register():
             "record_distribution_independent_of_visibility_fit": True,
             "visibility_curve_available": False,
             "phase_available": False,
-            "local_source_available": False,
+            "local_source_available": Path(
+                "outputs/tmp/second_no_refit_sources/mir/extracted/Figure3.eps"
+            ).exists(),
             "candidate_role": "closest pre-Xiao measured momentum-transfer candidate",
-            "implementation_status": "literature scout only",
-            "next_command": "",
+            "implementation_status": "scout implemented",
+            "next_command": "scout-mir-weak-value",
             "no_refit_gate_score": 0.52,
             "blocker": "directly measures a momentum-transfer distribution but does not yet provide the paired visibility curve needed for the no-refit gate",
             "source_basis": "arXiv abstract reports a weak-measurement double-slit which-way experiment measuring P_wv(q), a distribution for momentum transfer.",
@@ -8569,6 +8576,210 @@ Build `scout-eibenberger-recoil-absorption` only as a recoil-control lane, while
         encoding="utf-8",
     )
     return register, summary
+
+
+def resolve_mir_source_dir(source_dir: Path | None):
+    candidates = []
+    if source_dir is not None:
+        candidates.extend([Path(source_dir) / "extracted", Path(source_dir)])
+    candidates.extend(
+        [
+            Path("outputs/tmp/second_no_refit_sources/mir/extracted"),
+            Path("outputs/tmp/second_no_refit_sources/mir"),
+        ]
+    )
+    for candidate in candidates:
+        if (candidate / "www-rev.tex").exists() and (candidate / "Figure3.eps").exists():
+            return candidate
+    return None
+
+
+def mir_weak_value_metadata(source_dir: Path | None = None):
+    source = resolve_mir_source_dir(source_dir)
+    def figure_sha(filename):
+        if source is None or not (source / filename).exists():
+            return ""
+        return sha256_file(source / filename)
+
+    return {
+        "study_id": "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER",
+        "source_title": "A double-slit which-way experiment on the complementarity-uncertainty debate",
+        "source_authors": "Mir; Lundeen; Mitchell; Steinberg; Wiseman; Garretson",
+        "year": 2007,
+        "source_url": MIR_PAPER_URL,
+        "arxiv_source_url": MIR_ARXIV_SOURCE_URL,
+        "doi": MIR_DOI,
+        "source_dir": "" if source is None else str(source),
+        "source_tex_sha256": figure_sha("www-rev.tex"),
+        "digitization_date": MIR_DIGITIZATION_DATE,
+        "extraction_method": MIR_SCOUT_EXTRACTION_METHOD,
+        "gate_question": (
+            "Does the source provide a measured record distribution and a paired "
+            "visibility-loss curve suitable for a no-refit distribution-to-visibility test?"
+        ),
+        "figures": [
+            {
+                "figure": "Figure 2",
+                "source_file": "Figure2.ps",
+                "source_file_sha256": figure_sha("Figure2.ps"),
+                "observable": "conditional weak-valued probability P_wv(p_i | p_f)",
+                "momentum_distribution_available": True,
+                "visibility_sweep_available": False,
+                "phase_or_eraser_available": False,
+                "scout_role": "conditional momentum-transfer structure",
+            },
+            {
+                "figure": "Figure 3",
+                "source_file": "Figure3.eps",
+                "source_file_sha256": figure_sha("Figure3.eps"),
+                "observable": "unconditional weak-valued momentum-transfer distribution P_wv(q)",
+                "momentum_distribution_available": True,
+                "visibility_sweep_available": False,
+                "phase_or_eraser_available": False,
+                "scout_role": "closest measured distribution analogue to Xiao",
+            },
+            {
+                "figure": "Figure 4a",
+                "source_file": "Figure4a.ps",
+                "source_file_sha256": figure_sha("Figure4a.ps"),
+                "observable": "quantum eraser conditional WVP and interference for +45 degree polarizer",
+                "momentum_distribution_available": True,
+                "visibility_sweep_available": False,
+                "phase_or_eraser_available": True,
+                "scout_role": "eraser phase-control evidence, not a visibility sweep",
+            },
+            {
+                "figure": "Figure 4b",
+                "source_file": "Figure4b.ps",
+                "source_file_sha256": figure_sha("Figure4b.ps"),
+                "observable": "quantum eraser conditional WVP and interference for -45 degree polarizer",
+                "momentum_distribution_available": True,
+                "visibility_sweep_available": False,
+                "phase_or_eraser_available": True,
+                "scout_role": "eraser phase-control evidence, not a visibility sweep",
+            },
+        ],
+        "source_text_findings": [
+            "The paper reports direct observation of a weak-valued momentum-transfer distribution.",
+            "Figure 3 plots P_wv(q) and a variance integral, giving a real measured distribution target.",
+            "Figure 4 gives quantum-eraser conditional patterns, but not a controlled visibility-loss sweep.",
+            "The current source therefore does not clear the Xiao-like no-refit gate.",
+        ],
+    }
+
+
+def mir_weak_value_scout_dataframe(metadata: dict):
+    rows = []
+    for fig in metadata["figures"]:
+        rows.append(
+            {
+                "study_id": metadata["study_id"],
+                "figure": fig["figure"],
+                "source_file": fig["source_file"],
+                "source_file_sha256": fig["source_file_sha256"],
+                "observable": fig["observable"],
+                "momentum_distribution_available": bool(
+                    fig["momentum_distribution_available"]
+                ),
+                "visibility_sweep_available": bool(fig["visibility_sweep_available"]),
+                "phase_or_eraser_available": bool(fig["phase_or_eraser_available"]),
+                "clears_no_refit_gate": False,
+                "scout_role": fig["scout_role"],
+                "source_url": metadata["source_url"],
+                "doi": metadata["doi"],
+                "extraction_method": metadata["extraction_method"],
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def make_mir_weak_value_scout_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    metadata = mir_weak_value_metadata(source_dir)
+    scout = mir_weak_value_scout_dataframe(metadata)
+    momentum_available = bool(scout["momentum_distribution_available"].any())
+    visibility_sweep_available = bool(scout["visibility_sweep_available"].any())
+    eraser_available = bool(scout["phase_or_eraser_available"].any())
+    clears_gate = bool(momentum_available and visibility_sweep_available)
+    verdict = (
+        "measured distribution candidate clears no-refit gate"
+        if clears_gate
+        else "measured momentum-transfer distribution found, visibility sweep missing"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "momentum_distribution_available": momentum_available,
+                "visibility_sweep_available": visibility_sweep_available,
+                "phase_or_eraser_available": eraser_available,
+                "clears_no_refit_gate": clears_gate,
+                "figure_count": int(len(scout)),
+                "recommended_next": (
+                    "digitize Fig. 3 only if looking for a weak-value control; keep searching for no-refit visibility sweep"
+                ),
+            }
+        ]
+    )
+    scout.to_csv(data_dir / "MIR_2007_WEAK_VALUE_SCOUT.csv", index=False)
+    (data_dir / "MIR_2007_WEAK_VALUE_SCOUT.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    summary.to_csv(output_dir / "mir_weak_value_scout_summary.csv", index=False)
+    scout.to_csv(output_dir / "mir_weak_value_scout_figures.csv", index=False)
+    findings = "\n".join(f"- {item}" for item in metadata["source_text_findings"])
+    figure_lines = []
+    for _, row in scout.iterrows():
+        figure_lines.append(
+            "- **{figure}** (`{source_file}`): {observable}. Gate role: {role}".format(
+                figure=row["figure"],
+                source_file=row["source_file"],
+                observable=row["observable"],
+                role=row["scout_role"],
+            )
+        )
+    report = f"""# Mir 2007 Weak-Value Momentum-Transfer Scout
+
+Verdict: {verdict}
+
+This scout checks whether Mir et al. 2007 can serve as the missing independent Xiao-like target. It is scientifically close because it directly measures a weak-valued momentum-transfer distribution in a double-slit which-way experiment. It does not currently clear the no-refit gate because the source does not provide a paired controlled visibility-loss sweep.
+
+- Source URL: {metadata['source_url']}
+- DOI: {metadata['doi']}
+- Source directory: `{metadata.get('source_dir', '')}`
+- TeX SHA256: `{metadata.get('source_tex_sha256', '')}`
+- Extraction method: `{metadata['extraction_method']}`
+
+## Source Findings
+
+{findings}
+
+## Figure Register
+
+{chr(10).join(figure_lines)}
+
+## Gate Decision
+
+- Momentum-transfer distribution available: {momentum_available}
+- Visibility-loss sweep available: {visibility_sweep_available}
+- Eraser/phase structure available: {eraser_available}
+- Clears no-refit gate: {clears_gate}
+
+## Interpretation
+
+Mir is a useful weak-value momentum-transfer control and may help interpret Xiao historically, but it is not the second independent distribution-to-visibility validation. The next breakthrough-grade target still needs both a measured record distribution and a visibility/decoherence curve whose key bandwidth/load parameter is not refit from that curve.
+"""
+    (output_dir / "mir_weak_value_scout_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return scout, summary, metadata
 
 
 def eibenberger_default_metadata():
@@ -12576,6 +12787,14 @@ def run_scout_eibenberger_recoil_absorption(
     make_eibenberger_recoil_scout_outputs(source_dir, output_dir, data_dir)
 
 
+def run_scout_mir_weak_value(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_mir_weak_value_scout_outputs(source_dir, output_dir, data_dir)
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -12969,6 +13188,16 @@ def build_parser():
         default="outputs/eibenberger_recoil_scout",
     )
     eibenberger.add_argument("--data-dir", default="data/extracted")
+    mir = sub.add_parser(
+        "scout-mir-weak-value",
+        help="scout Mir 2007 weak-valued momentum transfer as a measured-distribution near miss",
+    )
+    mir.add_argument("--source-dir", default=None)
+    mir.add_argument(
+        "--output-dir",
+        default="outputs/mir_weak_value_scout",
+    )
+    mir.add_argument("--data-dir", default="data/extracted")
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -13180,6 +13409,13 @@ def main(argv=None):
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "scout-mir-weak-value":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_scout_mir_weak_value(
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),

@@ -114,6 +114,23 @@ previous-absorption midpoint RMSE: 0.0302
 
 This is a valuable standard-QM control because the recoil visibility reduction is a characteristic-function-like average over recoil phases. It does not clear the missing gate because the absorption cross section is extracted from the same visibility reduction.
 
+The Mir weak-value command is:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_weak_value_scout --data-dir data/extracted
+```
+
+Current Mir result:
+
+```text
+status: measured momentum-transfer distribution found, visibility sweep missing
+momentum-transfer distribution available: true
+visibility-loss sweep available: false
+eraser/phase structure available: true
+```
+
+Mir is the closest historical near miss: Fig. 3 gives an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 gives quantum-eraser conditional patterns. It is useful as a weak-value/momentum-transfer control, but it still does not provide the paired visibility-loss sweep needed for the no-refit breakthrough gate.
+
 ## Current Signal
 
 The first-pass Chapman analysis found a strong recoverability window:

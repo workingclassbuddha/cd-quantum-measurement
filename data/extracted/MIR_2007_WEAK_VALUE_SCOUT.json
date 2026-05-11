@@ -1,0 +1,62 @@
+{
+  "study_id": "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER",
+  "source_title": "A double-slit which-way experiment on the complementarity-uncertainty debate",
+  "source_authors": "Mir; Lundeen; Mitchell; Steinberg; Wiseman; Garretson",
+  "year": 2007,
+  "source_url": "https://arxiv.org/abs/0706.3966",
+  "arxiv_source_url": "https://arxiv.org/e-print/0706.3966",
+  "doi": "https://doi.org/10.1088/1367-2630/9/8/287",
+  "source_dir": "outputs/tmp/second_no_refit_sources/mir/extracted",
+  "source_tex_sha256": "970fb0a0489b826558dca0792bc05c2dbe3fb72ce314d67a1a4c07a54e00f5c3",
+  "digitization_date": "2026-05-11",
+  "extraction_method": "source_figure_availability_scout_v1",
+  "gate_question": "Does the source provide a measured record distribution and a paired visibility-loss curve suitable for a no-refit distribution-to-visibility test?",
+  "figures": [
+    {
+      "figure": "Figure 2",
+      "source_file": "Figure2.ps",
+      "source_file_sha256": "8b44a2cb16492951f80a0171158a11991d40c72734a7d407e5ef450b0126077c",
+      "observable": "conditional weak-valued probability P_wv(p_i | p_f)",
+      "momentum_distribution_available": true,
+      "visibility_sweep_available": false,
+      "phase_or_eraser_available": false,
+      "scout_role": "conditional momentum-transfer structure"
+    },
+    {
+      "figure": "Figure 3",
+      "source_file": "Figure3.eps",
+      "source_file_sha256": "e55b3cba83893c81ae9bcac50712307b83cf26e1662ce89a234b9346ecfe97e9",
+      "observable": "unconditional weak-valued momentum-transfer distribution P_wv(q)",
+      "momentum_distribution_available": true,
+      "visibility_sweep_available": false,
+      "phase_or_eraser_available": false,
+      "scout_role": "closest measured distribution analogue to Xiao"
+    },
+    {
+      "figure": "Figure 4a",
+      "source_file": "Figure4a.ps",
+      "source_file_sha256": "7cb540fbddd8e0db232c34237622064f0f7a35bb80b0267548c2d69b2cf54c33",
+      "observable": "quantum eraser conditional WVP and interference for +45 degree polarizer",
+      "momentum_distribution_available": true,
+      "visibility_sweep_available": false,
+      "phase_or_eraser_available": true,
+      "scout_role": "eraser phase-control evidence, not a visibility sweep"
+    },
+    {
+      "figure": "Figure 4b",
+      "source_file": "Figure4b.ps",
+      "source_file_sha256": "0875b4d8d38c92bbefc3109df32f7bd60b79f7a2835eff5ec79275e13f5af738",
+      "observable": "quantum eraser conditional WVP and interference for -45 degree polarizer",
+      "momentum_distribution_available": true,
+      "visibility_sweep_available": false,
+      "phase_or_eraser_available": true,
+      "scout_role": "eraser phase-control evidence, not a visibility sweep"
+    }
+  ],
+  "source_text_findings": [
+    "The paper reports direct observation of a weak-valued momentum-transfer distribution.",
+    "Figure 3 plots P_wv(q) and a variance integral, giving a real measured distribution target.",
+    "Figure 4 gives quantum-eraser conditional patterns, but not a controlled visibility-loss sweep.",
+    "The current source therefore does not clear the Xiao-like no-refit gate."
+  ]
+}

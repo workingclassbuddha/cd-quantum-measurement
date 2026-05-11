@@ -251,3 +251,25 @@ mean phase-sign accuracy: 0.877
 ```
 
 This is useful but not the breakthrough-grade third test. Cormann gives a clean visibility-plus-phase quantum-eraser control with known measurement strengths and purities, so it can help keep the scaffold honest about phase/sign behavior. It does not provide an independently measured momentum-record distribution comparable to Xiao Fig. 3. The next breakthrough hunt should therefore continue toward author-level numerical data or another experiment where a measured record variable predicts visibility without refitting.
+
+## Near-Miss Scout: Mir
+
+The Mir weak-value scout is implemented as a source-figure availability check:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value \
+  --source-dir outputs/tmp/second_no_refit_sources/mir \
+  --output-dir outputs/mir_weak_value_scout \
+  --data-dir data/extracted
+```
+
+Current scout verdict:
+
+```text
+status: measured momentum-transfer distribution found, visibility sweep missing
+momentum-transfer distribution available: true
+visibility-loss sweep available: false
+eraser/phase structure available: true
+```
+
+Mir et al. 2007 is scientifically close to Xiao because it directly measures a weak-valued momentum-transfer distribution in a double-slit which-way experiment. The source includes Fig. 3 for the unconditional `P_wv(q)` distribution and Fig. 4 for quantum-eraser conditional patterns. It is still a near miss for the breakthrough gate because it does not provide the paired controlled visibility-loss sweep needed for a no-refit distribution-to-visibility prediction.

@@ -1,0 +1,2 @@
+verdict,momentum_distribution_available,visibility_sweep_available,phase_or_eraser_available,clears_no_refit_gate,figure_count,recommended_next
+"measured momentum-transfer distribution found, visibility sweep missing",True,False,True,False,4,digitize Fig. 3 only if looking for a weak-value control; keep searching for no-refit visibility sweep

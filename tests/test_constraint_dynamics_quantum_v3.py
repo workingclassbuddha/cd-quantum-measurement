@@ -65,6 +65,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_breakthrough_candidate_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
+    make_mir_weak_value_scout_outputs,
     make_hornberger_collisional_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
@@ -78,6 +79,8 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     eibenberger_default_metadata,
     eibenberger_digitized_dataframe,
     eibenberger_recoil_reduction,
+    mir_weak_value_metadata,
+    mir_weak_value_scout_dataframe,
     fit_hornberger_collisional_scout,
     hornberger_default_metadata,
     hornberger_digitized_dataframe,
@@ -1000,6 +1003,44 @@ def test_eibenberger_recoil_scout_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "eibenberger_recoil_scout_report.md").exists()
+
+
+def test_mir_weak_value_scout_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "mir"
+    cli_output_dir = tmp_path / "mir_cli"
+    metadata = mir_weak_value_metadata(None)
+    scout_df = mir_weak_value_scout_dataframe(metadata)
+    assert not scout_df.empty
+    assert scout_df["momentum_distribution_available"].any()
+    assert not scout_df["visibility_sweep_available"].any()
+
+    scout, summary, metadata = make_mir_weak_value_scout_outputs(
+        None,
+        output_dir,
+        data_dir,
+    )
+    assert metadata["study_id"] == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+    assert not scout.empty
+    assert not summary.empty
+    assert not bool(summary["clears_no_refit_gate"].iloc[0])
+    assert (
+        summary["verdict"].iloc[0]
+        == "measured momentum-transfer distribution found, visibility sweep missing"
+    )
+    assert (output_dir / "mir_weak_value_scout_report.md").exists()
+    assert (data_dir / "MIR_2007_WEAK_VALUE_SCOUT.csv").exists()
+
+    main(
+        [
+            "scout-mir-weak-value",
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "mir_weak_value_scout_report.md").exists()
 
 
 def test_hornberger_collisional_scout_outputs_and_cli(tmp_path):
