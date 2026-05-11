@@ -214,6 +214,7 @@ python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir
 python src/constraint_dynamics_quantum_v3.py audit-breakthrough-gaps --output-dir outputs/breakthrough_gap_audit
 python src/constraint_dynamics_quantum_v3.py audit-public-data-availability --output-dir outputs/public_data_availability
 python src/constraint_dynamics_quantum_v3.py prepare-author-data-intake --output-dir outputs/author_data_intake
+python src/constraint_dynamics_quantum_v3.py validate-author-data-manifest --manifest outputs/author_data_intake/author_data_received_manifest_template.csv --schema outputs/author_data_intake/author_data_intake_schema.csv --output-dir outputs/author_data_validation
 python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_weak_value_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
@@ -364,6 +365,8 @@ The second-target scout now explicitly fails the strict Xiao-like gate: no secon
 The live G11 coordination thread is [issue #1](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/1). Author-data request trackers are open for [Xiao 2019](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/2), [Hochrainer 2017](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/3), [Mir 2007](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/4), and [Eibenberger 2014](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/5).
 
 The author-data intake command writes schemas and manifest templates for received numerical data. It explicitly marks Xiao as lead calibration only, while Hochrainer, Mir, and Eibenberger can affect G11 only if their record-width/distribution/load variable is independent of the visibility curve being predicted.
+
+The manifest validator checks received rows against those schemas. The committed empty-template validation currently reports `g11_ready_rows = 0`.
 
 The Mir weak-value scout is the closest historical near miss. The arXiv source includes Fig. 3, an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 quantum-eraser conditional patterns. The scout verdict is `measured momentum-transfer distribution found, visibility sweep missing`: useful as a weak-value/momentum-transfer control, but it does not clear the missing second no-refit distribution-to-visibility gate.
 

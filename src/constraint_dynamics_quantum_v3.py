@@ -9619,6 +9619,160 @@ When data arrives, fill the manifest, commit only data with clear permission/pro
     return schema, manifest
 
 
+def _truthy(value):
+    if isinstance(value, bool):
+        return value
+    if value is None or (isinstance(value, float) and np.isnan(value)):
+        return False
+    return str(value).strip().lower() in {"1", "true", "yes", "y"}
+
+
+def _resolve_manifest_path(path_value, manifest_dir: Path):
+    if path_value is None or (isinstance(path_value, float) and np.isnan(path_value)):
+        return None
+    text = str(path_value).strip()
+    if not text:
+        return None
+    path = Path(text)
+    if path.is_absolute():
+        return path
+    candidate = manifest_dir / path
+    if candidate.exists():
+        return candidate
+    return path
+
+
+def validate_author_data_manifest(
+    manifest_csv: Path,
+    schema_csv: Path,
+    output_dir: Path,
+):
+    """Validate received author-data manifest rows against target schemas."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    manifest = pd.read_csv(manifest_csv)
+    schema = pd.read_csv(schema_csv)
+    schema_by_target = {str(row["target_id"]): row for _, row in schema.iterrows()}
+    validations = []
+    for _, row in manifest.iterrows():
+        target_id = str(row.get("target_id", ""))
+        schema_row = schema_by_target.get(target_id)
+        received = _truthy(row.get("received", False))
+        supports_g11_claimed = _truthy(row.get("supports_g11", False))
+        path = _resolve_manifest_path(row.get("data_path", ""), Path(manifest_csv).parent)
+        data_exists = bool(path is not None and path.exists())
+        required_columns = []
+        missing_columns = []
+        schema_can_close = False
+        schema_found = schema_row is not None
+        if schema_found:
+            required_columns = [
+                item.strip()
+                for item in str(schema_row["required_columns"]).split(",")
+                if item.strip()
+            ]
+            schema_can_close = _truthy(schema_row.get("can_close_g11", False))
+        if received and data_exists and required_columns:
+            try:
+                data = pd.read_csv(path)
+                missing_columns = [
+                    column for column in required_columns if column not in data.columns
+                ]
+            except Exception as exc:  # pragma: no cover - defensive report path
+                missing_columns = [f"could_not_read_csv: {exc}"]
+        elif received:
+            missing_columns = required_columns
+
+        schema_ok = bool(received and schema_found and data_exists and not missing_columns)
+        g11_ready = bool(schema_ok and supports_g11_claimed and schema_can_close)
+        if not received:
+            status = "not_received"
+        elif not schema_found:
+            status = "unknown_target"
+        elif not data_exists:
+            status = "missing_data_path"
+        elif missing_columns:
+            status = "schema_failed"
+        elif supports_g11_claimed and not schema_can_close:
+            status = "calibration_only_not_g11"
+        elif g11_ready:
+            status = "g11_candidate_ready_for_analysis"
+        else:
+            status = "schema_passed_not_g11"
+
+        validations.append(
+            {
+                "target_id": target_id,
+                "received": received,
+                "data_path": "" if path is None else str(path),
+                "schema_found": schema_found,
+                "schema_ok": schema_ok,
+                "schema_can_close_g11": schema_can_close,
+                "supports_g11_claimed": supports_g11_claimed,
+                "g11_ready_for_analysis": g11_ready,
+                "status": status,
+                "missing_columns": ";".join(missing_columns),
+                "validation_rule": ""
+                if schema_row is None
+                else str(schema_row.get("validation_rule", "")),
+            }
+        )
+
+    validation = pd.DataFrame(validations)
+    validation.to_csv(output_dir / "author_data_manifest_validation.csv", index=False)
+    summary = pd.DataFrame(
+        [
+            {
+                "manifest_rows": int(len(validation)),
+                "received_rows": int(validation["received"].sum()),
+                "schema_ok_rows": int(validation["schema_ok"].sum()),
+                "g11_ready_rows": int(validation["g11_ready_for_analysis"].sum()),
+                "verdict": (
+                    "author data ready for G11 analysis"
+                    if int(validation["g11_ready_for_analysis"].sum()) > 0
+                    else "no author data ready for G11 analysis"
+                ),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "author_data_manifest_validation_summary.csv", index=False)
+    report_rows = "\n".join(
+        "- **{target_id}**: {status}; schema ok = {schema_ok}; G11 ready = {g11_ready}".format(
+            target_id=row["target_id"],
+            status=row["status"],
+            schema_ok=bool(row["schema_ok"]),
+            g11_ready=bool(row["g11_ready_for_analysis"]),
+        )
+        for _, row in validation.iterrows()
+    )
+    report = f"""# Author Data Manifest Validation
+
+Verdict: {summary['verdict'].iloc[0]}
+
+This validator checks whether received author/numerical data satisfy the target schema and whether the schema allows a genuine G11 analysis.
+
+## Summary
+
+- Manifest rows: {int(summary['manifest_rows'].iloc[0])}
+- Received rows: {int(summary['received_rows'].iloc[0])}
+- Schema-passing rows: {int(summary['schema_ok_rows'].iloc[0])}
+- G11-ready rows: {int(summary['g11_ready_rows'].iloc[0])}
+
+## Rows
+
+{report_rows}
+
+## Rule
+
+Passing the CSV schema is not enough. A row is G11-ready only when the source also claims support for G11 and the target schema allows a second-experiment or held-out record-variable test.
+"""
+    (output_dir / "author_data_manifest_validation_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return validation, summary
+
+
 def eibenberger_default_metadata():
     """Return seeded Fig. 2b points and constants for Eibenberger 2014."""
 
@@ -13624,6 +13778,14 @@ def run_prepare_author_data_intake(output_dir: Path):
     make_author_data_intake_outputs(output_dir)
 
 
+def run_validate_author_data_manifest(
+    manifest_csv: Path,
+    schema_csv: Path,
+    output_dir: Path,
+):
+    validate_author_data_manifest(manifest_csv, schema_csv, output_dir)
+
+
 def run_audit_breakthrough_gaps(output_dir: Path):
     make_breakthrough_gap_audit_outputs(output_dir)
 
@@ -14055,6 +14217,22 @@ def build_parser():
         "--output-dir",
         default="outputs/author_data_intake",
     )
+    author_validate = sub.add_parser(
+        "validate-author-data-manifest",
+        help="validate received author data manifest rows against intake schemas",
+    )
+    author_validate.add_argument(
+        "--manifest",
+        default="outputs/author_data_intake/author_data_received_manifest_template.csv",
+    )
+    author_validate.add_argument(
+        "--schema",
+        default="outputs/author_data_intake/author_data_intake_schema.csv",
+    )
+    author_validate.add_argument(
+        "--output-dir",
+        default="outputs/author_data_validation",
+    )
     gap_audit = sub.add_parser(
         "audit-breakthrough-gaps",
         help="audit which evidence is still missing for the second no-refit gate",
@@ -14313,6 +14491,12 @@ def main(argv=None):
             run_prepare_author_data_requests(Path(args.output_dir))
         elif command == "prepare-author-data-intake":
             run_prepare_author_data_intake(Path(args.output_dir))
+        elif command == "validate-author-data-manifest":
+            run_validate_author_data_manifest(
+                Path(args.manifest),
+                Path(args.schema),
+                Path(args.output_dir),
+            )
         elif command == "audit-breakthrough-gaps":
             run_audit_breakthrough_gaps(Path(args.output_dir))
         elif command == "audit-public-data-availability":

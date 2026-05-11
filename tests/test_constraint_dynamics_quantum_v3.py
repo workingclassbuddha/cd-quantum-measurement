@@ -97,6 +97,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     xiao_momentum_digitized_dataframe,
     xiao_probability_digitized_dataframe,
     summarize_xiao_probability,
+    validate_author_data_manifest,
 )
 
 
@@ -1009,6 +1010,55 @@ def test_author_data_intake_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "author_data_intake_plan.md").exists()
+
+
+def test_validate_author_data_manifest_outputs_and_cli(tmp_path):
+    intake_dir = tmp_path / "author_intake"
+    schema, manifest = make_author_data_intake_outputs(intake_dir)
+    data_path = tmp_path / "mir_received.csv"
+    pd.DataFrame(
+        [
+            {
+                "which_way_strength_or_setting": "setting_a",
+                "q_or_x": 0.0,
+                "value": 0.2,
+                "value_se": 0.01,
+                "visibility_or_contrast": 0.7,
+                "setting_note": "synthetic test row",
+            }
+        ]
+    ).to_csv(data_path, index=False)
+    manifest.loc[
+        manifest["target_id"] == "mir_2007_visibility_context",
+        ["received", "data_path", "supports_g11"],
+    ] = [True, str(data_path), True]
+    manifest_path = tmp_path / "manifest.csv"
+    manifest.to_csv(manifest_path, index=False)
+
+    output_dir = tmp_path / "validation"
+    validation, summary = validate_author_data_manifest(
+        manifest_path,
+        intake_dir / "author_data_intake_schema.csv",
+        output_dir,
+    )
+    assert not validation.empty
+    assert int(summary["g11_ready_rows"].iloc[0]) == 1
+    assert "g11_candidate_ready_for_analysis" in set(validation["status"])
+    assert (output_dir / "author_data_manifest_validation_report.md").exists()
+
+    cli_output_dir = tmp_path / "validation_cli"
+    main(
+        [
+            "validate-author-data-manifest",
+            "--manifest",
+            str(manifest_path),
+            "--schema",
+            str(intake_dir / "author_data_intake_schema.csv"),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "author_data_manifest_validation.csv").exists()
 
 
 def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):

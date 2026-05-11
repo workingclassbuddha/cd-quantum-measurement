@@ -90,6 +90,7 @@ python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir
 python src/constraint_dynamics_quantum_v3.py audit-breakthrough-gaps --output-dir outputs/breakthrough_gap_audit
 python src/constraint_dynamics_quantum_v3.py audit-public-data-availability --output-dir outputs/public_data_availability
 python src/constraint_dynamics_quantum_v3.py prepare-author-data-intake --output-dir outputs/author_data_intake
+python src/constraint_dynamics_quantum_v3.py validate-author-data-manifest --manifest outputs/author_data_intake/author_data_received_manifest_template.csv --schema outputs/author_data_intake/author_data_intake_schema.csv --output-dir outputs/author_data_validation
 ```
 
 Current verdict:
@@ -105,6 +106,8 @@ The expanded G11 audit currently checks 13 candidates and still reports `eligibl
 The public-data audit checks the lead source records for immediately usable numerical tables. Its current verdict is `public data does not close G11`: five lead source records checked, zero public numerical tables found that support G11 without author contact.
 
 The author-data intake plan writes target-specific schemas and manifest templates. Its key rule is strict: a response can affect G11 only if the record distribution, record width, or load calibration is independent of the visibility/decoherence curve being predicted.
+
+The validator turns that rule into a gate. With the committed empty manifest template, it reports `no author data ready for G11 analysis`.
 
 Live tracking:
 
