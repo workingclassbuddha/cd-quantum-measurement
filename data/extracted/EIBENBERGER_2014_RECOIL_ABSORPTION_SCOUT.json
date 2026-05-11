@@ -1,0 +1,104 @@
+{
+  "study_id": "EIBENBERGER_2014_RECOIL_ABSORPTION",
+  "source_title": "Absolute absorption cross sections from photon recoil in a matter-wave interferometer",
+  "source_url": "https://arxiv.org/abs/1402.5307",
+  "doi": "https://doi.org/10.1103/PhysRevLett.112.250402",
+  "source_file": "Fig2.pdf",
+  "extraction_method": "seeded_visual_scout_v1",
+  "notes": "Scout-grade visual picks from Fig. 2b. The paper's fit extracts sigma_abs from these data; this is a recoil-control lane, not a strict no-refit validation.",
+  "constants": {
+    "grating_period_m": 2.66e-07,
+    "recoil_wavelength_m": 5.322e-07,
+    "recoil_laser_power_W": 17.4,
+    "recoil_laser_waist_y_m": 0.00123,
+    "mean_velocity_m_per_s": 210.3,
+    "velocity_sigma_m_per_s": 38.4,
+    "c70_mass_kg": 1.394852815944e-24,
+    "paper_sigma_abs_m2": 1.97e-21,
+    "previous_absorption_midpoint_m2": 1.8e-21
+  },
+  "figures": [
+    {
+      "figure": "Fig. 2b",
+      "panel": "b",
+      "x_name": "distance_from_G1_m",
+      "y_name": "visibility_ratio",
+      "points": [
+        {
+          "distance_from_G1_m": 0.0335,
+          "visibility_ratio": 0.6,
+          "visibility_se": 0.035,
+          "point_note": "red triangle near first minimum"
+        },
+        {
+          "distance_from_G1_m": 0.035,
+          "visibility_ratio": 0.61,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0365,
+          "visibility_ratio": 0.615,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.038,
+          "visibility_ratio": 0.615,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0392,
+          "visibility_ratio": 0.625,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0405,
+          "visibility_ratio": 0.695,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.043,
+          "visibility_ratio": 0.74,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0445,
+          "visibility_ratio": 0.755,
+          "visibility_se": 0.035,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0465,
+          "visibility_ratio": 0.795,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0485,
+          "visibility_ratio": 0.82,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0505,
+          "visibility_ratio": 0.835,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        },
+        {
+          "distance_from_G1_m": 0.0525,
+          "visibility_ratio": 0.86,
+          "visibility_se": 0.03,
+          "point_note": "visual scout"
+        }
+      ]
+    }
+  ],
+  "source_file_sha256": "f3d54323ea94b06ba8bdab0cbc97d4245408e94d64b90ec3ca02444b2124c23b",
+  "source_dir": "outputs/tmp/second_no_refit_sources/eibenberger"
+}

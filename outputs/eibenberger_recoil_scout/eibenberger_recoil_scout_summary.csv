@@ -1,0 +1,4 @@
+model,sigma_abs_m2,n_fit_params_to_visibility,rmse_visibility_ratio,mae_visibility_ratio,status
+visibility_fit_sigma_abs,1.9345911949685537e-21,1,0.024726868594093964,0.022387466980023307,control_fit
+paper_sigma_abs,1.97e-21,0,0.025137217976276948,0.022360430487193467,parameter_fixed
+previous_absorption_midpoint,1.8e-21,0,0.0302348225403902,0.02371856243812287,parameter_fixed

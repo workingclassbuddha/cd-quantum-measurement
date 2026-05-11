@@ -63,6 +63,8 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_xiao_distribution_prediction_outputs,
     make_xiao_distribution_prediction_stress_outputs,
     make_breakthrough_candidate_outputs,
+    make_no_refit_target_scout_outputs,
+    make_eibenberger_recoil_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
     path_visibility_from_rho,
@@ -72,6 +74,9 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     hackermueller_default_metadata,
     hackermueller_digitized_dataframe,
     jitter_hackermueller_thermal,
+    eibenberger_default_metadata,
+    eibenberger_digitized_dataframe,
+    eibenberger_recoil_reduction,
     xiao_default_momentum_metadata,
     xiao_default_probability_metadata,
     xiao_distribution_branch_moments,
@@ -857,6 +862,83 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
     )
     assert (cli_output_dir / "breakthrough_candidate_scorecard.csv").exists()
     assert (cli_output_dir / "next_breakthrough_steps.csv").exists()
+
+
+def test_no_refit_target_scout_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "no_refit_scout"
+    register, summary = make_no_refit_target_scout_outputs(output_dir)
+    assert not register.empty
+    assert not summary.empty
+    assert "XIAO_2019_INTERNAL_LEAD" in set(register["candidate_id"])
+    assert summary["verdict"].iloc[0] == "no second no-refit distribution target yet"
+    assert (
+        output_dir / "second_no_refit_target_scout_report.md"
+    ).exists()
+    assert (
+        output_dir / "no_refit_target_candidate_register.csv"
+    ).exists()
+
+    cli_output_dir = tmp_path / "no_refit_scout_cli"
+    main(
+        [
+            "scout-no-refit-targets",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (
+        cli_output_dir / "second_no_refit_target_scout_report.md"
+    ).exists()
+
+
+def test_eibenberger_recoil_reduction_is_bounded():
+    metadata = eibenberger_default_metadata()
+    distances = np.linspace(0.0, 0.10, 25)
+    reduction = eibenberger_recoil_reduction(
+        distances,
+        metadata["constants"]["paper_sigma_abs_m2"],
+        metadata["constants"],
+    )
+    assert np.isfinite(reduction).all()
+    assert (reduction >= 0.0).all()
+    assert (reduction <= 1.0 + 1e-12).all()
+
+
+def test_eibenberger_recoil_scout_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "eibenberger"
+    cli_output_dir = tmp_path / "eibenberger_cli"
+    df = eibenberger_digitized_dataframe(eibenberger_default_metadata())
+    assert not df.empty
+    assert {"distance_from_G1_m", "visibility_ratio"}.issubset(df.columns)
+
+    digitized, metadata, summary, predictions = make_eibenberger_recoil_scout_outputs(
+        None,
+        output_dir,
+        data_dir,
+    )
+    assert metadata["study_id"] == "EIBENBERGER_2014_RECOIL_ABSORPTION"
+    assert not digitized.empty
+    assert not summary.empty
+    assert not predictions.empty
+    assert {"paper_sigma_abs", "visibility_fit_sigma_abs"}.issubset(
+        set(summary["model"])
+    )
+    assert (output_dir / "eibenberger_recoil_scout_report.md").exists()
+    assert (
+        data_dir / "EIBENBERGER_2014_RECOIL_ABSORPTION_SCOUT.csv"
+    ).exists()
+
+    main(
+        [
+            "scout-eibenberger-recoil-absorption",
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "eibenberger_recoil_scout_report.md").exists()
 
 
 def test_cormann_theory_visibility_is_bounded():

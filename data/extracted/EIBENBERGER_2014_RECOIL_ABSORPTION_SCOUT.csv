@@ -1,0 +1,13 @@
+study_id,figure,panel,point_id,x_name,y_name,distance_from_G1_m,visibility_ratio,visibility_se,extraction_method,point_note
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_0,distance_from_G1_m,visibility_ratio,0.0335,0.6,0.035,seeded_visual_scout_v1,red triangle near first minimum
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_1,distance_from_G1_m,visibility_ratio,0.035,0.61,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_2,distance_from_G1_m,visibility_ratio,0.0365,0.615,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_3,distance_from_G1_m,visibility_ratio,0.038,0.615,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_4,distance_from_G1_m,visibility_ratio,0.0392,0.625,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_5,distance_from_G1_m,visibility_ratio,0.0405,0.695,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_6,distance_from_G1_m,visibility_ratio,0.043,0.74,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_7,distance_from_G1_m,visibility_ratio,0.0445,0.755,0.035,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_8,distance_from_G1_m,visibility_ratio,0.0465,0.795,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_9,distance_from_G1_m,visibility_ratio,0.0485,0.82,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_10,distance_from_G1_m,visibility_ratio,0.0505,0.835,0.03,seeded_visual_scout_v1,visual scout
+EIBENBERGER_2014_RECOIL_ABSORPTION,Fig. 2b,b,eibenberger_fig2b_11,distance_from_G1_m,visibility_ratio,0.0525,0.86,0.03,seeded_visual_scout_v1,visual scout

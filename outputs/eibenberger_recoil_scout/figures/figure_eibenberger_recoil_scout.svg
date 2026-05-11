@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="560" viewBox="0 0 720 560">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="360.00" y="28.00" font-size="20" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#17212b">Eibenberger Recoil Visibility Scout</text>
+<rect x="82" y="54" width="606" height="424" fill="#fafafa" stroke="#cfd8dc"/>
+<line x1="82.00" y1="54" x2="82.00" y2="478" stroke="#eceff1"/>
+<text x="82.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.032</text>
+<line x1="203.20" y1="54" x2="203.20" y2="478" stroke="#eceff1"/>
+<text x="203.20" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.037</text>
+<line x1="324.40" y1="54" x2="324.40" y2="478" stroke="#eceff1"/>
+<text x="324.40" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.041</text>
+<line x1="445.60" y1="54" x2="445.60" y2="478" stroke="#eceff1"/>
+<text x="445.60" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.045</text>
+<line x1="566.80" y1="54" x2="566.80" y2="478" stroke="#eceff1"/>
+<text x="566.80" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.049</text>
+<line x1="688.00" y1="54" x2="688.00" y2="478" stroke="#eceff1"/>
+<text x="688.00" y="502.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">0.054</text>
+<line x1="82" y1="478.00" x2="688" y2="478.00" stroke="#eceff1"/>
+<text x="72.00" y="482.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.58</text>
+<line x1="82" y1="393.20" x2="688" y2="393.20" stroke="#eceff1"/>
+<text x="72.00" y="397.20" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.64</text>
+<line x1="82" y1="308.40" x2="688" y2="308.40" stroke="#eceff1"/>
+<text x="72.00" y="312.40" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.7</text>
+<line x1="82" y1="223.60" x2="688" y2="223.60" stroke="#eceff1"/>
+<text x="72.00" y="227.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.76</text>
+<line x1="82" y1="138.80" x2="688" y2="138.80" stroke="#eceff1"/>
+<text x="72.00" y="142.80" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.82</text>
+<line x1="82" y1="54.00" x2="688" y2="54.00" stroke="#eceff1"/>
+<text x="72.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">0.88</text>
+<circle cx="114.46" cy="455.29" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="157.18" cy="440.73" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="199.90" cy="433.45" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="242.61" cy="433.45" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="276.79" cy="418.88" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="313.81" cy="316.96" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="385.00" cy="251.44" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="427.72" cy="229.60" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="484.67" cy="171.36" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="541.63" cy="134.96" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="598.58" cy="113.12" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<circle cx="655.54" cy="76.71" r="3.4" fill="#6a1b9a" fill-opacity="0.62"/>
+<polyline fill="none" stroke="#d84315" stroke-width="2.5" points="-697.14,-62.86 -680.13,-48.14 -663.11,-32.37 -646.10,-15.68 -629.08,1.78 -612.07,19.89 -595.05,38.53 -578.04,57.57 -561.02,76.91 -544.01,96.43 -526.99,116.06 -509.98,135.68 -492.96,155.23 -475.95,174.63 -458.94,193.80 -441.92,212.68 -424.91,231.22 -407.89,249.36 -390.88,267.04 -373.86,284.24 -356.85,300.90 -339.83,316.99 -322.82,332.47 -305.80,347.31 -288.79,361.49 -271.77,374.97 -254.76,387.72 -237.74,399.73 -220.73,410.97 -203.71,421.42 -186.70,431.05 -169.68,439.85 -152.67,447.79 -135.65,454.87 -118.64,461.06 -101.62,466.36 -84.61,470.74 -67.59,474.22 -50.58,476.76 -33.56,478.39 -16.55,479.09 0.46,478.86 17.48,477.73 34.49,475.70 51.51,472.78 68.52,469.00 85.54,464.39 102.55,458.96 119.57,452.75 136.58,445.81 153.60,438.16 170.61,429.84 187.63,420.92 204.64,411.42 221.66,401.41 238.67,390.93 255.69,380.03 272.70,368.77 289.72,357.19 306.73,345.36 323.75,333.32 340.76,321.14 357.78,308.85 374.79,296.51 391.81,284.17 408.82,271.88 425.84,259.68 442.85,247.62 459.87,235.74 476.88,224.08 493.89,212.69 510.91,201.59 527.92,190.82 544.94,180.41 561.95,170.40 578.97,160.81 595.98,151.66 613.00,142.97 630.01,134.77 647.03,127.08 664.04,119.91 681.06,113.27 698.07,107.17 715.09,101.62 732.10,96.63 749.12,92.21 766.13,88.35 783.15,85.05 800.16,82.32 817.18,80.14 834.19,78.52 851.21,77.45 868.22,76.91 885.24,76.91 902.25,77.42 919.27,78.43 936.28,79.93 953.30,81.91 970.31,84.34 987.32,87.21 1004.34,90.50 1021.35,94.19 1038.37,98.27 1055.38,102.70 1072.40,107.46 1089.41,112.55 1106.43,117.92 1123.44,123.56 1140.46,129.45 1157.47,135.56 1174.49,141.86 1191.50,148.34 1208.52,154.96 1225.53,161.71 1242.55,168.56 1259.56,175.48 1276.58,182.46 1293.59,189.46 1310.61,196.47 1327.62,203.46 1344.64,210.41 1361.65,217.30 1378.67,224.10 1395.68,230.80 1412.70,237.38 1429.71,243.82 1446.73,250.10 1463.74,256.20 1480.75,262.10 1497.77,267.80 1514.78,273.28 1531.80,278.52 1548.81,283.51 1565.83,288.24 1582.84,292.71 1599.86,296.90 1616.87,300.81 1633.89,304.43 1650.90,307.75 1667.92,310.77 1684.93,313.50 1701.95,315.92 1718.96,318.05 1735.98,319.87 1752.99,321.40 1770.01,322.63 1787.02,323.57 1804.04,324.23 1821.05,324.61 1838.07,324.71 1855.08,324.56 1872.10,324.14 1889.11,323.49 1906.13,322.59 1923.14,321.47 1940.15,320.14 1957.17,318.60 1974.18,316.86 1991.20,314.95 2008.21,312.87"/>
+<text x="100.00" y="74.00" font-size="12" font-family="Arial, Helvetica, sans-serif" text-anchor="start" fill="#d84315">paper sigma</text>
+<text x="385.00" y="532.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238">distance from G1 (m)</text>
+<text x="22.00" y="266.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 266.00)">V&#x27; / V</text>
+</svg>

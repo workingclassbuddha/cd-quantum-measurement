@@ -8200,6 +8200,528 @@ Find a second independent experiment with both measured record distribution and 
     return scorecard, next_steps
 
 
+def no_refit_target_candidate_register():
+    """Manual, provenance-rich scout register for the missing second no-refit gate."""
+
+    rows = [
+        {
+            "candidate_id": "XIAO_2019_INTERNAL_LEAD",
+            "study": "Xiao et al. 2019",
+            "primary_url": "https://arxiv.org/abs/1805.02059",
+            "doi": "https://doi.org/10.1126/sciadv.aav9547",
+            "record_variable": "reconstructed Bohmian momentum-disturbance distribution",
+            "visibility_observable": "fringe visibility in partial which-way measurements",
+            "record_distribution_independent_of_visibility_fit": True,
+            "visibility_curve_available": True,
+            "phase_available": False,
+            "local_source_available": Path(
+                "outputs/tmp/second_hunt_sources/xiao/visibility.pdf"
+            ).exists(),
+            "candidate_role": "current lead, not independent second experiment",
+            "implementation_status": "implemented",
+            "next_command": "predict-xiao-visibility-from-distribution",
+            "no_refit_gate_score": 0.95,
+            "blocker": "within-paper cross-figure result; cannot satisfy independent second-experiment gate",
+            "source_basis": "arXiv abstract states momentum-change distribution was experimentally obtained and related quantitatively to visibility loss.",
+        },
+        {
+            "candidate_id": "EIBENBERGER_2014_RECOIL_ABSORPTION",
+            "study": "Eibenberger et al. 2014",
+            "primary_url": "https://arxiv.org/abs/1402.5307",
+            "doi": "https://doi.org/10.1103/PhysRevLett.112.250402",
+            "record_variable": "single-photon absorption recoil and absorbed/unabsorbed mixture",
+            "visibility_observable": "matter-wave fringe visibility reduction",
+            "record_distribution_independent_of_visibility_fit": False,
+            "visibility_curve_available": True,
+            "phase_available": False,
+            "local_source_available": False,
+            "candidate_role": "best next recoil-control scout",
+            "implementation_status": "not implemented",
+            "next_command": "scout-eibenberger-recoil-absorption",
+            "no_refit_gate_score": 0.70,
+            "blocker": "visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense",
+            "source_basis": "arXiv abstract states photon absorption imparts recoil, shifted/unshifted averaging reduces visibility, and the method extracts cross section.",
+        },
+        {
+            "candidate_id": "HORNBERGER_2003_COLLISIONAL_DECOHERENCE",
+            "study": "Hackermueller/Hornberger et al. 2003",
+            "primary_url": "https://arxiv.org/abs/quant-ph/0307238",
+            "doi": "https://doi.org/10.1007/s00340-003-1312-6",
+            "record_variable": "gas-collision effective cross section / pressure-derived localization rate",
+            "visibility_observable": "C70 fringe visibility versus gas pressure",
+            "record_distribution_independent_of_visibility_fit": False,
+            "visibility_curve_available": True,
+            "phase_available": False,
+            "local_source_available": Path(
+                "outputs/tmp/third_hunt_sources/hornberger/extracted/fig2.eps"
+            ).exists(),
+            "candidate_role": "best standard-decoherence no-adjustable-parameter control",
+            "implementation_status": "source package local, not yet implemented",
+            "next_command": "digitize-hornberger-collisional",
+            "no_refit_gate_score": 0.68,
+            "blocker": "excellent record-load control but not an independently measured record distribution",
+            "source_basis": "paper reports exponential visibility decrease with gas pressure and good quantitative agreement with decoherence theory.",
+        },
+        {
+            "candidate_id": "KOCSIS_2011_AVERAGE_TRAJECTORIES",
+            "study": "Kocsis et al. 2011",
+            "primary_url": "https://www.nist.gov/publications/observing-average-trajectories-single-photons-two-slit-interferometer",
+            "doi": "https://doi.org/10.1126/science.1202218",
+            "record_variable": "weakly measured photon momentum field / average trajectories",
+            "visibility_observable": "two-slit interference context, not a controlled visibility-loss sweep",
+            "record_distribution_independent_of_visibility_fit": True,
+            "visibility_curve_available": False,
+            "phase_available": False,
+            "local_source_available": False,
+            "candidate_role": "conceptual kin, weak no-refit target",
+            "implementation_status": "not implemented",
+            "next_command": "",
+            "no_refit_gate_score": 0.45,
+            "blocker": "measures momentum/trajectories but does not provide a visibility-loss curve to predict",
+            "source_basis": "NIST page states photon momentum was weakly measured and trajectories reconstructed by postselection in several planes.",
+        },
+        {
+            "candidate_id": "CORMANN_2016_MODULAR_VALUE",
+            "study": "Cormann et al. 2016",
+            "primary_url": "https://arxiv.org/abs/1508.01353",
+            "doi": "https://doi.org/10.1103/PhysRevA.93.042124",
+            "record_variable": "postselected modular-value/which-way phase structure",
+            "visibility_observable": "visibility and phase versus postselection angle",
+            "record_distribution_independent_of_visibility_fit": False,
+            "visibility_curve_available": True,
+            "phase_available": True,
+            "local_source_available": Path(
+                "outputs/tmp/third_hunt_sources/cormann/VisibilityPhaseMeasurement.eps"
+            ).exists(),
+            "candidate_role": "phase-control dataset, not record-distribution gate",
+            "implementation_status": "scout implemented",
+            "next_command": "scout-cormann-visibility-phase",
+            "no_refit_gate_score": 0.42,
+            "blocker": "useful visibility-plus-phase target but no independent measured record distribution",
+            "source_basis": "local scout finds phase/visibility constraints but not a measured distribution-to-visibility bridge.",
+        },
+        {
+            "candidate_id": "DURR_1998_COMPLEMENTARITY",
+            "study": "Duerr/Nonn/Rempe 1998",
+            "primary_url": "https://doi.org/10.1038/31822",
+            "doi": "https://doi.org/10.1038/31822",
+            "record_variable": "which-way distinguishability",
+            "visibility_observable": "fringe visibility versus path marking",
+            "record_distribution_independent_of_visibility_fit": False,
+            "visibility_curve_available": True,
+            "phase_available": False,
+            "local_source_available": Path(
+                "outputs/tmp/third_hunt_sources/durr_prl/source.tar"
+            ).exists(),
+            "candidate_role": "complementarity control",
+            "implementation_status": "source package local, not implemented",
+            "next_command": "",
+            "no_refit_gate_score": 0.35,
+            "blocker": "distinguishability/visibility duality is not a measured record-bandwidth distribution",
+            "source_basis": "candidate retained as a complementarity control, not a breakthrough-gate target.",
+        },
+    ]
+    return pd.DataFrame(rows).sort_values(
+        ["no_refit_gate_score", "candidate_id"],
+        ascending=[False, True],
+    ).reset_index(drop=True)
+
+
+def make_no_refit_target_scout_outputs(output_dir: Path):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    register = no_refit_target_candidate_register()
+    register.to_csv(output_dir / "no_refit_target_candidate_register.csv", index=False)
+
+    eligible_second = register[
+        (register["candidate_id"] != "XIAO_2019_INTERNAL_LEAD")
+        & (register["record_distribution_independent_of_visibility_fit"])
+        & (register["visibility_curve_available"])
+    ]
+    top_non_xiao = register[register["candidate_id"] != "XIAO_2019_INTERNAL_LEAD"].iloc[0]
+    gate_found = not eligible_second.empty
+    verdict = (
+        "second no-refit distribution target found"
+        if gate_found
+        else "no second no-refit distribution target yet"
+    )
+    recommended_next = (
+        eligible_second.iloc[0]["candidate_id"]
+        if gate_found
+        else str(top_non_xiao["candidate_id"])
+    )
+
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "candidate_count": int(len(register)),
+                "eligible_second_distribution_targets": int(len(eligible_second)),
+                "recommended_next_candidate": recommended_next,
+                "recommended_next_command": str(top_non_xiao["next_command"]),
+                "recommended_next_role": str(top_non_xiao["candidate_role"]),
+                "recommended_next_blocker": str(top_non_xiao["blocker"]),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "no_refit_target_scout_summary.csv", index=False)
+    write_bar_svg(
+        output_dir / "figures" / "figure_no_refit_candidate_scores.svg",
+        register["candidate_id"].astype(str).str.replace("_", " ").str.slice(0, 22),
+        register["no_refit_gate_score"].to_numpy(dtype=float),
+        "Second No-Refit Target Scores",
+        "gate score",
+    )
+
+    candidate_lines = []
+    for _idx, row in register.iterrows():
+        candidate_lines.append(
+            "- **{study}** (`{cid}`): score {score:.2f}. Role: {role}. Blocker: {blocker}".format(
+                study=row["study"],
+                cid=row["candidate_id"],
+                score=float(row["no_refit_gate_score"]),
+                role=row["candidate_role"],
+                blocker=row["blocker"],
+            )
+        )
+    candidates_text = "\n".join(candidate_lines)
+    report = f"""# Second No-Refit Target Scout
+
+Verdict: {verdict}
+
+This scout asks a narrow question: is there a second experiment, independent of Xiao, where a measured record distribution can predict a visibility/decoherence curve without refitting the key bandwidth/load parameter?
+
+## Result
+
+- Candidate count: {len(register)}
+- Eligible second distribution targets: {len(eligible_second)}
+- Recommended next candidate: `{recommended_next}`
+- Recommended next command: `{top_non_xiao['next_command']}`
+
+The answer is currently negative for the strict Xiao-like gate. The best next practical target is Eibenberger 2014 because it has a clean photon-recoil mechanism and visibility reduction in a matter-wave interferometer. But it is a recoil-control scout, not yet the missing independent measured-distribution prediction.
+
+## Candidate Register
+
+{candidates_text}
+
+## Interpretation
+
+Xiao remains the lead because it uniquely combines an experimentally reconstructed momentum-disturbance distribution with a visibility-loss curve in a way that supports a no-refit cross-figure prediction. Chapman, Hackermueller, Hornberger, and Eibenberger are strong standard-QM-compatible controls for record bandwidth/load, but they do not presently clear the second independent distribution-to-visibility gate.
+
+## Next Move
+
+Build `scout-eibenberger-recoil-absorption` only as a recoil-control lane, while continuing the literature search for a true second measured-distribution dataset.
+"""
+    (output_dir / "second_no_refit_target_scout_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return register, summary
+
+
+def eibenberger_default_metadata():
+    """Return seeded Fig. 2b points and constants for Eibenberger 2014."""
+
+    return {
+        "study_id": "EIBENBERGER_2014_RECOIL_ABSORPTION",
+        "source_title": "Absolute absorption cross sections from photon recoil in a matter-wave interferometer",
+        "source_url": "https://arxiv.org/abs/1402.5307",
+        "doi": "https://doi.org/10.1103/PhysRevLett.112.250402",
+        "source_file": "Fig2.pdf",
+        "extraction_method": "seeded_visual_scout_v1",
+        "notes": "Scout-grade visual picks from Fig. 2b. The paper's fit extracts sigma_abs from these data; this is a recoil-control lane, not a strict no-refit validation.",
+        "constants": {
+            "grating_period_m": 266e-9,
+            "recoil_wavelength_m": 532.2e-9,
+            "recoil_laser_power_W": 17.4,
+            "recoil_laser_waist_y_m": 1.23e-3,
+            "mean_velocity_m_per_s": 210.3,
+            "velocity_sigma_m_per_s": 38.4,
+            "c70_mass_kg": 70.0 * 12.0 * 1.66053906660e-27,
+            "paper_sigma_abs_m2": 1.97e-21,
+            "previous_absorption_midpoint_m2": 1.8e-21,
+        },
+        "figures": [
+            {
+                "figure": "Fig. 2b",
+                "panel": "b",
+                "x_name": "distance_from_G1_m",
+                "y_name": "visibility_ratio",
+                "points": [
+                    {"distance_from_G1_m": 0.0335, "visibility_ratio": 0.600, "visibility_se": 0.035, "point_note": "red triangle near first minimum"},
+                    {"distance_from_G1_m": 0.0350, "visibility_ratio": 0.610, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0365, "visibility_ratio": 0.615, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0380, "visibility_ratio": 0.615, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0392, "visibility_ratio": 0.625, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0405, "visibility_ratio": 0.695, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0430, "visibility_ratio": 0.740, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0445, "visibility_ratio": 0.755, "visibility_se": 0.035, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0465, "visibility_ratio": 0.795, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0485, "visibility_ratio": 0.820, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0505, "visibility_ratio": 0.835, "visibility_se": 0.030, "point_note": "visual scout"},
+                    {"distance_from_G1_m": 0.0525, "visibility_ratio": 0.860, "visibility_se": 0.030, "point_note": "visual scout"},
+                ],
+            }
+        ],
+    }
+
+
+def eibenberger_digitized_dataframe(metadata: dict) -> pd.DataFrame:
+    rows = []
+    for figure in metadata["figures"]:
+        for idx, point in enumerate(figure["points"]):
+            rows.append(
+                {
+                    "study_id": metadata["study_id"],
+                    "figure": figure["figure"],
+                    "panel": figure["panel"],
+                    "point_id": f"eibenberger_fig2b_{idx}",
+                    "x_name": figure["x_name"],
+                    "y_name": figure["y_name"],
+                    "distance_from_G1_m": float(point["distance_from_G1_m"]),
+                    "visibility_ratio": float(point["visibility_ratio"]),
+                    "visibility_se": float(point["visibility_se"]),
+                    "extraction_method": metadata["extraction_method"],
+                    "point_note": point["point_note"],
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def eibenberger_recoil_reduction(distance_m, sigma_abs_m2, constants: dict):
+    """Eq. (2)-style recoil visibility reduction averaged over velocity."""
+
+    distance = np.asarray(distance_m, dtype=float)
+    d = float(constants["grating_period_m"])
+    lambda_k = float(constants["recoil_wavelength_m"])
+    power = float(constants["recoil_laser_power_W"])
+    waist_y = float(constants["recoil_laser_waist_y_m"])
+    v0 = float(constants["mean_velocity_m_per_s"])
+    sigma_v = float(constants["velocity_sigma_m_per_s"])
+    mass = float(constants["c70_mass_kg"])
+    h = 6.62607015e-34
+    c = 299792458.0
+    v_min = max(1e-6, v0 - 5.0 * sigma_v)
+    v_max = v0 + 5.0 * sigma_v
+    velocities = np.linspace(v_min, v_max, 900)
+    weights = np.exp(-0.5 * ((velocities - v0) / sigma_v) ** 2)
+    weights = weights / max(float(np.trapezoid(weights, velocities)), EPS)
+    n0 = (
+        math.sqrt(2.0 / math.pi)
+        * float(sigma_abs_m2)
+        * lambda_k
+        * power
+        / (h * c * waist_y * velocities)
+    )
+    out = []
+    for dist in np.ravel(distance):
+        shift = h * dist / (lambda_k * mass * velocities)
+        phase = 2.0 * math.pi * shift / d
+        amp = np.exp(-n0 * (1.0 - np.exp(1j * phase)))
+        out.append(float(abs(np.trapezoid(weights * amp, velocities))))
+    return np.asarray(out, dtype=float).reshape(distance.shape)
+
+
+def fit_eibenberger_recoil_scout(df: pd.DataFrame, metadata: dict):
+    constants = metadata["constants"]
+    data = df.copy()
+    x = data["distance_from_G1_m"].to_numpy(dtype=float)
+    y = data["visibility_ratio"].to_numpy(dtype=float)
+    models = [
+        ("paper_sigma_abs", float(constants["paper_sigma_abs_m2"]), 0),
+        (
+            "previous_absorption_midpoint",
+            float(constants["previous_absorption_midpoint_m2"]),
+            0,
+        ),
+    ]
+    grid = np.linspace(0.8e-21, 3.0e-21, 160)
+    grid_scores = []
+    for sigma in grid:
+        pred = eibenberger_recoil_reduction(x, sigma, constants)
+        grid_scores.append(float(np.mean((y - pred) ** 2)))
+    best_sigma = float(grid[int(np.argmin(grid_scores))])
+    models.append(("visibility_fit_sigma_abs", best_sigma, 1))
+
+    summary_rows = []
+    prediction_rows = []
+    x_grid = np.linspace(0.005, 0.100, 160)
+    for model, sigma, n_fit_params in models:
+        pred = eibenberger_recoil_reduction(x, sigma, constants)
+        residual = y - pred
+        rmse = math.sqrt(float(np.mean(residual**2)))
+        mae = float(np.mean(np.abs(residual)))
+        summary_rows.append(
+            {
+                "model": model,
+                "sigma_abs_m2": sigma,
+                "n_fit_params_to_visibility": int(n_fit_params),
+                "rmse_visibility_ratio": rmse,
+                "mae_visibility_ratio": mae,
+                "status": "control_fit" if n_fit_params else "parameter_fixed",
+            }
+        )
+        for idx, row in data.iterrows():
+            prediction_rows.append(
+                {
+                    "model": model,
+                    "grid_type": "observed",
+                    "point_id": row["point_id"],
+                    "distance_from_G1_m": float(row["distance_from_G1_m"]),
+                    "visibility_ratio_obs": float(row["visibility_ratio"]),
+                    "pred_visibility_ratio": float(pred[idx]),
+                    "residual": float(residual[idx]),
+                }
+            )
+        grid_pred = eibenberger_recoil_reduction(x_grid, sigma, constants)
+        for xv, yv in zip(x_grid, grid_pred):
+            prediction_rows.append(
+                {
+                    "model": model,
+                    "grid_type": "grid",
+                    "point_id": "",
+                    "distance_from_G1_m": float(xv),
+                    "visibility_ratio_obs": np.nan,
+                    "pred_visibility_ratio": float(yv),
+                    "residual": np.nan,
+                }
+            )
+    summary = pd.DataFrame(summary_rows).sort_values(
+        "rmse_visibility_ratio"
+    ).reset_index(drop=True)
+    predictions = pd.DataFrame(prediction_rows)
+    return summary, predictions, data
+
+
+def make_eibenberger_recoil_scout_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    metadata = eibenberger_default_metadata()
+    source_pdf = None
+    if source_dir is not None:
+        candidate = Path(source_dir) / "Fig2.pdf"
+        if candidate.exists():
+            source_pdf = candidate
+    if source_pdf is None:
+        candidate = Path("outputs/tmp/second_no_refit_sources/eibenberger/Fig2.pdf")
+        if candidate.exists():
+            source_pdf = candidate
+    if source_pdf is not None:
+        metadata["source_file_sha256"] = sha256_file(source_pdf)
+        metadata["source_dir"] = str(source_pdf.parent)
+    else:
+        metadata["source_file_sha256"] = ""
+        metadata["source_dir"] = ""
+    digitized = eibenberger_digitized_dataframe(metadata)
+    summary, predictions, clean = fit_eibenberger_recoil_scout(digitized, metadata)
+    digitized.to_csv(
+        data_dir / "EIBENBERGER_2014_RECOIL_ABSORPTION_SCOUT.csv",
+        index=False,
+    )
+    (data_dir / "EIBENBERGER_2014_RECOIL_ABSORPTION_SCOUT.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    summary.to_csv(output_dir / "eibenberger_recoil_scout_summary.csv", index=False)
+    predictions.to_csv(
+        output_dir / "eibenberger_recoil_scout_predictions.csv",
+        index=False,
+    )
+    best = summary.iloc[0]
+    paper = summary[summary["model"] == "paper_sigma_abs"].iloc[0]
+    previous = summary[summary["model"] == "previous_absorption_midpoint"].iloc[0]
+    fit = summary[summary["model"] == "visibility_fit_sigma_abs"].iloc[0]
+    grid_paper = predictions[
+        (predictions["model"] == "paper_sigma_abs")
+        & (predictions["grid_type"] == "grid")
+    ].sort_values("distance_from_G1_m")
+    grid_fit = predictions[
+        (predictions["model"] == "visibility_fit_sigma_abs")
+        & (predictions["grid_type"] == "grid")
+    ].sort_values("distance_from_G1_m")
+    write_scatter_svg(
+        output_dir / "figures" / "figure_eibenberger_recoil_scout.svg",
+        clean["distance_from_G1_m"].to_numpy(dtype=float),
+        clean["visibility_ratio"].to_numpy(dtype=float),
+        "Eibenberger Recoil Visibility Scout",
+        "distance from G1 (m)",
+        "V' / V",
+        color="#6a1b9a",
+        line_x=grid_paper["distance_from_G1_m"].to_numpy(dtype=float),
+        line_y=grid_paper["pred_visibility_ratio"].to_numpy(dtype=float),
+        line_label="paper sigma",
+    )
+    write_line_svg(
+        output_dir / "figures" / "figure_eibenberger_recoil_models.svg",
+        grid_paper["distance_from_G1_m"].to_numpy(dtype=float),
+        [
+            {
+                "label": "paper sigma",
+                "y": grid_paper["pred_visibility_ratio"].to_numpy(dtype=float),
+                "color": "#2962ff",
+            },
+            {
+                "label": "visibility-fit sigma",
+                "y": grid_fit["pred_visibility_ratio"].to_numpy(dtype=float),
+                "color": "#c62828",
+                "dash": True,
+            },
+        ],
+        "Eibenberger Recoil Kernel Curves",
+        "distance from G1 (m)",
+        "V' / V",
+        xlim=(0.0, 0.10),
+        ylim=(0.45, 1.02),
+    )
+    verdict = (
+        "recoil-control candidate, not second no-refit gate"
+        if float(paper["rmse_visibility_ratio"]) < 0.08
+        else "recoil-control scout inconclusive"
+    )
+    report = f"""# Eibenberger Recoil-Absorption Scout
+
+Status: {verdict}
+
+This scout implements the Eq. (2)-style recoil visibility reduction from Eibenberger et al. 2014 as a record-kernel control. Photon absorption gives a known momentum recoil, and the observed visibility reduction follows from averaging shifted and unshifted molecular fringes over the measured velocity distribution.
+
+- Source URL: {metadata['source_url']}
+- DOI: {metadata['doi']}
+- Source SHA256: `{metadata.get('source_file_sha256', '')}`
+- Extraction method: `{metadata['extraction_method']}`
+- Extracted Fig. 2b rows: {len(digitized)}
+
+## Fit Quality
+
+- Paper sigma_abs: {float(paper['sigma_abs_m2']):.3e} m^2
+- Paper-sigma RMSE: {float(paper['rmse_visibility_ratio']):.4f}
+- Previous-absorption midpoint sigma_abs: {float(previous['sigma_abs_m2']):.3e} m^2
+- Previous-midpoint RMSE: {float(previous['rmse_visibility_ratio']):.4f}
+- Visibility-fit sigma_abs: {float(fit['sigma_abs_m2']):.3e} m^2
+- Visibility-fit RMSE: {float(fit['rmse_visibility_ratio']):.4f}
+- Best model: `{best['model']}`
+
+## Interpretation
+
+This is mathematically close to the record-bandwidth idea because visibility is a characteristic-function-like average over recoil phases. It does **not** clear the missing second no-refit gate, because the paper uses the visibility reduction to extract the absorption cross section. It is still useful as a standard-QM recoil-control lane.
+
+## What This Does Not Show
+
+- It does not validate the Lambda/Gamma/Theta product law.
+- It does not provide an independently measured record distribution like Xiao.
+- It does not show physics beyond standard quantum mechanics.
+"""
+    (output_dir / "eibenberger_recoil_scout_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return digitized, metadata, summary, predictions
+
+
 def _hackermueller_axis(panel):
     y_top = 110 if panel == "a" else 470
     y_bottom = 420 if panel == "a" else 780
@@ -11544,6 +12066,18 @@ def run_evaluate_breakthrough_candidate(
     )
 
 
+def run_scout_no_refit_targets(output_dir: Path):
+    make_no_refit_target_scout_outputs(output_dir)
+
+
+def run_scout_eibenberger_recoil_absorption(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_eibenberger_recoil_scout_outputs(source_dir, output_dir, data_dir)
+
+
 def run_analyze_chapman_kernel(input_csv: Path, output_dir: Path):
     make_chapman_kernel_outputs(input_csv, output_dir)
 
@@ -11899,6 +12433,24 @@ def build_parser():
         "--output-dir",
         default="outputs/breakthrough_candidate",
     )
+    no_refit_scout = sub.add_parser(
+        "scout-no-refit-targets",
+        help="rank candidate experiments for the missing second no-refit distribution gate",
+    )
+    no_refit_scout.add_argument(
+        "--output-dir",
+        default="outputs/no_refit_target_scout",
+    )
+    eibenberger = sub.add_parser(
+        "scout-eibenberger-recoil-absorption",
+        help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
+    )
+    eibenberger.add_argument("--source-dir", default=None)
+    eibenberger.add_argument(
+        "--output-dir",
+        default="outputs/eibenberger_recoil_scout",
+    )
+    eibenberger.add_argument("--data-dir", default="data/extracted")
     bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
     bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
@@ -12091,6 +12643,15 @@ def main(argv=None):
                 Path(args.chapman_complex_mixture_summary),
                 Path(args.hackermueller_stress_summary),
                 Path(args.synthesis_csv),
+            )
+        elif command == "scout-no-refit-targets":
+            run_scout_no_refit_targets(Path(args.output_dir))
+        elif command == "scout-eibenberger-recoil-absorption":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_scout_eibenberger_recoil_absorption(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
             )
         elif command == "benchmark-designs":
             run_identifiability_benchmark(Path(args.output_dir))

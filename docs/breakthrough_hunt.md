@@ -81,6 +81,39 @@ Find a second independent experiment where a measured record distribution predic
 visibility/decoherence without refitting the key bandwidth or load parameter.
 ```
 
+## Second No-Refit Target Scout
+
+The follow-up command is:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir outputs/no_refit_target_scout
+```
+
+Current verdict:
+
+```text
+no second no-refit distribution target yet
+eligible second distribution targets: 0
+recommended next candidate: EIBENBERGER_2014_RECOIL_ABSORPTION
+```
+
+The Eibenberger recoil-control command is:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
+```
+
+Current Eibenberger result:
+
+```text
+status: recoil-control candidate, not second no-refit gate
+paper-sigma RMSE: 0.0251
+visibility-fit sigma RMSE: 0.0247
+previous-absorption midpoint RMSE: 0.0302
+```
+
+This is a valuable standard-QM control because the recoil visibility reduction is a characteristic-function-like average over recoil phases. It does not clear the missing gate because the absorption cross section is extracted from the same visibility reduction.
+
 ## Current Signal
 
 The first-pass Chapman analysis found a strong recoverability window:
