@@ -42,10 +42,10 @@ Theta is better treated as record accessibility / bandwidth / load
 than as generic entropy load or scalar dephasing strength.
 ```
 
-The Chapman 1995 pass shows raw visibility is better captured by a Fourier/sinc-style momentum-record kernel than by monotone exponential dephasing. The Xiao 2019 pass independently reconstructs a momentum-disturbance scale that tracks visibility loss tightly and shows distributional side peaks. The Hackermueller 2004 pass adds an irreversible environmental-record lane: thermal emitted-photon load survives a 1000-sample uncertainty bootstrap against plain exp(power). The synthesis command currently labels this:
+The Chapman 1995 pass shows raw visibility is better captured by a Fourier/sinc-style momentum-record kernel than by monotone exponential dephasing. The Xiao 2019 pass independently reconstructs a momentum-disturbance scale that tracks visibility loss tightly and shows distributional side peaks. The Hackermueller 2004 pass adds an irreversible environmental-record lane: thermal emitted-photon load survives a 1000-sample uncertainty bootstrap against plain exp(power). Hornberger 2003 adds a collisional-decoherence guardrail whose methane pressure scale is internally consistent across visibility and gas-species figures. The synthesis command currently labels this:
 
 ```text
-three-experiment record-variable structure survives
+three-experiment structure survives with Hornberger guardrail
 ```
 
 Representative current numbers:
@@ -340,7 +340,7 @@ The complex-kernel command adds rough Chapman phase digitization and asks whethe
 
 The complex-mixture command tests whether that raw phase failure is caused by missing Chapman-style 0-photon, 1-photon, 2-photon, and velocity-smearing terms. Its report uses strict labels: `raw phase repaired`, `digitization-limited`, or `model still fails`. The current run is `model still fails`: conditioned ordering survives, but raw phase improves only slightly and raw visibility gets worse.
 
-The Xiao pass gives the best second-experiment support so far. Fig. 4 produces a tight relation between visibility loss and reconstructed momentum-disturbance scale, the stress test survives digitization uncertainty and pairing nulls, and the probability-distribution extraction shows side peaks in the `phi=pi` branch while `phi=0` remains centered. The Hackermueller pass adds a third durable-record load check: thermal delta-T4 beats plain exp(power) in the current calibrated EPS-rendered Figure 4 pass and survives the uncertainty bootstrap. The synthesis command therefore labels the current state `three-experiment record-variable structure survives`. That is a promising empirical structure, not a breakthrough: it still does not validate the product law, solve collapse, or establish physics beyond standard quantum mechanics.
+The Xiao pass gives the best second-experiment support so far. Fig. 4 produces a tight relation between visibility loss and reconstructed momentum-disturbance scale, the stress test survives digitization uncertainty and pairing nulls, and the probability-distribution extraction shows side peaks in the `phi=pi` branch while `phi=0` remains centered. The Hackermueller pass adds a third durable-record load check: thermal delta-T4 beats plain exp(power) in the current calibrated EPS-rendered Figure 4 pass and survives the uncertainty bootstrap. Hornberger adds a collisional-decoherence guardrail: methane visibility gives `p_v = 0.807 x 10^-6 mbar`, matching the Fig. 3 CH4 scale `0.810 x 10^-6 mbar`. The synthesis command therefore labels the current state `three-experiment structure survives with Hornberger guardrail`. That is a promising empirical structure, not a breakthrough: it still does not validate the product law, solve collapse, or establish physics beyond standard quantum mechanics.
 
 The phase-grade command redigitizes the Fig. 2 raw phase panel with explicit displayed phase, unwrapped phase, unwrap groups, quality labels, and wrap/low-contrast ambiguity flags. It reruns the complex and mixture analyses on all phase points and on a high-confidence raw subset. The current focused-grid run is `phase still fails`: the high-confidence mask does not rescue raw phase, though conditioned forward/backward ordering remains intact.
 

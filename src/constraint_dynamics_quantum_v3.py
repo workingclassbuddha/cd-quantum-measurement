@@ -7535,6 +7535,7 @@ def make_record_bandwidth_synthesis_outputs(
     output_dir: Path,
     hackermueller_thermal_summary: Path | None = None,
     hackermueller_thermal_stress_summary: Path | None = None,
+    hornberger_collisional_summary: Path | None = None,
 ):
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "figures").mkdir(parents=True, exist_ok=True)
@@ -7553,6 +7554,12 @@ def make_record_bandwidth_synthesis_outputs(
         pd.read_csv(hackermueller_thermal_stress_summary)
         if hackermueller_thermal_stress_summary is not None
         and Path(hackermueller_thermal_stress_summary).exists()
+        else None
+    )
+    hornberger_summary = (
+        pd.read_csv(hornberger_collisional_summary)
+        if hornberger_collisional_summary is not None
+        and Path(hornberger_collisional_summary).exists()
         else None
     )
 
@@ -7661,6 +7668,36 @@ def make_record_bandwidth_synthesis_outputs(
                     "status": "thermal record-load proxy supports durable environmental record lane",
                 }
             )
+    hornberger_methane = hornberger_species = None
+    if hornberger_summary is not None and not hornberger_summary.empty:
+        methane_rows = hornberger_summary[hornberger_summary["lane"] == "methane_visibility"]
+        species_rows = hornberger_summary[hornberger_summary["lane"] == "gas_species_pressure"]
+        if not methane_rows.empty and not species_rows.empty:
+            hornberger_methane = methane_rows.iloc[0]
+            hornberger_species = species_rows.iloc[0]
+            synthesis_rows.append(
+                {
+                    "experiment": "Hornberger 2003",
+                    "observable": "collisional decoherence pressure",
+                    "record_bandwidth_proxy": float(
+                        hornberger_methane["decoherence_pressure_pv_1e_minus_6_mbar"]
+                    ),
+                    "secondary_scale": float(
+                        hornberger_species["ch4_fig3_pressure_1e_minus_6_mbar"]
+                    ),
+                    "secondary_scale_name": "fig3_ch4_pressure",
+                    "fit_quality_metric": float(
+                        hornberger_methane["rmse_visibility_percent"]
+                    ),
+                    "baseline_metric": float(
+                        hornberger_species["fig3_rmse_pressure_1e_minus_6_mbar"]
+                    ),
+                    "baseline_comparison_ratio": float(
+                        hornberger_species["fig3_theory_observed_corr"]
+                    ),
+                    "status": "collisional record-load guardrail supports standard decoherence",
+                }
+            )
     synthesis = pd.DataFrame(synthesis_rows)
     synthesis.to_csv(output_dir / "record_bandwidth_synthesis.csv", index=False)
 
@@ -7707,6 +7744,15 @@ def make_record_bandwidth_synthesis_outputs(
             if strong_cross_signal
             else "cross-experiment target remains incomplete"
         )
+    hornberger_survives = False
+    if hornberger_methane is not None and hornberger_species is not None:
+        hornberger_survives = (
+            float(hornberger_methane["rmse_visibility_percent"]) < 1.5
+            and float(hornberger_species["fig3_rmse_pressure_1e_minus_6_mbar"]) < 0.25
+            and float(hornberger_species["fig3_theory_observed_corr"]) > 0.75
+        )
+        if verdict == "three-experiment record-variable structure survives" and hornberger_survives:
+            verdict = "three-experiment structure survives with Hornberger guardrail"
     hack_section = ""
     if hack_thermal is not None and hack_power is not None:
         hack_stress_text = ""
@@ -7723,6 +7769,20 @@ def make_record_bandwidth_synthesis_outputs(
 - Exp(power)/thermal RMSE ratio: {float(hack_power['rmse_visibility']) / max(float(hack_thermal['rmse_visibility']), EPS):.2f}
 {hack_stress_text}
 Hackermueller tests a different lane from Chapman and Xiao: durable environmental records emitted as thermal photons. It should be read as standard decoherence-compatible support for a record-load variable, not as a Fourier-revival result.
+"""
+    hornberger_section = ""
+    if hornberger_methane is not None and hornberger_species is not None:
+        hornberger_section = f"""
+## Hornberger
+
+- Methane fitted decoherence pressure p_v: {float(hornberger_methane['decoherence_pressure_pv_1e_minus_6_mbar']):.3f} x 10^-6 mbar
+- Methane visibility RMSE: {float(hornberger_methane['rmse_visibility_percent']):.3f} percentage points
+- Fig. 3 CH4 decoherence pressure: {float(hornberger_species['ch4_fig3_pressure_1e_minus_6_mbar']):.3f} x 10^-6 mbar
+- Fig. 2 p_v minus Fig. 3 CH4 pressure: {float(hornberger_species['fig2_pv_minus_fig3_ch4']):.3f} x 10^-6 mbar
+- Gas-species theory/experiment pressure RMSE: {float(hornberger_species['fig3_rmse_pressure_1e_minus_6_mbar']):.3f} x 10^-6 mbar
+- Gas-species theory/experiment correlation: {float(hornberger_species['fig3_theory_observed_corr']):.3f}
+
+Hornberger is the standard-decoherence guardrail. It supports the environmental-record-load reading by showing that collision records give internally consistent monotone decoherence, while also reminding us not to overgeneralize Fourier-kernel revival language to every irreversible record.
 """
     report = f"""# Record-Bandwidth Cross-Experiment Synthesis
 
@@ -7756,6 +7816,7 @@ This synthesis compares the strongest Chapman and Xiao outputs without forcing t
 
 Chapman and Xiao are not the same apparatus and should not be numerically merged as if their axes were identical. The useful agreement is structural: Chapman raw visibility behaves like a Fourier transform of an unresolved momentum-transfer record, while Xiao independently reconstructs a momentum-disturbance distribution whose bandwidth grows and whose scalar magnitude tracks visibility loss.
 {hack_section}
+{hornberger_section}
 
 The scale comparison is suggestive but not decisive:
 
@@ -12446,6 +12507,7 @@ def run_synthesize_record_bandwidth(
     output_dir: Path,
     hackermueller_thermal_summary: Path | None = None,
     hackermueller_thermal_stress_summary: Path | None = None,
+    hornberger_collisional_summary: Path | None = None,
 ):
     make_record_bandwidth_synthesis_outputs(
         chapman_kernel_summary,
@@ -12456,6 +12518,7 @@ def run_synthesize_record_bandwidth(
         output_dir,
         hackermueller_thermal_summary,
         hackermueller_thermal_stress_summary,
+        hornberger_collisional_summary,
     )
 
 
@@ -12825,6 +12888,10 @@ def build_parser():
         "--hackermueller-thermal-stress-summary",
         default="outputs/hackermueller_thermal_stress/stress_summary.csv",
     )
+    synthesize.add_argument(
+        "--hornberger-collisional-summary",
+        default="outputs/hornberger_collisional_scout/hornberger_collisional_scout_summary.csv",
+    )
     synthesize.add_argument("--output-dir", default="outputs/record_bandwidth_synthesis")
     breakthrough = sub.add_parser(
         "evaluate-breakthrough-candidate",
@@ -13076,6 +13143,7 @@ def main(argv=None):
                 Path(args.output_dir),
                 Path(args.hackermueller_thermal_summary),
                 Path(args.hackermueller_thermal_stress_summary),
+                Path(args.hornberger_collisional_summary),
             )
         elif command == "evaluate-breakthrough-candidate":
             run_evaluate_breakthrough_candidate(

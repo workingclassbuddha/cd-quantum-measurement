@@ -1,6 +1,6 @@
 # Record-Bandwidth Cross-Experiment Synthesis
 
-Status: three-experiment record-variable structure survives
+Status: three-experiment structure survives with Hornberger guardrail
 
 This synthesis compares the strongest Chapman and Xiao outputs without forcing them into a shared product-law fit. The question is narrower: do independent experiments support treating the relevant measurement record as a conjugate momentum-transfer bandwidth rather than a scalar dephasing load?
 
@@ -40,6 +40,18 @@ Chapman and Xiao are not the same apparatus and should not be numerically merged
 - Stress P(thermal delta-T4 is best): 0.701
 
 Hackermueller tests a different lane from Chapman and Xiao: durable environmental records emitted as thermal photons. It should be read as standard decoherence-compatible support for a record-load variable, not as a Fourier-revival result.
+
+
+## Hornberger
+
+- Methane fitted decoherence pressure p_v: 0.807 x 10^-6 mbar
+- Methane visibility RMSE: 0.888 percentage points
+- Fig. 3 CH4 decoherence pressure: 0.810 x 10^-6 mbar
+- Fig. 2 p_v minus Fig. 3 CH4 pressure: -0.003 x 10^-6 mbar
+- Gas-species theory/experiment pressure RMSE: 0.185 x 10^-6 mbar
+- Gas-species theory/experiment correlation: 0.888
+
+Hornberger is the standard-decoherence guardrail. It supports the environmental-record-load reading by showing that collision records give internally consistent monotone decoherence, while also reminding us not to overgeneralize Fourier-kernel revival language to every irreversible record.
 
 
 The scale comparison is suggestive but not decisive:

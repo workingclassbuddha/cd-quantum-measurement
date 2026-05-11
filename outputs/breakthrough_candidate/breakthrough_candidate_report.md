@@ -25,7 +25,7 @@ This dossier does not fit a new model. It scores the current outputs against str
 - Chapman raw first zero: d/lambda = 0.510
 - Hackermueller P(thermal delta-T4 beats exp power): 0.994
 - Hackermueller P(thermal delta-T4 is best): 0.701
-- Synthesis statuses: side-peak distribution supports bandwidth proxy; supports Fourier record-bandwidth over scalar exponential; survives uncertainty and pairing null; thermal record-load proxy supports durable environmental record lane
+- Synthesis statuses: collisional record-load guardrail supports standard decoherence; side-peak distribution supports bandwidth proxy; supports Fourier record-bandwidth over scalar exponential; survives uncertainty and pairing null; thermal record-load proxy supports durable environmental record lane
 - Second no-refit scout verdict: no second no-refit distribution target yet
 - Eligible second no-refit targets: 0
 - Recommended second-target candidate: EIBENBERGER_2014_RECOIL_ABSORPTION

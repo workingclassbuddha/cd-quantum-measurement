@@ -14,13 +14,15 @@
 <text x="76.00" y="121.60" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">1.8</text>
 <line x1="86" y1="54.00" x2="796" y2="54.00" stroke="#eceff1"/>
 <text x="76.00" y="58.00" font-size="11" font-family="Arial, Helvetica, sans-serif" text-anchor="end" fill="#263238">2.2</text>
-<rect x="117.95" y="88.07" width="113.60" height="283.93" fill="#2962ff" fill-opacity="0.82"/>
-<text x="174.75" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 174.75 390.00)">Chapman 1995 raw visibility Fou</text>
-<rect x="295.45" y="272.61" width="113.60" height="99.39" fill="#00897b" fill-opacity="0.82"/>
-<text x="352.25" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 352.25 390.00)">Xiao 2019 momentum disturban</text>
-<rect x="472.95" y="142.39" width="113.60" height="229.61" fill="#d84315" fill-opacity="0.82"/>
-<text x="529.75" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 529.75 390.00)">Xiao 2019 far-field momentum</text>
-<rect x="650.45" y="369.71" width="113.60" height="2.29" fill="#6a1b9a" fill-opacity="0.82"/>
-<text x="707.25" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 707.25 390.00)">Hackermueller 2004 thermal emitted-ph</text>
+<rect x="111.56" y="88.07" width="90.88" height="283.93" fill="#2962ff" fill-opacity="0.82"/>
+<text x="157.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 157.00 390.00)">Chapman 1995 raw visibility Fou</text>
+<rect x="253.56" y="272.61" width="90.88" height="99.39" fill="#00897b" fill-opacity="0.82"/>
+<text x="299.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 299.00 390.00)">Xiao 2019 momentum disturban</text>
+<rect x="395.56" y="142.39" width="90.88" height="229.61" fill="#d84315" fill-opacity="0.82"/>
+<text x="441.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 441.00 390.00)">Xiao 2019 far-field momentum</text>
+<rect x="537.56" y="369.71" width="90.88" height="2.29" fill="#6a1b9a" fill-opacity="0.82"/>
+<text x="583.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 583.00 390.00)">Hackermueller 2004 thermal emitted-ph</text>
+<rect x="679.56" y="255.19" width="90.88" height="116.81" fill="#f9a825" fill-opacity="0.82"/>
+<text x="725.00" y="390.00" font-size="10" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-28 725.00 390.00)">Hornberger 2003 collisional decohe</text>
 <text x="22.00" y="213.00" font-size="14" font-family="Arial, Helvetica, sans-serif" text-anchor="middle" fill="#263238" transform="rotate(-90 22.00 213.00)">proxy scale</text>
 </svg>

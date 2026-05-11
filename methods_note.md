@@ -191,7 +191,7 @@ The `scout-cormann-visibility-phase` command downloads or reuses the Cormann et 
 
 ## Record-Bandwidth Synthesis
 
-The `synthesize-record-bandwidth` command combines the already generated Chapman, Xiao, and Hackermueller summaries into one conservative cross-experiment report. It does not refit the experiments and does not force a Lambda/Gamma/Theta product law across incompatible apparatus axes.
+The `synthesize-record-bandwidth` command combines the already generated Chapman, Xiao, Hackermueller, and Hornberger summaries into one conservative cross-experiment report. It does not refit the experiments and does not force a Lambda/Gamma/Theta product law across incompatible apparatus axes.
 
 The synthesis compares:
 
@@ -199,8 +199,9 @@ The synthesis compares:
 - Xiao visibility-loss versus reconstructed momentum-disturbance slope, stress-test probabilities, and pairing-null results.
 - Xiao probability-distribution side-peak scale and mean absolute disturbance growth.
 - Hackermueller thermal emitted-photon record-load fits and stress-test probabilities.
+- Hornberger methane collisional-decoherence pressure and gas-species theory/experiment pressure agreement.
 
-The output label `three-experiment record-variable structure survives` means Chapman, Xiao, and Hackermueller each support a compatible operational record variable in their own apparatus language. It does not mean the product law is validated, and it does not repair the Chapman raw-phase failure.
+The output label `three-experiment structure survives with Hornberger guardrail` means Chapman, Xiao, and Hackermueller each support a compatible operational record variable in their own apparatus language, while Hornberger adds a standard collisional-decoherence sanity check. It does not mean the product law is validated, and it does not repair the Chapman raw-phase failure.
 
 ## Identifiability Diagnostics
 

@@ -675,6 +675,24 @@ def test_record_bandwidth_synthesis_outputs_and_cli(tmp_path):
             }
         ]
     )
+    hornberger_summary = pd.DataFrame(
+        [
+            {
+                "lane": "methane_visibility",
+                "model": "exponential_pressure",
+                "decoherence_pressure_pv_1e_minus_6_mbar": 0.807,
+                "rmse_visibility_percent": 0.888,
+            },
+            {
+                "lane": "gas_species_pressure",
+                "model": "theory_vs_experiment",
+                "fig3_rmse_pressure_1e_minus_6_mbar": 0.185,
+                "fig3_theory_observed_corr": 0.888,
+                "ch4_fig3_pressure_1e_minus_6_mbar": 0.810,
+                "fig2_pv_minus_fig3_ch4": -0.003,
+            },
+        ]
+    )
     paths = {}
     for name, frame in [
         ("chapman_kernel", chapman_kernel),
@@ -684,6 +702,7 @@ def test_record_bandwidth_synthesis_outputs_and_cli(tmp_path):
         ("xiao_probability", xiao_probability),
         ("hack_summary", hack_summary),
         ("hack_stress", hack_stress),
+        ("hornberger_summary", hornberger_summary),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -699,14 +718,16 @@ def test_record_bandwidth_synthesis_outputs_and_cli(tmp_path):
         output_dir,
         paths["hack_summary"],
         paths["hack_stress"],
+        paths["hornberger_summary"],
     )
     assert not synthesis.empty
     assert "Hackermueller 2004" in set(synthesis["experiment"])
+    assert "Hornberger 2003" in set(synthesis["experiment"])
     report = output_dir / "record_bandwidth_synthesis_report.md"
     assert report.exists()
-    assert "three-experiment record-variable structure survives" in report.read_text(
-        encoding="utf-8"
-    )
+    report_text = report.read_text(encoding="utf-8")
+    assert "three-experiment structure survives with Hornberger guardrail" in report_text
+    assert "## Hornberger" in report_text
 
     cli_output_dir = tmp_path / "synthesis_cli"
     main(
@@ -726,6 +747,8 @@ def test_record_bandwidth_synthesis_outputs_and_cli(tmp_path):
             str(paths["hack_summary"]),
             "--hackermueller-thermal-stress-summary",
             str(paths["hack_stress"]),
+            "--hornberger-collisional-summary",
+            str(paths["hornberger_summary"]),
             "--output-dir",
             str(cli_output_dir),
         ]

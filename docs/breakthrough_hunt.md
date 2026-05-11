@@ -474,7 +474,7 @@ It deliberately does not merge Chapman, Xiao, and Hackermueller into a shared ap
 The current run gives:
 
 ```text
-status: three-experiment record-variable structure survives
+status: three-experiment structure survives with Hornberger guardrail
 Chapman raw sinc/Fourier width: 1.961
 Chapman raw first zero: d/lambda = 0.510
 Chapman raw sinc RMSE / exponential RMSE: 0.0257 / 0.0738
@@ -491,9 +491,18 @@ Xiao side-peak scale / Chapman raw sinc width: 0.823
 Hackermueller thermal delta-T4 RMSE / exp(power) RMSE: 0.0767 / 0.0923
 Hackermueller stress P(thermal beats exp power): 0.994
 Hackermueller stress P(thermal best): 0.701
+Hornberger methane p_v / Fig. 3 CH4 p_v: 0.807 / 0.810 x 10^-6 mbar
+Hornberger gas-species pressure RMSE: 0.185 x 10^-6 mbar
+Hornberger gas-species theory/experiment correlation: 0.888
 ```
 
-This is the closest thing to a real signal so far. Chapman supplies the Fourier visibility zero/revival, Xiao supplies an independently reconstructed momentum-disturbance bandwidth with distributional side peaks, and Hackermueller supplies the durable environmental-record load lane through thermal photon emission. The agreement is structural, not a unit-level numerical identity.
+The current generated status is now:
+
+```text
+three-experiment structure survives with Hornberger guardrail
+```
+
+This is the closest thing to a real signal so far. Chapman supplies the Fourier visibility zero/revival, Xiao supplies an independently reconstructed momentum-disturbance bandwidth with distributional side peaks, Hackermueller supplies the durable environmental-record load lane through thermal photon emission, and Hornberger supplies the monotone collisional-decoherence guardrail. The agreement is structural, not a unit-level numerical identity.
 
 The conservative verdict remains: robust cross-experiment target, not breakthrough. The next breakthrough-grade step would be a held-out experiment where an independently measured record distribution predicts visibility without refitting the bandwidth or thermal-load curve.
 

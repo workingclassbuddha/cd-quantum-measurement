@@ -3,3 +3,4 @@ Chapman 1995,raw visibility Fourier zero/revival,1.961361111111111,0.50985001911
 Xiao 2019,momentum disturbance vs visibility,0.6866101580424487,0.042925293821979425,linear_intercept,0.0033791199380243,0.0693065730692245,20.510243596072705,survives uncertainty and pairing null
 Xiao 2019,far-field momentum distribution,1.586156111929308,0.5683853118712274,mean_abs_growth,0.3142857142857143,1.234285714285714,3.9272727272727264,side-peak distribution supports bandwidth proxy
 Hackermueller 2004,thermal emitted-photon record load,0.0158101160640604,0.0767145314599193,thermal_delta_T4_rmse,0.0767145314599193,0.0922858484202863,1.202977410720451,thermal record-load proxy supports durable environmental record lane
+Hornberger 2003,collisional decoherence pressure,0.806914538905973,0.81,fig3_ch4_pressure,0.8881224682640035,0.1847520861406802,0.8884291636263053,collisional record-load guardrail supports standard decoherence
