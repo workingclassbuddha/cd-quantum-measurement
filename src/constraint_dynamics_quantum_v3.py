@@ -55,6 +55,11 @@ HACKERMUELLER_PAPER_URL = "https://arxiv.org/abs/quant-ph/0402146"
 HACKERMUELLER_DOI = "https://doi.org/10.1038/nature02276"
 HACKERMUELLER_DIGITIZATION_DATE = "2026-04-30"
 HACKERMUELLER_EXTRACTION_METHOD = "calibrated_eps_render_digitization_v2"
+HORNBERGER_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/quant-ph/0303093"
+HORNBERGER_PAPER_URL = "https://arxiv.org/abs/quant-ph/0303093"
+HORNBERGER_DOI = "https://doi.org/10.1103/PhysRevLett.90.160401"
+HORNBERGER_DIGITIZATION_DATE = "2026-05-11"
+HORNBERGER_EXTRACTION_METHOD = "manual_eps_render_scout_v1"
 
 
 @dataclass(frozen=True)
@@ -7844,6 +7849,12 @@ def make_breakthrough_candidate_outputs(
     synthesis_csv: Path = Path(
         "outputs/record_bandwidth_synthesis/record_bandwidth_synthesis.csv"
     ),
+    no_refit_target_scout_summary: Path = Path(
+        "outputs/no_refit_target_scout/no_refit_target_scout_summary.csv"
+    ),
+    eibenberger_recoil_summary: Path = Path(
+        "outputs/eibenberger_recoil_scout/eibenberger_recoil_scout_summary.csv"
+    ),
 ):
     """Write a strict breakthrough-readiness dossier from existing analyses.
 
@@ -7861,6 +7872,8 @@ def make_breakthrough_candidate_outputs(
     chapman_mixture = _read_optional_metric_csv(chapman_complex_mixture_summary)
     hack_stress = _read_optional_metric_csv(hackermueller_stress_summary)
     synthesis = _read_optional_metric_csv(synthesis_csv)
+    no_refit_scout = _read_optional_metric_csv(no_refit_target_scout_summary)
+    eibenberger_summary = _read_optional_metric_csv(eibenberger_recoil_summary)
 
     xiao_no_refit = _summary_model_row(xiao_dist, "distribution_no_refit")
     xiao_bound = _summary_model_row(xiao_dist, "published_bound")
@@ -7954,6 +7967,54 @@ def make_breakthrough_candidate_outputs(
     synthesis_status = ""
     if synthesis is not None and not synthesis.empty and "status" in synthesis.columns:
         synthesis_status = "; ".join(sorted(set(synthesis["status"].astype(str))))
+
+    second_target_count = 0
+    second_target_verdict = "not run"
+    second_target_candidate = "not available"
+    second_target_evidence: Path | str = "literature search"
+    second_target_pass = False
+    if no_refit_scout is not None and not no_refit_scout.empty:
+        scout_row = no_refit_scout.iloc[0]
+        second_target_verdict = str(scout_row.get("verdict", "unknown"))
+        second_target_count = int(
+            float(scout_row.get("eligible_second_distribution_targets", 0))
+        )
+        second_target_candidate = str(
+            scout_row.get("recommended_next_candidate", "not available")
+        )
+        second_target_evidence = no_refit_target_scout_summary
+        second_target_pass = second_target_count > 0
+
+    eibenberger_status = "not run"
+    eibenberger_best_model = "not available"
+    eibenberger_best_rmse = np.nan
+    eibenberger_paper_rmse = np.nan
+    eibenberger_sigma = np.nan
+    if eibenberger_summary is not None and not eibenberger_summary.empty:
+        rmse_col = (
+            "rmse_visibility_ratio"
+            if "rmse_visibility_ratio" in eibenberger_summary.columns
+            else "rmse_visibility"
+        )
+        if rmse_col in eibenberger_summary.columns:
+            numeric_rmse = pd.to_numeric(
+                eibenberger_summary[rmse_col],
+                errors="coerce",
+            )
+            best_idx = numeric_rmse.idxmin()
+            eibenberger_row = eibenberger_summary.loc[best_idx]
+            eibenberger_status = str(eibenberger_row.get("status", "unknown"))
+            eibenberger_best_model = str(eibenberger_row.get("model", "unknown"))
+            eibenberger_best_rmse = float(numeric_rmse.loc[best_idx])
+            eibenberger_sigma = float(eibenberger_row.get("sigma_abs_m2", np.nan))
+            paper_rows = eibenberger_summary[
+                eibenberger_summary.get("model", pd.Series(dtype=str)).astype(str)
+                == "paper_sigma_abs"
+            ]
+            if not paper_rows.empty:
+                eibenberger_paper_rmse = float(
+                    pd.to_numeric(paper_rows[rmse_col], errors="coerce").iloc[0]
+                )
 
     gates = [
         _gate_row(
@@ -8060,11 +8121,11 @@ def make_breakthrough_candidate_outputs(
             "G11",
             "External blocker",
             "Second independent distribution-to-visibility experiment found",
-            "not yet",
-            "yes",
-            False,
-            "literature search",
-            "Xiao is within-paper cross-figure evidence; a true breakthrough needs another independent no-refit distribution test.",
+            second_target_count,
+            "> 0",
+            second_target_pass,
+            second_target_evidence,
+            "The scout keeps this blocker explicit: Xiao is within-paper cross-figure evidence; a true breakthrough needs another independent no-refit distribution test.",
         ),
         _gate_row(
             "G12",
@@ -8092,7 +8153,7 @@ def make_breakthrough_candidate_outputs(
                 "priority": 2,
                 "action": "Find or digitize a second independent distribution-to-visibility dataset",
                 "success_criterion": "Measured record distribution predicts visibility without refitting the bandwidth/load parameter.",
-                "why": "This is the missing breakthrough gate.",
+                "why": f"This is the missing breakthrough gate; latest scout verdict is `{second_target_verdict}`.",
             },
             {
                 "priority": 3,
@@ -8162,12 +8223,20 @@ This dossier does not fit a new model. It scores the current outputs against str
 - Hackermueller P(thermal delta-T4 beats exp power): {hack_p:.3f}
 - Hackermueller P(thermal delta-T4 is best): {hack_best_p:.3f}
 - Synthesis statuses: {synthesis_status or "not available"}
+- Second no-refit scout verdict: {second_target_verdict}
+- Eligible second no-refit targets: {second_target_count}
+- Recommended second-target candidate: {second_target_candidate}
+- Eibenberger recoil-control status: {eibenberger_status}
+- Eibenberger best recoil model: {eibenberger_best_model}
+- Eibenberger best RMSE: {eibenberger_best_rmse if math.isfinite(eibenberger_best_rmse) else "not available"}
+- Eibenberger paper-sigma RMSE: {eibenberger_paper_rmse if math.isfinite(eibenberger_paper_rmse) else "not available"}
+- Eibenberger inferred sigma_abs: {eibenberger_sigma if math.isfinite(eibenberger_sigma) else "not available"}
 
 ## Blockers
 
 - Chapman raw phase verdict: {raw_phase_verdict}
 - Chapman best mixture raw phase RMSE: {raw_phase_rmse if math.isfinite(raw_phase_rmse) else "not available"}
-- Second independent distribution-to-visibility experiment: not yet found
+- Second independent distribution-to-visibility experiment: {second_target_verdict}
 - Lambda/Gamma/Theta product law validation: not yet
 
 ## Gate Score
@@ -8175,6 +8244,8 @@ This dossier does not fit a new model. It scores the current outputs against str
 Passed gates: {passed_count} / {total_count}
 
 The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao is therefore the centerpiece. Chapman and Hackermueller provide cross-experiment support for record bandwidth/load, but they do not by themselves clear the no-refit breakthrough gate.
+
+Eibenberger is now logged as a useful recoil-control lane: the known photon recoil mechanism predicts visibility reduction at roughly the paper absorption cross section. It strengthens the standard-QM compatibility of the record-kernel framing, but it does not close G11 because the absorption cross section is still extracted from visibility rather than independently measured as a held-out record distribution.
 
 ## Strict Claim
 
@@ -8234,9 +8305,11 @@ def no_refit_target_candidate_register():
             "record_distribution_independent_of_visibility_fit": False,
             "visibility_curve_available": True,
             "phase_available": False,
-            "local_source_available": False,
+            "local_source_available": Path(
+                "outputs/tmp/second_no_refit_sources/eibenberger/Fig2.pdf"
+            ).exists(),
             "candidate_role": "best next recoil-control scout",
-            "implementation_status": "not implemented",
+            "implementation_status": "scout implemented",
             "next_command": "scout-eibenberger-recoil-absorption",
             "no_refit_gate_score": 0.70,
             "blocker": "visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense",
@@ -8256,8 +8329,8 @@ def no_refit_target_candidate_register():
                 "outputs/tmp/third_hunt_sources/hornberger/extracted/fig2.eps"
             ).exists(),
             "candidate_role": "best standard-decoherence no-adjustable-parameter control",
-            "implementation_status": "source package local, not yet implemented",
-            "next_command": "digitize-hornberger-collisional",
+            "implementation_status": "scout implemented",
+            "next_command": "scout-hornberger-collisional",
             "no_refit_gate_score": 0.68,
             "blocker": "excellent record-load control but not an independently measured record distribution",
             "source_basis": "paper reports exponential visibility decrease with gas pressure and good quantitative agreement with decoherence theory.",
@@ -8716,6 +8789,346 @@ This is mathematically close to the record-bandwidth idea because visibility is 
 - It does not show physics beyond standard quantum mechanics.
 """
     (output_dir / "eibenberger_recoil_scout_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return digitized, metadata, summary, predictions
+
+
+def _hornberger_fig2_axis():
+    return {
+        "x_min": 0.0,
+        "x_max": 2.5,
+        "y_min": 1.0,
+        "y_max": 50.0,
+        "y_scale": "log10",
+        "x_pixel_min": [72.0, 697.0],
+        "x_pixel_max": [854.0, 697.0],
+        "y_pixel_min": [72.0, 697.0],
+        "y_pixel_max": [72.0, 23.0],
+    }
+
+
+def _hornberger_fig3_axis():
+    return {
+        "x_min": 40.0,
+        "x_max": 110.0,
+        "y_min": 0.0,
+        "y_max": 2.0,
+        "x_pixel_min": [90.0, 685.0],
+        "x_pixel_max": [874.0, 685.0],
+        "y_pixel_min": [90.0, 685.0],
+        "y_pixel_max": [90.0, 21.0],
+    }
+
+
+def _data_to_hornberger_fig2_pixel(pressure, visibility_percent):
+    axis = _hornberger_fig2_axis()
+    x, _ = data_to_pixel(float(pressure), 1.0, axis)
+    y0 = float(axis["y_pixel_min"][1])
+    y1 = float(axis["y_pixel_max"][1])
+    log_min = math.log10(float(axis["y_min"]))
+    log_max = math.log10(float(axis["y_max"]))
+    value = math.log10(max(float(visibility_percent), EPS))
+    y = y0 + (value - log_min) * (y1 - y0) / (log_max - log_min)
+    return round(float(x), 3), round(float(y), 3)
+
+
+def hornberger_default_metadata(source_dir: Path | None = None):
+    fig2_points = [
+        (0.00, 37.8, 1.8),
+        (0.04, 36.4, 1.7),
+        (0.08, 34.5, 1.7),
+        (0.13, 33.0, 1.6),
+        (0.17, 32.0, 1.6),
+        (0.20, 30.5, 1.6),
+        (0.31, 26.8, 1.5),
+        (0.36, 25.6, 1.5),
+        (0.44, 23.6, 1.4),
+        (0.56, 20.4, 1.4),
+        (0.65, 17.0, 1.5),
+        (0.74, 17.2, 1.5),
+        (0.83, 13.6, 1.3),
+        (0.95, 10.4, 1.2),
+        (1.12, 9.5, 1.4),
+        (1.32, 6.2, 1.7),
+        (1.62, 4.0, 1.8),
+        (1.92, 4.0, 2.0),
+        (2.38, 2.4, 2.6),
+    ]
+    fig3_points = [
+        ("Ne", 49.4, 1.32, 0.20, 1.60),
+        ("He", 57.2, 1.07, 0.17, 1.38),
+        ("Kr", 62.1, 1.29, 0.19, 1.24),
+        ("Ar", 65.5, 1.06, 0.16, 1.18),
+        ("Xe", 65.8, 1.07, 0.17, 1.18),
+        ("Air", 69.2, 1.04, 0.16, 1.14),
+        ("D2", 82.5, 0.79, 0.11, 0.91),
+        ("CH4", 97.2, 0.81, 0.12, 0.78),
+        ("H2", 102.5, 0.45, 0.07, 0.73),
+    ]
+    source_file = ""
+    source_sha = ""
+    if source_dir is not None:
+        source_dir = Path(source_dir)
+        if (source_dir / "fig2.eps").exists():
+            source_file = str(source_dir / "fig2.eps")
+            source_sha = sha256_file(source_dir / "fig2.eps")
+    return {
+        "study_id": "HORNBERGER_2003_COLLISIONAL",
+        "source_title": "Collisional decoherence observed in matter wave interferometry",
+        "source_authors": "Hornberger; Sipe; Arndt",
+        "year": 2003,
+        "source_url": HORNBERGER_PAPER_URL,
+        "arxiv_source_url": HORNBERGER_ARXIV_SOURCE_URL,
+        "doi": HORNBERGER_DOI,
+        "source_file": source_file,
+        "source_file_sha256": source_sha,
+        "digitization_date": HORNBERGER_DIGITIZATION_DATE,
+        "extraction_method": HORNBERGER_EXTRACTION_METHOD,
+        "coordinate_system": "EPS rendered at 160 dpi for scout-grade manual point picks",
+        "figures": [
+            {
+                "figure": "Figure 2",
+                "panel": "methane_visibility",
+                "axis_bounds": _hornberger_fig2_axis(),
+                "points": [
+                    {
+                        "pressure_1e_minus_6_mbar": pressure,
+                        "visibility_percent": visibility,
+                        "visibility_se_percent": se,
+                        "x_pixel": _data_to_hornberger_fig2_pixel(pressure, visibility)[0],
+                        "y_pixel": _data_to_hornberger_fig2_pixel(pressure, visibility)[1],
+                    }
+                    for pressure, visibility, se in fig2_points
+                ],
+            },
+            {
+                "figure": "Figure 3",
+                "panel": "decoherence_pressure_by_gas",
+                "axis_bounds": _hornberger_fig3_axis(),
+                "points": [
+                    {
+                        "gas": gas,
+                        "sigma_eff_nm2": sigma,
+                        "decoherence_pressure_1e_minus_6_mbar": p0,
+                        "decoherence_pressure_se": se,
+                        "theory_decoherence_pressure_1e_minus_6_mbar": theory,
+                    }
+                    for gas, sigma, p0, se, theory in fig3_points
+                ],
+            },
+        ],
+    }
+
+
+def hornberger_digitized_dataframe(metadata: dict) -> pd.DataFrame:
+    rows = []
+    for fig in metadata["figures"]:
+        for idx, point in enumerate(fig["points"]):
+            base = {
+                "study_id": metadata["study_id"],
+                "figure": fig["figure"],
+                "panel": fig["panel"],
+                "point_id": idx,
+                "source_url": metadata["source_url"],
+                "doi": metadata["doi"],
+                "extraction_method": metadata["extraction_method"],
+                "source_file_sha256": metadata.get("source_file_sha256", ""),
+            }
+            base.update(point)
+            rows.append(base)
+    return pd.DataFrame(rows)
+
+
+def fit_hornberger_collisional_scout(df: pd.DataFrame):
+    fig2 = df[df["panel"] == "methane_visibility"].copy()
+    p = fig2["pressure_1e_minus_6_mbar"].to_numpy(dtype=float)
+    visibility = fig2["visibility_percent"].to_numpy(dtype=float)
+    ylog = np.log(np.maximum(visibility, EPS))
+    X = np.column_stack([np.ones_like(p), -p])
+    beta, *_ = np.linalg.lstsq(X, ylog, rcond=None)
+    v0 = float(np.exp(beta[0]))
+    pv = float(1.0 / max(beta[1], EPS))
+    pred = v0 * np.exp(-p / pv)
+    rmse = float(np.sqrt(np.mean((visibility - pred) ** 2)))
+    mae = float(np.mean(np.abs(visibility - pred)))
+
+    grid_p = np.linspace(0.0, 2.5, 160)
+    grid_pred = v0 * np.exp(-grid_p / pv)
+    prediction_rows = []
+    for _idx, row in fig2.iterrows():
+        prediction_rows.append(
+            {
+                "figure": "Figure 2",
+                "model": "methane_exponential_pressure",
+                "grid_type": "observed",
+                "pressure_1e_minus_6_mbar": float(row["pressure_1e_minus_6_mbar"]),
+                "observed_visibility_percent": float(row["visibility_percent"]),
+                "pred_visibility_percent": float(
+                    v0 * math.exp(-float(row["pressure_1e_minus_6_mbar"]) / pv)
+                ),
+            }
+        )
+    for pp, vv in zip(grid_p, grid_pred):
+        prediction_rows.append(
+            {
+                "figure": "Figure 2",
+                "model": "methane_exponential_pressure",
+                "grid_type": "grid",
+                "pressure_1e_minus_6_mbar": float(pp),
+                "observed_visibility_percent": np.nan,
+                "pred_visibility_percent": float(vv),
+            }
+        )
+
+    fig3 = df[df["panel"] == "decoherence_pressure_by_gas"].copy()
+    observed = fig3["decoherence_pressure_1e_minus_6_mbar"].to_numpy(dtype=float)
+    theory = fig3["theory_decoherence_pressure_1e_minus_6_mbar"].to_numpy(dtype=float)
+    fig3_rmse = float(np.sqrt(np.mean((observed - theory) ** 2)))
+    fig3_mae = float(np.mean(np.abs(observed - theory)))
+    corr = float(np.corrcoef(observed, theory)[0, 1])
+    ch4_rows = fig3[fig3["gas"] == "CH4"]
+    ch4_p0 = float(ch4_rows["decoherence_pressure_1e_minus_6_mbar"].iloc[0])
+    ch4_theory = float(
+        ch4_rows["theory_decoherence_pressure_1e_minus_6_mbar"].iloc[0]
+    )
+    pv_minus_ch4 = float(pv - ch4_p0)
+
+    summary = pd.DataFrame(
+        [
+            {
+                "lane": "methane_visibility",
+                "model": "exponential_pressure",
+                "n": int(len(fig2)),
+                "V0_percent": v0,
+                "decoherence_pressure_pv_1e_minus_6_mbar": pv,
+                "rmse_visibility_percent": rmse,
+                "mae_visibility_percent": mae,
+                "status": "collisional record-load control",
+            },
+            {
+                "lane": "gas_species_pressure",
+                "model": "theory_vs_experiment",
+                "n": int(len(fig3)),
+                "fig3_rmse_pressure_1e_minus_6_mbar": fig3_rmse,
+                "fig3_mae_pressure_1e_minus_6_mbar": fig3_mae,
+                "fig3_theory_observed_corr": corr,
+                "ch4_fig3_pressure_1e_minus_6_mbar": ch4_p0,
+                "ch4_theory_pressure_1e_minus_6_mbar": ch4_theory,
+                "fig2_pv_minus_fig3_ch4": pv_minus_ch4,
+                "status": "no-adjustable-parameter guardrail",
+            },
+        ]
+    )
+    return summary, pd.DataFrame(prediction_rows), fig2, fig3
+
+
+def make_hornberger_collisional_scout_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    source = None
+    candidates = []
+    if source_dir is not None:
+        candidates.extend([Path(source_dir) / "extracted", Path(source_dir)])
+    candidates.extend(
+        [
+            Path("outputs/tmp/third_hunt_sources/hornberger/extracted"),
+            Path("outputs/tmp/third_hunt_sources/hornberger"),
+        ]
+    )
+    for candidate in candidates:
+        if (candidate / "fig2.eps").exists() and (candidate / "fig3.eps").exists():
+            source = candidate
+            break
+    metadata = hornberger_default_metadata(source)
+    digitized = hornberger_digitized_dataframe(metadata)
+    summary, predictions, fig2, fig3 = fit_hornberger_collisional_scout(digitized)
+    digitized.to_csv(
+        data_dir / "HORNBERGER_2003_COLLISIONAL_SCOUT.csv",
+        index=False,
+    )
+    (data_dir / "HORNBERGER_2003_COLLISIONAL_SCOUT.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    summary.to_csv(output_dir / "hornberger_collisional_scout_summary.csv", index=False)
+    predictions.to_csv(
+        output_dir / "hornberger_collisional_scout_predictions.csv",
+        index=False,
+    )
+    grid = predictions[predictions["grid_type"] == "grid"]
+    write_scatter_svg(
+        output_dir / "figures" / "figure_hornberger_methane_visibility.svg",
+        fig2["pressure_1e_minus_6_mbar"].to_numpy(dtype=float),
+        fig2["visibility_percent"].to_numpy(dtype=float),
+        "Hornberger Methane Collisional Decoherence",
+        "pressure (10^-6 mbar)",
+        "visibility (%)",
+        color="#455a64",
+        line_x=grid["pressure_1e_minus_6_mbar"].to_numpy(dtype=float),
+        line_y=grid["pred_visibility_percent"].to_numpy(dtype=float),
+        line_label="exp pressure fit",
+    )
+    write_scatter_svg(
+        output_dir / "figures" / "figure_hornberger_species_pressure.svg",
+        fig3["theory_decoherence_pressure_1e_minus_6_mbar"].to_numpy(dtype=float),
+        fig3["decoherence_pressure_1e_minus_6_mbar"].to_numpy(dtype=float),
+        "Hornberger Gas-Species Decoherence Pressure",
+        "theory p0 (10^-6 mbar)",
+        "experiment p0 (10^-6 mbar)",
+        color="#00897b",
+        diagonal=True,
+    )
+    methane = summary[summary["lane"] == "methane_visibility"].iloc[0]
+    species = summary[summary["lane"] == "gas_species_pressure"].iloc[0]
+    verdict = (
+        "collisional record-load guardrail supports standard decoherence"
+        if float(species["fig3_rmse_pressure_1e_minus_6_mbar"]) < 0.25
+        else "collisional scout inconclusive"
+    )
+    report = f"""# Hornberger Collisional Decoherence Scout
+
+Status: {verdict}
+
+This scout adds Hornberger et al. 2003 as a conservative collisional-decoherence control. It is not the missing Xiao-like no-refit distribution test. It asks whether a plain environmental collision record-load variable behaves as standard decoherence predicts.
+
+- Source URL: {metadata['source_url']}
+- DOI: {metadata['doi']}
+- Source SHA256: `{metadata.get('source_file_sha256', '')}`
+- Extraction method: `{metadata['extraction_method']}`
+- Fig. 2 methane rows: {len(fig2)}
+- Fig. 3 gas-species rows: {len(fig3)}
+
+## Methane Visibility Fit
+
+- Fitted V0: {float(methane['V0_percent']):.2f} %
+- Fitted decoherence pressure p_v: {float(methane['decoherence_pressure_pv_1e_minus_6_mbar']):.3f} x 10^-6 mbar
+- RMSE visibility: {float(methane['rmse_visibility_percent']):.3f} percentage points
+
+## Gas-Species Guardrail
+
+- Theory-vs-experiment pressure RMSE: {float(species['fig3_rmse_pressure_1e_minus_6_mbar']):.3f} x 10^-6 mbar
+- Theory-vs-experiment pressure correlation: {float(species['fig3_theory_observed_corr']):.3f}
+- CH4 Fig. 3 pressure: {float(species['ch4_fig3_pressure_1e_minus_6_mbar']):.3f} x 10^-6 mbar
+- Fig. 2 methane p_v minus Fig. 3 CH4 pressure: {float(species['fig2_pv_minus_fig3_ch4']):.3f} x 10^-6 mbar
+
+## Interpretation
+
+Hornberger is a guardrail, not a breakthrough lane. It supports the boring but important point that irreversible environmental records should decohere monotonically and quantitatively under standard theory. That helps keep the Constraint Dynamics language honest: record load is useful only if it organizes data without pretending every visibility loss is a new Fourier revival problem.
+
+## What This Does Not Show
+
+- It does not validate the Lambda/Gamma/Theta product law.
+- It does not provide an independently measured record distribution like Xiao.
+- It does not show physics beyond standard quantum mechanics.
+"""
+    (output_dir / "hornberger_collisional_scout_report.md").write_text(
         report,
         encoding="utf-8",
     )
@@ -12054,6 +12467,8 @@ def run_evaluate_breakthrough_candidate(
     chapman_complex_mixture_summary: Path,
     hackermueller_stress_summary: Path,
     synthesis_csv: Path,
+    no_refit_target_scout_summary: Path,
+    eibenberger_recoil_summary: Path,
 ):
     make_breakthrough_candidate_outputs(
         output_dir,
@@ -12063,6 +12478,8 @@ def run_evaluate_breakthrough_candidate(
         chapman_complex_mixture_summary,
         hackermueller_stress_summary,
         synthesis_csv,
+        no_refit_target_scout_summary,
+        eibenberger_recoil_summary,
     )
 
 
@@ -12076,6 +12493,14 @@ def run_scout_eibenberger_recoil_absorption(
     data_dir: Path,
 ):
     make_eibenberger_recoil_scout_outputs(source_dir, output_dir, data_dir)
+
+
+def run_scout_hornberger_collisional(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_hornberger_collisional_scout_outputs(source_dir, output_dir, data_dir)
 
 
 def run_analyze_chapman_kernel(input_csv: Path, output_dir: Path):
@@ -12430,6 +12855,14 @@ def build_parser():
         default="outputs/record_bandwidth_synthesis/record_bandwidth_synthesis.csv",
     )
     breakthrough.add_argument(
+        "--no-refit-target-scout-summary",
+        default="outputs/no_refit_target_scout/no_refit_target_scout_summary.csv",
+    )
+    breakthrough.add_argument(
+        "--eibenberger-recoil-summary",
+        default="outputs/eibenberger_recoil_scout/eibenberger_recoil_scout_summary.csv",
+    )
+    breakthrough.add_argument(
         "--output-dir",
         default="outputs/breakthrough_candidate",
     )
@@ -12451,6 +12884,16 @@ def build_parser():
         default="outputs/eibenberger_recoil_scout",
     )
     eibenberger.add_argument("--data-dir", default="data/extracted")
+    hornberger = sub.add_parser(
+        "scout-hornberger-collisional",
+        help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
+    )
+    hornberger.add_argument("--source-dir", default=None)
+    hornberger.add_argument(
+        "--output-dir",
+        default="outputs/hornberger_collisional_scout",
+    )
+    hornberger.add_argument("--data-dir", default="data/extracted")
     bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
     bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
@@ -12643,12 +13086,21 @@ def main(argv=None):
                 Path(args.chapman_complex_mixture_summary),
                 Path(args.hackermueller_stress_summary),
                 Path(args.synthesis_csv),
+                Path(args.no_refit_target_scout_summary),
+                Path(args.eibenberger_recoil_summary),
             )
         elif command == "scout-no-refit-targets":
             run_scout_no_refit_targets(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "scout-hornberger-collisional":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_scout_hornberger_collisional(
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),

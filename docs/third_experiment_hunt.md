@@ -50,6 +50,11 @@ python src/constraint_dynamics_quantum_v3.py digitize-hackermueller-thermal \
 python src/constraint_dynamics_quantum_v3.py analyze-thermal-decoherence \
   --input data/extracted/HACKERMUELLER_2004_THERMAL_DIGITIZED.csv \
   --output-dir outputs/hackermueller_thermal
+
+python src/constraint_dynamics_quantum_v3.py scout-hornberger-collisional \
+  --source-dir outputs/tmp/third_hunt_sources/hornberger \
+  --output-dir outputs/hornberger_collisional_scout \
+  --data-dir data/extracted
 ```
 
 ## First Implementation Result
@@ -85,6 +90,30 @@ thermal RMSE 95% CI: [0.0686, 0.0949]
 ```
 
 This is encouraging, but still not a beyond-QM claim. It says the thermal record-load proxy survives the current uncertainty model and is worth upgrading further with fully automated vector/pixel extraction.
+
+## Hornberger Guardrail Result
+
+The Hornberger collisional scout is now implemented as a scout-grade EPS-render pass:
+
+```text
+data/extracted/HORNBERGER_2003_COLLISIONAL_SCOUT.csv
+data/extracted/HORNBERGER_2003_COLLISIONAL_SCOUT.json
+outputs/hornberger_collisional_scout/hornberger_collisional_scout_summary.csv
+outputs/hornberger_collisional_scout/hornberger_collisional_scout_predictions.csv
+outputs/hornberger_collisional_scout/hornberger_collisional_scout_report.md
+```
+
+Current result:
+
+```text
+status: collisional record-load guardrail supports standard decoherence
+Fig. 2 methane p_v: 0.807 x 10^-6 mbar
+Fig. 3 CH4 p_v: 0.810 x 10^-6 mbar
+gas-species pressure RMSE: 0.185 x 10^-6 mbar
+gas-species theory/experiment correlation: 0.888
+```
+
+This is exactly the expected boring control: irreversible collision records produce monotone exponential decoherence, and the methane pressure scale is internally consistent across Fig. 2 and Fig. 3. It strengthens the environmental-record-load lane but does not satisfy the missing independent no-refit distribution gate.
 
 ## Success Criteria
 

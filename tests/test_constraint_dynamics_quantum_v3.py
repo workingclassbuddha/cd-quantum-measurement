@@ -65,6 +65,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_breakthrough_candidate_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
+    make_hornberger_collisional_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
     path_visibility_from_rho,
@@ -77,6 +78,9 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     eibenberger_default_metadata,
     eibenberger_digitized_dataframe,
     eibenberger_recoil_reduction,
+    fit_hornberger_collisional_scout,
+    hornberger_default_metadata,
+    hornberger_digitized_dataframe,
     xiao_default_momentum_metadata,
     xiao_default_probability_metadata,
     xiao_distribution_branch_moments,
@@ -803,6 +807,32 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
             },
         ]
     )
+    no_refit_scout = pd.DataFrame(
+        [
+            {
+                "verdict": "no second no-refit distribution target yet",
+                "candidate_count": 6,
+                "eligible_second_distribution_targets": 0,
+                "recommended_next_candidate": "EIBENBERGER_2014_RECOIL_ABSORPTION",
+            }
+        ]
+    )
+    eibenberger = pd.DataFrame(
+        [
+            {
+                "model": "visibility_fit_sigma_abs",
+                "sigma_abs_m2": 1.935e-21,
+                "rmse_visibility_ratio": 0.0247,
+                "status": "control_fit",
+            },
+            {
+                "model": "paper_sigma_abs",
+                "sigma_abs_m2": 1.97e-21,
+                "rmse_visibility_ratio": 0.0251,
+                "status": "parameter_fixed",
+            },
+        ]
+    )
     paths = {}
     for name, frame in [
         ("xiao_distribution", xiao_distribution),
@@ -811,6 +841,8 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
         ("chapman_mixture", chapman_mixture),
         ("hack_stress", hack_stress),
         ("synthesis", synthesis),
+        ("no_refit_scout", no_refit_scout),
+        ("eibenberger", eibenberger),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -829,6 +861,8 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
         paths["chapman_mixture"],
         paths["hack_stress"],
         paths["synthesis"],
+        paths["no_refit_scout"],
+        paths["eibenberger"],
     )
     assert not scorecard.empty
     assert not next_steps.empty
@@ -836,9 +870,9 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
     assert not bool(scorecard[scorecard["gate_id"] == "G11"]["passed"].iloc[0])
     report = output_dir / "breakthrough_candidate_report.md"
     assert report.exists()
-    assert "lead candidate found, breakthrough not yet" in report.read_text(
-        encoding="utf-8"
-    )
+    report_text = report.read_text(encoding="utf-8")
+    assert "lead candidate found, breakthrough not yet" in report_text
+    assert "Eibenberger recoil-control status: control_fit" in report_text
 
     cli_output_dir = tmp_path / "breakthrough_cli"
     main(
@@ -856,6 +890,10 @@ def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
             str(paths["hack_stress"]),
             "--synthesis-csv",
             str(paths["synthesis"]),
+            "--no-refit-target-scout-summary",
+            str(paths["no_refit_scout"]),
+            "--eibenberger-recoil-summary",
+            str(paths["eibenberger"]),
             "--output-dir",
             str(cli_output_dir),
         ]
@@ -939,6 +977,48 @@ def test_eibenberger_recoil_scout_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "eibenberger_recoil_scout_report.md").exists()
+
+
+def test_hornberger_collisional_scout_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "hornberger"
+    cli_output_dir = tmp_path / "hornberger_cli"
+    metadata = hornberger_default_metadata()
+    df = hornberger_digitized_dataframe(metadata)
+    assert not df.empty
+    assert {"methane_visibility", "decoherence_pressure_by_gas"}.issubset(
+        set(df["panel"])
+    )
+    summary, predictions, fig2, fig3 = fit_hornberger_collisional_scout(df)
+    assert not summary.empty
+    assert not predictions.empty
+    methane = summary[summary["lane"] == "methane_visibility"].iloc[0]
+    species = summary[summary["lane"] == "gas_species_pressure"].iloc[0]
+    assert float(methane["decoherence_pressure_pv_1e_minus_6_mbar"]) > 0.0
+    assert float(species["fig3_theory_observed_corr"]) > 0.5
+
+    digitized, metadata, summary, predictions = make_hornberger_collisional_scout_outputs(
+        None,
+        output_dir,
+        data_dir,
+    )
+    assert metadata["study_id"] == "HORNBERGER_2003_COLLISIONAL"
+    assert not digitized.empty
+    assert not summary.empty
+    assert not predictions.empty
+    assert (output_dir / "hornberger_collisional_scout_report.md").exists()
+    assert (data_dir / "HORNBERGER_2003_COLLISIONAL_SCOUT.csv").exists()
+
+    main(
+        [
+            "scout-hornberger-collisional",
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "hornberger_collisional_scout_report.md").exists()
 
 
 def test_cormann_theory_visibility_is_bounded():

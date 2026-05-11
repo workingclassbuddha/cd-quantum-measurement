@@ -26,12 +26,20 @@ This dossier does not fit a new model. It scores the current outputs against str
 - Hackermueller P(thermal delta-T4 beats exp power): 0.994
 - Hackermueller P(thermal delta-T4 is best): 0.701
 - Synthesis statuses: side-peak distribution supports bandwidth proxy; supports Fourier record-bandwidth over scalar exponential; survives uncertainty and pairing null; thermal record-load proxy supports durable environmental record lane
+- Second no-refit scout verdict: no second no-refit distribution target yet
+- Eligible second no-refit targets: 0
+- Recommended second-target candidate: EIBENBERGER_2014_RECOIL_ABSORPTION
+- Eibenberger recoil-control status: control_fit
+- Eibenberger best recoil model: visibility_fit_sigma_abs
+- Eibenberger best RMSE: 0.0247268685940939
+- Eibenberger paper-sigma RMSE: 0.0251372179762769
+- Eibenberger inferred sigma_abs: 1.9345911949685537e-21
 
 ## Blockers
 
 - Chapman raw phase verdict: model still fails
 - Chapman best mixture raw phase RMSE: 1.3087718496350118
-- Second independent distribution-to-visibility experiment: not yet found
+- Second independent distribution-to-visibility experiment: no second no-refit distribution target yet
 - Lambda/Gamma/Theta product law validation: not yet
 
 ## Gate Score
@@ -39,6 +47,8 @@ This dossier does not fit a new model. It scores the current outputs against str
 Passed gates: 9 / 12
 
 The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao is therefore the centerpiece. Chapman and Hackermueller provide cross-experiment support for record bandwidth/load, but they do not by themselves clear the no-refit breakthrough gate.
+
+Eibenberger is now logged as a useful recoil-control lane: the known photon recoil mechanism predicts visibility reduction at roughly the paper absorption cross section. It strengthens the standard-QM compatibility of the record-kernel framing, but it does not close G11 because the absorption cross section is still extracted from visibility rather than independently measured as a held-out record distribution.
 
 ## Strict Claim
 

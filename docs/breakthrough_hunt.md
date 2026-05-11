@@ -585,6 +585,24 @@ Hackermueller wins the next build slot because the arXiv source package includes
 
 Hornberger is the strong backup: its arXiv source includes `fig2.eps` visibility versus gas pressure and `fig3.eps` decoherence pressure by gas species. It is excellent for falsifying overreach in standard collisional decoherence, though less likely to produce a Fourier-kernel result.
 
+Implemented guardrail command:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py scout-hornberger-collisional --source-dir outputs/tmp/third_hunt_sources/hornberger --output-dir outputs/hornberger_collisional_scout --data-dir data/extracted
+```
+
+Current Hornberger result:
+
+```text
+status: collisional record-load guardrail supports standard decoherence
+Fig. 2 methane p_v: 0.807 x 10^-6 mbar
+Fig. 3 CH4 p_v: 0.810 x 10^-6 mbar
+gas-species pressure RMSE: 0.185 x 10^-6 mbar
+gas-species theory/experiment correlation: 0.888
+```
+
+This is a strong sanity check, not a breakthrough gate. It says the irreversible environmental-record lane behaves as standard decoherence expects; it does not provide an independently measured distribution-to-visibility prediction like Xiao.
+
 Scout artifacts:
 
 ```text

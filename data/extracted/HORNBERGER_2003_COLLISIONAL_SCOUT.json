@@ -1,0 +1,269 @@
+{
+  "study_id": "HORNBERGER_2003_COLLISIONAL",
+  "source_title": "Collisional decoherence observed in matter wave interferometry",
+  "source_authors": "Hornberger; Sipe; Arndt",
+  "year": 2003,
+  "source_url": "https://arxiv.org/abs/quant-ph/0303093",
+  "arxiv_source_url": "https://arxiv.org/e-print/quant-ph/0303093",
+  "doi": "https://doi.org/10.1103/PhysRevLett.90.160401",
+  "source_file": "outputs/tmp/third_hunt_sources/hornberger/extracted/fig2.eps",
+  "source_file_sha256": "6b5c170322c909b961f45710ff09e96c2bd9379d67363ac4c7dfb862d541ce76",
+  "digitization_date": "2026-05-11",
+  "extraction_method": "manual_eps_render_scout_v1",
+  "coordinate_system": "EPS rendered at 160 dpi for scout-grade manual point picks",
+  "figures": [
+    {
+      "figure": "Figure 2",
+      "panel": "methane_visibility",
+      "axis_bounds": {
+        "x_min": 0.0,
+        "x_max": 2.5,
+        "y_min": 1.0,
+        "y_max": 50.0,
+        "y_scale": "log10",
+        "x_pixel_min": [
+          72.0,
+          697.0
+        ],
+        "x_pixel_max": [
+          854.0,
+          697.0
+        ],
+        "y_pixel_min": [
+          72.0,
+          697.0
+        ],
+        "y_pixel_max": [
+          72.0,
+          23.0
+        ]
+      },
+      "points": [
+        {
+          "pressure_1e_minus_6_mbar": 0.0,
+          "visibility_percent": 37.8,
+          "visibility_se_percent": 1.8,
+          "x_pixel": 72.0,
+          "y_pixel": 71.192
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.04,
+          "visibility_percent": 36.4,
+          "visibility_se_percent": 1.7,
+          "x_pixel": 84.512,
+          "y_pixel": 77.694
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.08,
+          "visibility_percent": 34.5,
+          "visibility_se_percent": 1.7,
+          "x_pixel": 97.024,
+          "y_pixel": 86.93
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.13,
+          "visibility_percent": 33.0,
+          "visibility_se_percent": 1.6,
+          "x_pixel": 112.664,
+          "y_pixel": 94.589
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.17,
+          "visibility_percent": 32.0,
+          "visibility_se_percent": 1.6,
+          "x_pixel": 125.176,
+          "y_pixel": 99.891
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.2,
+          "visibility_percent": 30.5,
+          "visibility_se_percent": 1.6,
+          "x_pixel": 134.56,
+          "y_pixel": 108.162
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.31,
+          "visibility_percent": 26.8,
+          "visibility_se_percent": 1.5,
+          "x_pixel": 168.968,
+          "y_pixel": 130.443
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.36,
+          "visibility_percent": 25.6,
+          "visibility_se_percent": 1.5,
+          "x_pixel": 184.608,
+          "y_pixel": 138.336
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.44,
+          "visibility_percent": 23.6,
+          "visibility_se_percent": 1.4,
+          "x_pixel": 209.632,
+          "y_pixel": 152.351
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.56,
+          "visibility_percent": 20.4,
+          "visibility_se_percent": 1.4,
+          "x_pixel": 247.168,
+          "y_pixel": 177.455
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.65,
+          "visibility_percent": 17.0,
+          "visibility_se_percent": 1.5,
+          "x_pixel": 275.32,
+          "y_pixel": 208.867
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.74,
+          "visibility_percent": 17.2,
+          "visibility_se_percent": 1.5,
+          "x_pixel": 303.472,
+          "y_pixel": 206.852
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.83,
+          "visibility_percent": 13.6,
+          "visibility_se_percent": 1.3,
+          "x_pixel": 331.624,
+          "y_pixel": 247.313
+        },
+        {
+          "pressure_1e_minus_6_mbar": 0.95,
+          "visibility_percent": 10.4,
+          "visibility_se_percent": 1.2,
+          "x_pixel": 369.16,
+          "y_pixel": 293.532
+        },
+        {
+          "pressure_1e_minus_6_mbar": 1.12,
+          "visibility_percent": 9.5,
+          "visibility_se_percent": 1.4,
+          "x_pixel": 422.336,
+          "y_pixel": 309.126
+        },
+        {
+          "pressure_1e_minus_6_mbar": 1.32,
+          "visibility_percent": 6.2,
+          "visibility_se_percent": 1.7,
+          "x_pixel": 484.896,
+          "y_pixel": 382.65
+        },
+        {
+          "pressure_1e_minus_6_mbar": 1.62,
+          "visibility_percent": 4.0,
+          "visibility_se_percent": 1.8,
+          "x_pixel": 578.736,
+          "y_pixel": 458.156
+        },
+        {
+          "pressure_1e_minus_6_mbar": 1.92,
+          "visibility_percent": 4.0,
+          "visibility_se_percent": 2.0,
+          "x_pixel": 672.576,
+          "y_pixel": 458.156
+        },
+        {
+          "pressure_1e_minus_6_mbar": 2.38,
+          "visibility_percent": 2.4,
+          "visibility_se_percent": 2.6,
+          "x_pixel": 816.464,
+          "y_pixel": 546.166
+        }
+      ]
+    },
+    {
+      "figure": "Figure 3",
+      "panel": "decoherence_pressure_by_gas",
+      "axis_bounds": {
+        "x_min": 40.0,
+        "x_max": 110.0,
+        "y_min": 0.0,
+        "y_max": 2.0,
+        "x_pixel_min": [
+          90.0,
+          685.0
+        ],
+        "x_pixel_max": [
+          874.0,
+          685.0
+        ],
+        "y_pixel_min": [
+          90.0,
+          685.0
+        ],
+        "y_pixel_max": [
+          90.0,
+          21.0
+        ]
+      },
+      "points": [
+        {
+          "gas": "Ne",
+          "sigma_eff_nm2": 49.4,
+          "decoherence_pressure_1e_minus_6_mbar": 1.32,
+          "decoherence_pressure_se": 0.2,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 1.6
+        },
+        {
+          "gas": "He",
+          "sigma_eff_nm2": 57.2,
+          "decoherence_pressure_1e_minus_6_mbar": 1.07,
+          "decoherence_pressure_se": 0.17,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 1.38
+        },
+        {
+          "gas": "Kr",
+          "sigma_eff_nm2": 62.1,
+          "decoherence_pressure_1e_minus_6_mbar": 1.29,
+          "decoherence_pressure_se": 0.19,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 1.24
+        },
+        {
+          "gas": "Ar",
+          "sigma_eff_nm2": 65.5,
+          "decoherence_pressure_1e_minus_6_mbar": 1.06,
+          "decoherence_pressure_se": 0.16,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 1.18
+        },
+        {
+          "gas": "Xe",
+          "sigma_eff_nm2": 65.8,
+          "decoherence_pressure_1e_minus_6_mbar": 1.07,
+          "decoherence_pressure_se": 0.17,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 1.18
+        },
+        {
+          "gas": "Air",
+          "sigma_eff_nm2": 69.2,
+          "decoherence_pressure_1e_minus_6_mbar": 1.04,
+          "decoherence_pressure_se": 0.16,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 1.14
+        },
+        {
+          "gas": "D2",
+          "sigma_eff_nm2": 82.5,
+          "decoherence_pressure_1e_minus_6_mbar": 0.79,
+          "decoherence_pressure_se": 0.11,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 0.91
+        },
+        {
+          "gas": "CH4",
+          "sigma_eff_nm2": 97.2,
+          "decoherence_pressure_1e_minus_6_mbar": 0.81,
+          "decoherence_pressure_se": 0.12,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 0.78
+        },
+        {
+          "gas": "H2",
+          "sigma_eff_nm2": 102.5,
+          "decoherence_pressure_1e_minus_6_mbar": 0.45,
+          "decoherence_pressure_se": 0.07,
+          "theory_decoherence_pressure_1e_minus_6_mbar": 0.73
+        }
+      ]
+    }
+  ]
+}

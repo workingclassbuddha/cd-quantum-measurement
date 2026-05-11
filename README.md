@@ -212,6 +212,7 @@ Rank candidate experiments for the missing second no-refit distribution gate, th
 ```bash
 python src/constraint_dynamics_quantum_v3.py scout-no-refit-targets --output-dir outputs/no_refit_target_scout
 python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
+python src/constraint_dynamics_quantum_v3.py scout-hornberger-collisional --source-dir outputs/tmp/third_hunt_sources/hornberger --output-dir outputs/hornberger_collisional_scout --data-dir data/extracted
 ```
 
 Scout the third held-out irreversible-record dataset:
@@ -354,5 +355,7 @@ The Xiao distribution-prediction command is the current sharpest no-refit check.
 The vector-aware stress test now survives its configured robustness checks: `P(no-refit beats published bound) = 1.000`, `P(no-refit RMSE < 0.025) = 0.957`, pairing-null `P(RMSE <= observed) = 0.003`, and branch-label-swap `P(RMSE <= observed) = 0.000`. The caveat is important: this is a within-paper cross-figure prediction with vector-coordinate uncertainty, not an independent apparatus validation.
 
 The second-target scout now explicitly fails the strict Xiao-like gate: no second independent measured-distribution-to-visibility target has been identified. Eibenberger 2014 is the best next recoil-control lane. Its Eq. (2)-style recoil kernel fits scout Fig. 2b points well with the paper cross section (`RMSE = 0.0251`) and nearly matches a visibility-fitted cross section (`RMSE = 0.0247`), but the paper uses visibility reduction to extract the absorption cross section, so it is not an independent distribution validation.
+
+The Hornberger collisional scout now adds the standard-decoherence guardrail. Scout Fig. 2 methane visibility gives a fitted decoherence pressure `p_v = 0.807 x 10^-6 mbar`, while Fig. 3 CH4 gives `0.810 x 10^-6 mbar`; gas-species theory vs experiment has pressure RMSE `0.185 x 10^-6 mbar` and correlation `0.888`. This supports the environmental-record-load lane, but it is deliberately not counted as the missing Xiao-like no-refit distribution test.
 
 The Cormann scout adds a third-candidate check, but not a new record-bandwidth win. It extracts `VisibilityPhaseMeasurement.eps` from the arXiv source package and compares visibility against the paper's caption parameters without refitting. Setup 1 and 2 visibility are usable (`RMSE = 0.0357` and `0.0655`), phase-sign accuracy averages `0.877`, and setup 3 is too noisy/occluded in the current scout. Verdict: useful as a phase-control dataset, not the held-out distribution-to-visibility breakthrough test.
