@@ -100,6 +100,14 @@ recommended next candidate: EIBENBERGER_2014_RECOIL_ABSORPTION
 
 The expanded G11 audit currently checks 13 candidates and still reports `eligible_second_no_refit_targets = 0`. The blocker split is mostly `record_variable_not_independent`, with a smaller `paired_visibility_curve_missing` group. The latest refresh adds Ding 2025, Chen 2022, Yoon/Cho 2021, Rozema 2012, and Kaneda 2014 as useful controls or near misses, not breakthrough-gate closers.
 
+Live tracking:
+
+- Parent gate: [GitHub issue #1](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/1)
+- Xiao author data: [issue #2](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/2)
+- Hochrainer author data: [issue #3](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/3)
+- Mir author data: [issue #4](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/4)
+- Eibenberger author data: [issue #5](https://github.com/workingclassbuddha/cd-quantum-measurement/issues/5)
+
 The Eibenberger recoil-control command is:
 
 ```bash
