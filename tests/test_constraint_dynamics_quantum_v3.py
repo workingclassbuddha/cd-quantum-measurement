@@ -62,6 +62,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_xiao_probability_vector_outputs,
     make_xiao_distribution_prediction_outputs,
     make_xiao_distribution_prediction_stress_outputs,
+    make_breakthrough_candidate_outputs,
     make_record_bandwidth_synthesis_outputs,
     partial_trace_marker,
     path_visibility_from_rho,
@@ -721,6 +722,141 @@ def test_record_bandwidth_synthesis_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "record_bandwidth_synthesis_report.md").exists()
+
+
+def test_breakthrough_candidate_scorecard_outputs_and_cli(tmp_path):
+    xiao_distribution = pd.DataFrame(
+        [
+            {
+                "model": "linear_fig4_refit",
+                "rmse_momentum": 0.0034,
+            },
+            {
+                "model": "distribution_no_refit",
+                "rmse_momentum": 0.0133,
+            },
+            {
+                "model": "published_bound",
+                "rmse_momentum": 0.0693,
+            },
+        ]
+    )
+    xiao_stress = pd.DataFrame(
+        [
+            {
+                "p_no_refit_beats_published_bound": 1.0,
+                "p_no_refit_rmse_lt_025": 0.96,
+                "pairing_null_p_rmse_le_observed": 0.003,
+                "branch_label_swap_p_rmse_le_observed": 0.0,
+                "baseline_sensitivity_pass_fraction": 0.75,
+            }
+        ]
+    )
+    chapman_kernel = pd.DataFrame(
+        [
+            {
+                "branch": "raw",
+                "model": "sinc_fourier",
+                "rmse_visibility": 0.026,
+                "first_zero_d_over_lambda": 0.51,
+            },
+            {
+                "branch": "raw",
+                "model": "exponential",
+                "rmse_visibility": 0.074,
+                "first_zero_d_over_lambda": np.nan,
+            },
+        ]
+    )
+    chapman_mixture = pd.DataFrame(
+        [
+            {
+                "branch": "raw",
+                "model": "complex_mixture_with_smear",
+                "rmse_visibility": 0.065,
+                "rmse_phase_rad": 1.31,
+            }
+        ]
+    )
+    hack_stress = pd.DataFrame(
+        [
+            {
+                "p_thermal_delta_T4_beats_exp_power": 0.994,
+                "p_thermal_delta_T4_best_model": 0.701,
+            }
+        ]
+    )
+    synthesis = pd.DataFrame(
+        [
+            {
+                "experiment": "Xiao 2019",
+                "status": "survives uncertainty and pairing null",
+            },
+            {
+                "experiment": "Hackermueller 2004",
+                "status": "thermal record-load proxy supports durable environmental record lane",
+            },
+        ]
+    )
+    paths = {}
+    for name, frame in [
+        ("xiao_distribution", xiao_distribution),
+        ("xiao_stress", xiao_stress),
+        ("chapman_kernel", chapman_kernel),
+        ("chapman_mixture", chapman_mixture),
+        ("hack_stress", hack_stress),
+        ("synthesis", synthesis),
+    ]:
+        path = tmp_path / f"{name}.csv"
+        frame.to_csv(path, index=False)
+        paths[name] = path
+    (tmp_path / "chapman_complex_mixture_report.md").write_text(
+        "Verdict: model still fails\n",
+        encoding="utf-8",
+    )
+
+    output_dir = tmp_path / "breakthrough"
+    scorecard, next_steps = make_breakthrough_candidate_outputs(
+        output_dir,
+        paths["xiao_distribution"],
+        paths["xiao_stress"],
+        paths["chapman_kernel"],
+        paths["chapman_mixture"],
+        paths["hack_stress"],
+        paths["synthesis"],
+    )
+    assert not scorecard.empty
+    assert not next_steps.empty
+    assert "G11" in set(scorecard["gate_id"])
+    assert not bool(scorecard[scorecard["gate_id"] == "G11"]["passed"].iloc[0])
+    report = output_dir / "breakthrough_candidate_report.md"
+    assert report.exists()
+    assert "lead candidate found, breakthrough not yet" in report.read_text(
+        encoding="utf-8"
+    )
+
+    cli_output_dir = tmp_path / "breakthrough_cli"
+    main(
+        [
+            "evaluate-breakthrough-candidate",
+            "--xiao-distribution-summary",
+            str(paths["xiao_distribution"]),
+            "--xiao-distribution-stress-summary",
+            str(paths["xiao_stress"]),
+            "--chapman-kernel-summary",
+            str(paths["chapman_kernel"]),
+            "--chapman-complex-mixture-summary",
+            str(paths["chapman_mixture"]),
+            "--hackermueller-stress-summary",
+            str(paths["hack_stress"]),
+            "--synthesis-csv",
+            str(paths["synthesis"]),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "breakthrough_candidate_scorecard.csv").exists()
+    assert (cli_output_dir / "next_breakthrough_steps.csv").exists()
 
 
 def test_cormann_theory_visibility_is_bounded():

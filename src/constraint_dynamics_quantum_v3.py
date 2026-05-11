@@ -7780,6 +7780,426 @@ Xiao phi=pi side-peak scale / Chapman raw sinc width = {scale_ratio:.3f}
     return synthesis
 
 
+def _read_optional_metric_csv(path: Path | None):
+    if path is None:
+        return None
+    path = Path(path)
+    if not path.exists():
+        return None
+    return pd.read_csv(path)
+
+
+def _summary_model_row(summary: pd.DataFrame, model: str):
+    if summary is None or summary.empty or "model" not in summary.columns:
+        raise ValueError(f"Missing model summary for {model}")
+    match = summary[summary["model"] == model]
+    if match.empty:
+        raise ValueError(f"Summary is missing model {model}")
+    return match.iloc[0]
+
+
+def _first_value(frame: pd.DataFrame | None, column: str, default=np.nan):
+    if frame is None or frame.empty or column not in frame.columns:
+        return default
+    return frame[column].iloc[0]
+
+
+def _gate_row(
+    gate_id,
+    lane,
+    criterion,
+    observed_value,
+    threshold,
+    passed,
+    evidence_path,
+    interpretation,
+):
+    return {
+        "gate_id": gate_id,
+        "lane": lane,
+        "criterion": criterion,
+        "observed_value": observed_value,
+        "threshold": threshold,
+        "passed": bool(passed),
+        "evidence_path": str(evidence_path),
+        "interpretation": interpretation,
+    }
+
+
+def make_breakthrough_candidate_outputs(
+    output_dir: Path,
+    xiao_distribution_summary: Path = Path(
+        "outputs/xiao_distribution_prediction_vector/xiao_distribution_prediction_summary.csv"
+    ),
+    xiao_distribution_stress_summary: Path = Path(
+        "outputs/xiao_distribution_prediction_vector_stress/stress_summary.csv"
+    ),
+    chapman_kernel_summary: Path = Path("outputs/chapman_kernel/kernel_fit_summary.csv"),
+    chapman_complex_mixture_summary: Path = Path(
+        "outputs/chapman_complex_mixture/complex_mixture_summary.csv"
+    ),
+    hackermueller_stress_summary: Path = Path(
+        "outputs/hackermueller_thermal_stress/stress_summary.csv"
+    ),
+    synthesis_csv: Path = Path(
+        "outputs/record_bandwidth_synthesis/record_bandwidth_synthesis.csv"
+    ),
+):
+    """Write a strict breakthrough-readiness dossier from existing analyses.
+
+    This deliberately does not fit a new model. It scores the current evidence
+    against gates that separate a promising no-refit result from a true
+    breakthrough-grade cross-experiment validation.
+    """
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+
+    xiao_dist = _read_metric_csv(xiao_distribution_summary)
+    xiao_stress = _read_metric_csv(xiao_distribution_stress_summary)
+    chapman_kernel = _read_metric_csv(chapman_kernel_summary)
+    chapman_mixture = _read_optional_metric_csv(chapman_complex_mixture_summary)
+    hack_stress = _read_optional_metric_csv(hackermueller_stress_summary)
+    synthesis = _read_optional_metric_csv(synthesis_csv)
+
+    xiao_no_refit = _summary_model_row(xiao_dist, "distribution_no_refit")
+    xiao_bound = _summary_model_row(xiao_dist, "published_bound")
+    xiao_direct = _summary_model_row(xiao_dist, "linear_fig4_refit")
+    xiao_no_refit_rmse = float(xiao_no_refit["rmse_momentum"])
+    xiao_bound_rmse = float(xiao_bound["rmse_momentum"])
+    xiao_direct_rmse = float(xiao_direct["rmse_momentum"])
+    xiao_bound_ratio = xiao_no_refit_rmse / max(xiao_bound_rmse, EPS)
+    xiao_direct_ratio = xiao_no_refit_rmse / max(xiao_direct_rmse, EPS)
+
+    stress_row = xiao_stress.iloc[0]
+    p_no_refit_beats_bound = float(
+        stress_row.get("p_no_refit_beats_published_bound", np.nan)
+    )
+    p_no_refit_rmse_lt_025 = float(stress_row.get("p_no_refit_rmse_lt_025", np.nan))
+    pairing_p = float(stress_row.get("pairing_null_p_rmse_le_observed", np.nan))
+    branch_p = float(stress_row.get("branch_label_swap_p_rmse_le_observed", np.nan))
+    baseline_pass_fraction = float(
+        stress_row.get("baseline_sensitivity_pass_fraction", np.nan)
+    )
+
+    raw_sinc = chapman_kernel[
+        (chapman_kernel["branch"] == "raw")
+        & (chapman_kernel["model"] == "sinc_fourier")
+    ].iloc[0]
+    raw_exp = chapman_kernel[
+        (chapman_kernel["branch"] == "raw")
+        & (chapman_kernel["model"] == "exponential")
+    ].iloc[0]
+    chapman_ratio = float(raw_exp["rmse_visibility"]) / max(
+        float(raw_sinc["rmse_visibility"]),
+        EPS,
+    )
+    chapman_zero = float(raw_sinc["first_zero_d_over_lambda"])
+
+    raw_phase_verdict = "not run"
+    raw_phase_pass = False
+    raw_phase_rmse = np.nan
+    if chapman_mixture is not None and not chapman_mixture.empty:
+        verdict_values = [
+            str(v)
+            for v in chapman_mixture.get("verdict", pd.Series(dtype=str)).dropna().unique()
+        ]
+        if verdict_values:
+            raw_phase_verdict = verdict_values[0]
+        else:
+            report_path = Path(chapman_complex_mixture_summary).with_name(
+                "chapman_complex_mixture_report.md"
+            )
+            if report_path.exists():
+                report_text = report_path.read_text(encoding="utf-8")
+                status_match = re.search(
+                    r"Status:\s*([^\n.]+)",
+                    report_text,
+                    flags=re.IGNORECASE,
+                )
+                binary_match = re.search(
+                    r"Current binary verdict:\s*\*\*([^*]+)\*\*",
+                    report_text,
+                    flags=re.IGNORECASE,
+                )
+                if binary_match:
+                    raw_phase_verdict = binary_match.group(1).strip()
+                elif status_match:
+                    raw_phase_verdict = status_match.group(1).strip()
+            else:
+                raw_phase_verdict = "unknown"
+        if {"branch", "model"}.issubset(chapman_mixture.columns):
+            phase_candidates = chapman_mixture[
+                (chapman_mixture["branch"] == "raw")
+                & (chapman_mixture["model"].astype(str).str.contains("mixture"))
+            ]
+        else:
+            phase_candidates = pd.DataFrame()
+        phase_rmse_col = (
+            "phase_rmse_rad"
+            if "phase_rmse_rad" in phase_candidates.columns
+            else "rmse_phase_rad"
+        )
+        if not phase_candidates.empty and phase_rmse_col in phase_candidates.columns:
+            raw_phase_rmse = float(
+                pd.to_numeric(
+                    phase_candidates[phase_rmse_col],
+                    errors="coerce",
+                ).min()
+            )
+        raw_phase_pass = raw_phase_verdict == "raw phase repaired"
+
+    hack_p = float(_first_value(hack_stress, "p_thermal_delta_T4_beats_exp_power"))
+    hack_best_p = float(_first_value(hack_stress, "p_thermal_delta_T4_best_model"))
+    synthesis_status = ""
+    if synthesis is not None and not synthesis.empty and "status" in synthesis.columns:
+        synthesis_status = "; ".join(sorted(set(synthesis["status"].astype(str))))
+
+    gates = [
+        _gate_row(
+            "G1",
+            "Xiao no-refit",
+            "Fig. 3 distribution predicts Fig. 4 better than published-bound baseline",
+            xiao_bound_ratio,
+            "< 0.50",
+            xiao_bound_ratio < 0.50,
+            xiao_distribution_summary,
+            "No-refit distribution prediction is meaningfully better than the generic lower-bound curve.",
+        ),
+        _gate_row(
+            "G2",
+            "Xiao no-refit",
+            "Absolute no-refit error remains small",
+            xiao_no_refit_rmse,
+            "< 0.025",
+            xiao_no_refit_rmse < 0.025,
+            xiao_distribution_summary,
+            "The held-out cross-figure prediction is numerically tight enough to be the lead candidate.",
+        ),
+        _gate_row(
+            "G3",
+            "Xiao stress",
+            "Bootstrap probability that no-refit beats published bound",
+            p_no_refit_beats_bound,
+            ">= 0.95",
+            p_no_refit_beats_bound >= 0.95,
+            xiao_distribution_stress_summary,
+            "Digitization uncertainty does not erase the no-refit advantage.",
+        ),
+        _gate_row(
+            "G4",
+            "Xiao stress",
+            "Bootstrap probability that no-refit RMSE stays below 0.025",
+            p_no_refit_rmse_lt_025,
+            ">= 0.90",
+            p_no_refit_rmse_lt_025 >= 0.90,
+            xiao_distribution_stress_summary,
+            "The result survives the absolute-error gate under jitter.",
+        ),
+        _gate_row(
+            "G5",
+            "Xiao null",
+            "Pairing null probability of matching observed no-refit RMSE",
+            pairing_p,
+            "<= 0.05",
+            pairing_p <= 0.05,
+            xiao_distribution_stress_summary,
+            "The result is unlikely under shuffled visibility/momentum pairing.",
+        ),
+        _gate_row(
+            "G6",
+            "Xiao null",
+            "Branch-label null probability of matching observed no-refit RMSE",
+            branch_p,
+            "<= 0.05",
+            branch_p <= 0.05,
+            xiao_distribution_stress_summary,
+            "The phi=0 / phi=pi branch identity is carrying real signal.",
+        ),
+        _gate_row(
+            "G7",
+            "Chapman support",
+            "Raw Fourier/sinc beats monotone exponential by RMSE ratio",
+            chapman_ratio,
+            "> 2.0",
+            chapman_ratio > 2.0,
+            chapman_kernel_summary,
+            "An independent experiment supports Fourier record bandwidth over scalar dephasing.",
+        ),
+        _gate_row(
+            "G8",
+            "Chapman support",
+            "Raw first zero aligns with d/lambda near 0.5",
+            chapman_zero,
+            "0.45 to 0.55",
+            0.45 <= chapman_zero <= 0.55,
+            chapman_kernel_summary,
+            "The zero/revival scale is consistent with a broad photon recoil record.",
+        ),
+        _gate_row(
+            "G9",
+            "Hackermueller support",
+            "Thermal record-load bootstrap beats plain exp(power)",
+            hack_p,
+            ">= 0.95",
+            math.isfinite(hack_p) and hack_p >= 0.95,
+            hackermueller_stress_summary,
+            "A durable environmental-record lane supports the record-load variable.",
+        ),
+        _gate_row(
+            "G10",
+            "Chapman blocker",
+            "Raw complex phase repaired while preserving visibility",
+            raw_phase_verdict,
+            "raw phase repaired",
+            raw_phase_pass,
+            chapman_complex_mixture_summary,
+            "The strongest Chapman phase overconstraint still blocks breakthrough language.",
+        ),
+        _gate_row(
+            "G11",
+            "External blocker",
+            "Second independent distribution-to-visibility experiment found",
+            "not yet",
+            "yes",
+            False,
+            "literature search",
+            "Xiao is within-paper cross-figure evidence; a true breakthrough needs another independent no-refit distribution test.",
+        ),
+        _gate_row(
+            "G12",
+            "Theory blocker",
+            "Lambda/Gamma/Theta product law validated by independent factors",
+            "not yet",
+            "yes",
+            False,
+            "experimental design",
+            "The evidence supports a record-variable target, not the full product law.",
+        ),
+    ]
+    scorecard = pd.DataFrame(gates)
+    scorecard.to_csv(output_dir / "breakthrough_candidate_scorecard.csv", index=False)
+
+    next_steps = pd.DataFrame(
+        [
+            {
+                "priority": 1,
+                "action": "Promote Xiao vector distribution prediction to centerpiece",
+                "success_criterion": "Keep no-refit RMSE below 0.025 and null p-values below 0.05 under stricter extraction uncertainty.",
+                "why": "This is the only current no-refit distribution-to-visibility bridge.",
+            },
+            {
+                "priority": 2,
+                "action": "Find or digitize a second independent distribution-to-visibility dataset",
+                "success_criterion": "Measured record distribution predicts visibility without refitting the bandwidth/load parameter.",
+                "why": "This is the missing breakthrough gate.",
+            },
+            {
+                "priority": 3,
+                "action": "Repair Chapman raw phase by publication-grade Fig. 2 digitization before adding model freedom",
+                "success_criterion": "Raw phase RMSE improves while raw visibility and conditioned ordering remain competitive.",
+                "why": "Current complex phase overconstraint is the strongest internal blocker.",
+            },
+            {
+                "priority": 4,
+                "action": "Design an independent Lambda/Gamma/Theta apparatus-factor experiment",
+                "success_criterion": "Factors vary independently enough to beat additive and pairwise alternatives out of sample.",
+                "why": "The product law remains provisional.",
+            },
+        ]
+    )
+    next_steps.to_csv(output_dir / "next_breakthrough_steps.csv", index=False)
+
+    gate_values = scorecard["passed"].astype(float).to_numpy(dtype=float)
+    write_bar_svg(
+        output_dir / "figures" / "figure_breakthrough_gate_scores.svg",
+        scorecard["gate_id"].to_list(),
+        gate_values,
+        "Breakthrough Readiness Gates",
+        "pass = 1, fail = 0",
+    )
+
+    passed_count = int(scorecard["passed"].sum())
+    total_count = int(len(scorecard))
+    xiao_core_pass = bool(scorecard[scorecard["gate_id"].isin(["G1", "G2", "G3", "G4", "G5", "G6"])]["passed"].all())
+    cross_support_pass = bool(scorecard[scorecard["gate_id"].isin(["G7", "G8", "G9"])]["passed"].all())
+    blockers_clear = bool(scorecard[scorecard["gate_id"].isin(["G10", "G11", "G12"])]["passed"].all())
+
+    if xiao_core_pass and cross_support_pass and blockers_clear:
+        verdict = "breakthrough candidate passes current gates"
+    elif xiao_core_pass and cross_support_pass:
+        verdict = "lead candidate found, breakthrough not yet"
+    elif xiao_core_pass:
+        verdict = "Xiao lead survives, cross-experiment support incomplete"
+    else:
+        verdict = "no breakthrough candidate yet"
+
+    report = f"""# Breakthrough Candidate Dossier
+
+Verdict: {verdict}
+
+Lead candidate: Xiao 2019 vector Fig. 3 distribution-to-Fig. 4 no-refit prediction.
+
+This dossier does not fit a new model. It scores the current outputs against strict gates for whether the project has found a breakthrough-grade result.
+
+## Core Result
+
+- Xiao no-refit RMSE: {xiao_no_refit_rmse:.4f}
+- Published-bound RMSE: {xiao_bound_rmse:.4f}
+- Direct Fig. 4 refit RMSE: {xiao_direct_rmse:.4f}
+- No-refit / published-bound RMSE ratio: {xiao_bound_ratio:.3f}
+- No-refit / direct-refit RMSE ratio: {xiao_direct_ratio:.3f}
+- Bootstrap P(no-refit beats published bound): {p_no_refit_beats_bound:.3f}
+- Bootstrap P(no-refit RMSE < 0.025): {p_no_refit_rmse_lt_025:.3f}
+- Pairing-null P(RMSE <= observed): {pairing_p:.3f}
+- Branch-label-null P(RMSE <= observed): {branch_p:.3f}
+- Baseline sensitivity pass fraction: {baseline_pass_fraction:.3f}
+
+## Cross-Experiment Support
+
+- Chapman exponential/sinc RMSE ratio: {chapman_ratio:.3f}
+- Chapman raw first zero: d/lambda = {chapman_zero:.3f}
+- Hackermueller P(thermal delta-T4 beats exp power): {hack_p:.3f}
+- Hackermueller P(thermal delta-T4 is best): {hack_best_p:.3f}
+- Synthesis statuses: {synthesis_status or "not available"}
+
+## Blockers
+
+- Chapman raw phase verdict: {raw_phase_verdict}
+- Chapman best mixture raw phase RMSE: {raw_phase_rmse if math.isfinite(raw_phase_rmse) else "not available"}
+- Second independent distribution-to-visibility experiment: not yet found
+- Lambda/Gamma/Theta product law validation: not yet
+
+## Gate Score
+
+Passed gates: {passed_count} / {total_count}
+
+The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao is therefore the centerpiece. Chapman and Hackermueller provide cross-experiment support for record bandwidth/load, but they do not by themselves clear the no-refit breakthrough gate.
+
+## Strict Claim
+
+```text
+We have a lead breakthrough candidate: an independently digitized Xiao momentum distribution predicts visibility loss better than scalar baselines without refitting the key record-bandwidth parameter.
+```
+
+## Strict Non-Claims
+
+- This does not solve collapse.
+- This does not validate the Lambda/Gamma/Theta product law.
+- This does not show physics beyond standard quantum mechanics.
+- This is not yet a cross-experiment no-refit prediction.
+
+## Next Move
+
+Find a second independent experiment with both measured record distribution and visibility/decoherence output. Do not add model freedom until that search fails.
+"""
+    (output_dir / "breakthrough_candidate_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return scorecard, next_steps
+
+
 def _hackermueller_axis(panel):
     y_top = 110 if panel == "a" else 470
     y_bottom = 420 if panel == "a" else 780
@@ -11104,6 +11524,26 @@ def run_synthesize_record_bandwidth(
     )
 
 
+def run_evaluate_breakthrough_candidate(
+    output_dir: Path,
+    xiao_distribution_summary: Path,
+    xiao_distribution_stress_summary: Path,
+    chapman_kernel_summary: Path,
+    chapman_complex_mixture_summary: Path,
+    hackermueller_stress_summary: Path,
+    synthesis_csv: Path,
+):
+    make_breakthrough_candidate_outputs(
+        output_dir,
+        xiao_distribution_summary,
+        xiao_distribution_stress_summary,
+        chapman_kernel_summary,
+        chapman_complex_mixture_summary,
+        hackermueller_stress_summary,
+        synthesis_csv,
+    )
+
+
 def run_analyze_chapman_kernel(input_csv: Path, output_dir: Path):
     make_chapman_kernel_outputs(input_csv, output_dir)
 
@@ -11427,6 +11867,38 @@ def build_parser():
         default="outputs/hackermueller_thermal_stress/stress_summary.csv",
     )
     synthesize.add_argument("--output-dir", default="outputs/record_bandwidth_synthesis")
+    breakthrough = sub.add_parser(
+        "evaluate-breakthrough-candidate",
+        help="score the current evidence against strict breakthrough-readiness gates",
+    )
+    breakthrough.add_argument(
+        "--xiao-distribution-summary",
+        default="outputs/xiao_distribution_prediction_vector/xiao_distribution_prediction_summary.csv",
+    )
+    breakthrough.add_argument(
+        "--xiao-distribution-stress-summary",
+        default="outputs/xiao_distribution_prediction_vector_stress/stress_summary.csv",
+    )
+    breakthrough.add_argument(
+        "--chapman-kernel-summary",
+        default="outputs/chapman_kernel/kernel_fit_summary.csv",
+    )
+    breakthrough.add_argument(
+        "--chapman-complex-mixture-summary",
+        default="outputs/chapman_complex_mixture/complex_mixture_summary.csv",
+    )
+    breakthrough.add_argument(
+        "--hackermueller-stress-summary",
+        default="outputs/hackermueller_thermal_stress/stress_summary.csv",
+    )
+    breakthrough.add_argument(
+        "--synthesis-csv",
+        default="outputs/record_bandwidth_synthesis/record_bandwidth_synthesis.csv",
+    )
+    breakthrough.add_argument(
+        "--output-dir",
+        default="outputs/breakthrough_candidate",
+    )
     bench = sub.add_parser("benchmark-designs", help="generate balanced vs confounded identifiability benchmark")
     bench.add_argument("--output-dir", default="outputs")
     template = sub.add_parser("template", help="write a visibility CSV template")
@@ -11609,6 +12081,16 @@ def main(argv=None):
                 Path(args.output_dir),
                 Path(args.hackermueller_thermal_summary),
                 Path(args.hackermueller_thermal_stress_summary),
+            )
+        elif command == "evaluate-breakthrough-candidate":
+            run_evaluate_breakthrough_candidate(
+                Path(args.output_dir),
+                Path(args.xiao_distribution_summary),
+                Path(args.xiao_distribution_stress_summary),
+                Path(args.chapman_kernel_summary),
+                Path(args.chapman_complex_mixture_summary),
+                Path(args.hackermueller_stress_summary),
+                Path(args.synthesis_csv),
             )
         elif command == "benchmark-designs":
             run_identifiability_benchmark(Path(args.output_dir))

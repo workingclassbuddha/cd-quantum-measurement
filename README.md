@@ -201,6 +201,12 @@ Synthesize the Chapman, Xiao, and Hackermueller record-variable results without 
 python src/constraint_dynamics_quantum_v3.py synthesize-record-bandwidth --output-dir outputs/record_bandwidth_synthesis
 ```
 
+Score the current evidence against strict breakthrough-readiness gates:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py evaluate-breakthrough-candidate --output-dir outputs/breakthrough_candidate
+```
+
 Scout the third held-out irreversible-record dataset:
 
 ```text
@@ -336,7 +342,7 @@ The Xiao stress command jitters the digitized visibility and momentum values and
 
 The Xiao probability command digitizes Fig. 3 from `probability.pdf`. The raster run is `probability distribution supports record-bandwidth target`: mean absolute disturbance grows by about 0.568 hbar/d across propagation, the `phi=0` far-field distribution is centered near p = -0.022, and the `phi=pi` branch develops side peaks with mean absolute location |p| = 1.586. The vector command improves the bottleneck by reading the Fig. 3b red/blue curves directly from PDF path commands; its current branch moments are `M_phi0 = 0.0610` and `M_phipi = 1.4112`.
 
-The Xiao distribution-prediction command is the current sharpest no-refit check. It computes branch mean momentum disturbance from Fig. 3b, maps visibility to the paper's phase-mixture weights, and predicts Fig. 4 without fitting the bandwidth to Fig. 4. With vector Fig. 3b extraction, `distribution_no_refit` has RMSE 0.0133, compared with 0.0693 for the published-bound line and 0.0034 for a direct Fig. 4 linear refit.
+The Xiao distribution-prediction command is the current sharpest no-refit check. It computes branch mean momentum disturbance from Fig. 3b, maps visibility to the paper's phase-mixture weights, and predicts Fig. 4 without fitting the bandwidth to Fig. 4. With vector Fig. 3b extraction, `distribution_no_refit` has RMSE 0.0133, compared with 0.0693 for the published-bound line and 0.0034 for a direct Fig. 4 linear refit. The breakthrough-readiness dossier now labels this `lead candidate found, breakthrough not yet`: Xiao passes the core no-refit and null gates, while Chapman raw phase, a second independent distribution-to-visibility dataset, and product-law validation remain open blockers.
 
 The vector-aware stress test now survives its configured robustness checks: `P(no-refit beats published bound) = 1.000`, `P(no-refit RMSE < 0.025) = 0.957`, pairing-null `P(RMSE <= observed) = 0.003`, and branch-label-swap `P(RMSE <= observed) = 0.000`. The caveat is important: this is a within-paper cross-figure prediction with vector-coordinate uncertainty, not an independent apparatus validation.
 

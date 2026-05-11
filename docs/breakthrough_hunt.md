@@ -5,10 +5,25 @@
 The current project state is:
 
 ```text
-robust cross-experiment record-bandwidth target
+lead candidate found, breakthrough not yet
 ```
 
-That is the strongest honest claim so far. It means Chapman and Xiao now point toward the same operational variable:
+That is the strongest honest claim so far. The lead candidate is now Xiao 2019 vector Fig. 3 distribution-to-Fig. 4 visibility prediction: an independently digitized momentum distribution predicts the visibility-loss tradeoff without refitting the key bandwidth parameter. Chapman and Hackermueller provide cross-experiment support for the broader record-variable reading, but they do not clear the missing second independent no-refit distribution gate.
+
+The new reproducible gate is:
+
+```bash
+python src/constraint_dynamics_quantum_v3.py evaluate-breakthrough-candidate --output-dir outputs/breakthrough_candidate
+```
+
+Current dossier verdict:
+
+```text
+lead candidate found, breakthrough not yet
+passed gates: 9 / 12
+```
+
+It means Chapman and Xiao now point toward the same operational variable:
 
 ```text
 Theta = inaccessible conjugate-record bandwidth
@@ -30,9 +45,41 @@ Xiao phi=pi side-peak |p|: 1.586
 Xiao vector Fig. 3 distribution no-refit prediction RMSE: 0.0133
 Xiao vector distribution stress P(no-refit beats bound): 1.000
 Xiao vector distribution stress P(RMSE < 0.025): 0.957
+Xiao no-refit / published-bound RMSE ratio: 0.193
+Xiao distribution pairing-null P(RMSE <= observed): 0.003
+Xiao distribution branch-label-null P(RMSE <= observed): 0.000
+Hackermueller stress P(thermal delta-T4 beats exp power): 0.994
 ```
 
 This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the next breakthrough-grade move is an outside held-out prediction where an independently measured record distribution predicts visibility without refitting the bandwidth.
+
+## Breakthrough-Readiness Dossier
+
+The `evaluate-breakthrough-candidate` command writes:
+
+```text
+outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv
+outputs/breakthrough_candidate/next_breakthrough_steps.csv
+outputs/breakthrough_candidate/breakthrough_candidate_report.md
+outputs/breakthrough_candidate/figures/figure_breakthrough_gate_scores.svg
+```
+
+Current pass/fail summary:
+
+- Xiao no-refit distribution prediction: pass.
+- Xiao bootstrap and null controls: pass.
+- Chapman raw Fourier-kernel support: pass.
+- Hackermueller durable thermal-record support: pass.
+- Chapman raw complex phase repair: fail.
+- Second independent distribution-to-visibility experiment: fail.
+- Lambda/Gamma/Theta product-law validation: fail.
+
+Therefore the working breakthrough target is narrow:
+
+```text
+Find a second independent experiment where a measured record distribution predicts
+visibility/decoherence without refitting the key bandwidth or load parameter.
+```
 
 ## Current Signal
 
