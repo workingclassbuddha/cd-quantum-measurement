@@ -64,6 +64,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_xiao_distribution_prediction_stress_outputs,
     make_breakthrough_candidate_outputs,
     make_breakthrough_author_data_requests,
+    make_author_outreach_queue,
     make_author_data_intake_outputs,
     make_breakthrough_gap_audit_outputs,
     make_current_goal_completion_audit_outputs,
@@ -1047,6 +1048,49 @@ def test_breakthrough_author_data_requests_outputs_and_cli(tmp_path):
     assert (cli_output_dir / "author_data_request_packet.md").exists()
     assert (cli_output_dir / "author_data_request_tracker.csv").exists()
     assert (cli_output_dir / "author_contact_candidate_register.csv").exists()
+
+
+def test_author_outreach_queue_outputs_and_cli(tmp_path):
+    request_dir = tmp_path / "author_requests"
+    intake_dir = tmp_path / "author_intake"
+    validation_dir = tmp_path / "author_validation"
+    output_dir = tmp_path / "author_outreach"
+    make_breakthrough_author_data_requests(request_dir)
+    make_author_data_intake_outputs(intake_dir)
+    validation_dir.mkdir()
+    pd.DataFrame([{"g11_ready_rows": 0}]).to_csv(
+        validation_dir / "author_data_manifest_validation_summary.csv",
+        index=False,
+    )
+
+    queue, summary = make_author_outreach_queue(
+        request_dir,
+        intake_dir,
+        validation_dir,
+        output_dir,
+    )
+    assert not queue.empty
+    assert int(summary["possible_g11_closer_rows"].iloc[0]) >= 1
+    assert set(queue["send_decision"]) == {"hold_until_contact_verified"}
+    assert (output_dir / "author_outreach_queue.csv").exists()
+    assert (output_dir / "author_outreach_summary.csv").exists()
+    assert (output_dir / "author_outreach_queue.md").exists()
+
+    cli_output_dir = tmp_path / "author_outreach_cli"
+    main(
+        [
+            "prepare-author-outreach-queue",
+            "--request-dir",
+            str(request_dir),
+            "--intake-dir",
+            str(intake_dir),
+            "--validation-dir",
+            str(validation_dir),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "author_outreach_queue.md").exists()
 
 
 def test_author_data_intake_outputs_and_cli(tmp_path):

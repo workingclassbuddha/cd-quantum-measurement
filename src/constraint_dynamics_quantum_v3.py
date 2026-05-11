@@ -9720,6 +9720,175 @@ author_contact_candidate_register.csv
     return register
 
 
+def make_author_outreach_queue(
+    request_dir: Path,
+    intake_dir: Path,
+    validation_dir: Path,
+    output_dir: Path,
+):
+    """Turn request drafts and intake schemas into a send/review queue."""
+
+    request_register_path = request_dir / "author_data_request_register.csv"
+    tracker_path = request_dir / "author_data_request_tracker.csv"
+    contact_path = request_dir / "author_contact_candidate_register.csv"
+    schema_path = intake_dir / "author_data_intake_schema.csv"
+    validation_summary_path = validation_dir / "author_data_manifest_validation_summary.csv"
+
+    required = [
+        request_register_path,
+        tracker_path,
+        contact_path,
+        schema_path,
+    ]
+    missing = [str(path) for path in required if not path.exists()]
+    if missing:
+        raise ValueError(
+            "Missing author outreach inputs. Run prepare-author-data-requests and "
+            f"prepare-author-data-intake first. Missing: {', '.join(missing)}"
+        )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    register = pd.read_csv(request_register_path)
+    tracker = pd.read_csv(tracker_path)
+    contacts = pd.read_csv(contact_path)
+    schema = pd.read_csv(schema_path)
+    validation_summary = (
+        pd.read_csv(validation_summary_path)
+        if validation_summary_path.exists()
+        else pd.DataFrame([{"g11_ready_rows": 0}])
+    )
+
+    schema_rollup = (
+        schema.groupby("target_id", as_index=False)
+        .agg(
+            can_close_g11=("can_close_g11", "max"),
+            dataset_ids=("dataset_id", lambda values: "; ".join(map(str, values))),
+            minimum_required_files=(
+                "minimum_required_files",
+                lambda values: " | ".join(map(str, values)),
+            ),
+            validation_rules=("validation_rule", lambda values: " | ".join(map(str, values))),
+        )
+    )
+    queue = (
+        tracker.merge(
+            register[["target_id", "why", "gate", "source_url", "doi"]],
+            on="target_id",
+            how="left",
+        )
+        .merge(contacts, on=["target_id", "study"], how="left")
+        .merge(schema_rollup, on="target_id", how="left")
+        .sort_values(["send_priority", "target_id"])
+        .reset_index(drop=True)
+    )
+    queue["request_draft_path"] = queue["target_id"].map(
+        lambda target_id: str(request_dir / f"{target_id}_request.md")
+    )
+    queue["outreach_blocker"] = queue["contact_status"].map(
+        lambda value: (
+            "verify_current_contact_route"
+            if str(value) == "candidate_route_verify_before_send"
+            else "none"
+        )
+    )
+    queue["send_decision"] = np.where(
+        queue["outreach_blocker"] == "none",
+        "ready_to_send",
+        "hold_until_contact_verified",
+    )
+    queue["g11_priority_note"] = np.where(
+        queue["can_close_g11"].astype(bool),
+        "possible second no-refit closer if independence is confirmed",
+        "calibration/control data; useful but cannot close G11 alone",
+    )
+    queue.to_csv(output_dir / "author_outreach_queue.csv", index=False)
+
+    g11_ready_rows = int(validation_summary.get("g11_ready_rows", pd.Series([0])).iloc[0])
+    summary = pd.DataFrame(
+        [
+            {
+                "queue_rows": int(len(queue)),
+                "ready_to_send_rows": int((queue["send_decision"] == "ready_to_send").sum()),
+                "hold_until_contact_verified_rows": int(
+                    (queue["send_decision"] == "hold_until_contact_verified").sum()
+                ),
+                "possible_g11_closer_rows": int(queue["can_close_g11"].astype(bool).sum()),
+                "author_data_g11_ready_rows": g11_ready_rows,
+                "verdict": (
+                    "author outreach prepared; current contacts still require verification"
+                    if len(queue)
+                    else "empty outreach queue"
+                ),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "author_outreach_summary.csv", index=False)
+
+    action_lines = "\n".join(
+        "- **Priority {priority}: {study}** - {decision}; blocker: {blocker}; G11 role: {role}; draft: `{draft}`".format(
+            priority=int(row["send_priority"]),
+            study=row["study"],
+            decision=row["send_decision"],
+            blocker=row["outreach_blocker"],
+            role=row["g11_priority_note"],
+            draft=row["request_draft_path"],
+        )
+        for _, row in queue.iterrows()
+    )
+    contact_lines = "\n".join(
+        "- **{study}**: verify via {route}. Source: {url}".format(
+            study=row["study"],
+            route=row["contact_route"],
+            url=row["contact_source_url"],
+        )
+        for _, row in queue.iterrows()
+    )
+    possible_closers = queue[queue["can_close_g11"].astype(bool)]
+    closer_lines = "\n".join(
+        "- **{study}**: {required}. Independence rule: {rules}".format(
+            study=row["study"],
+            required=row["minimum_required_files"],
+            rules=row["validation_rules"],
+        )
+        for _, row in possible_closers.iterrows()
+    )
+    if not closer_lines:
+        closer_lines = "- None in the current queue."
+
+    report = f"""# Author Outreach Queue
+
+Verdict: {summary['verdict'].iloc[0]}
+
+This queue is the current action surface for the missing G11 gate. It does not claim any request has been sent. Every row remains on hold until the current contact route is verified outside the repo.
+
+## Queue Summary
+
+- Queue rows: {int(summary['queue_rows'].iloc[0])}
+- Ready to send now: {int(summary['ready_to_send_rows'].iloc[0])}
+- Held for contact verification: {int(summary['hold_until_contact_verified_rows'].iloc[0])}
+- Possible G11 closers if received and independently validated: {int(summary['possible_g11_closer_rows'].iloc[0])}
+- Author-data G11-ready rows already received: {g11_ready_rows}
+
+## Immediate Actions
+
+{action_lines}
+
+## Contact Verification Routes
+
+{contact_lines}
+
+## Possible G11 Closers
+
+{closer_lines}
+
+## Strict Boundary
+
+The outreach should ask for numerical data and uncertainty/provenance notes only. It should not frame the project as a collapse solution, a product-law validation, or a beyond-standard-quantum-mechanics claim.
+"""
+    (output_dir / "author_outreach_queue.md").write_text(report, encoding="utf-8")
+    return queue, summary
+
+
 def make_author_data_intake_outputs(output_dir: Path):
     """Write schemas for evaluating any author data that arrives."""
 
@@ -13981,6 +14150,15 @@ def run_prepare_author_data_requests(output_dir: Path):
     make_breakthrough_author_data_requests(output_dir)
 
 
+def run_prepare_author_outreach_queue(
+    request_dir: Path,
+    intake_dir: Path,
+    validation_dir: Path,
+    output_dir: Path,
+):
+    make_author_outreach_queue(request_dir, intake_dir, validation_dir, output_dir)
+
+
 def run_prepare_author_data_intake(output_dir: Path):
     make_author_data_intake_outputs(output_dir)
 
@@ -14424,6 +14602,26 @@ def build_parser():
         "--output-dir",
         default="outputs/author_data_requests",
     )
+    outreach_queue = sub.add_parser(
+        "prepare-author-outreach-queue",
+        help="write the next-action queue for author-data outreach",
+    )
+    outreach_queue.add_argument(
+        "--request-dir",
+        default="outputs/author_data_requests",
+    )
+    outreach_queue.add_argument(
+        "--intake-dir",
+        default="outputs/author_data_intake",
+    )
+    outreach_queue.add_argument(
+        "--validation-dir",
+        default="outputs/author_data_validation",
+    )
+    outreach_queue.add_argument(
+        "--output-dir",
+        default="outputs/author_outreach_queue",
+    )
     author_intake = sub.add_parser(
         "prepare-author-data-intake",
         help="write schemas and manifest templates for received G11 author data",
@@ -14706,6 +14904,13 @@ def main(argv=None):
             run_scout_no_refit_targets(Path(args.output_dir))
         elif command == "prepare-author-data-requests":
             run_prepare_author_data_requests(Path(args.output_dir))
+        elif command == "prepare-author-outreach-queue":
+            run_prepare_author_outreach_queue(
+                Path(args.request_dir),
+                Path(args.intake_dir),
+                Path(args.validation_dir),
+                Path(args.output_dir),
+            )
         elif command == "prepare-author-data-intake":
             run_prepare_author_data_intake(Path(args.output_dir))
         elif command == "validate-author-data-manifest":
