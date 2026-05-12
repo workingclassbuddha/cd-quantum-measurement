@@ -10822,6 +10822,172 @@ This does not rescue or reject Kokorowski by itself. It turns the next provenanc
     return summary, profile, samples
 
 
+def _find_tex_line_window(lines, patterns, pad_before=1, pad_after=1):
+    matches = []
+    for idx, line in enumerate(lines):
+        if any(re.search(pattern, line, flags=re.IGNORECASE) for pattern in patterns):
+            matches.append(idx)
+    if not matches:
+        return None
+    start = max(0, min(matches) - pad_before)
+    end = min(len(lines) - 1, max(matches) + pad_after)
+    return start + 1, end + 1
+
+
+def make_kokorowski_calibration_provenance_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    source = resolve_kokorowski_source_dir(source_dir)
+    if source is None:
+        raise ValueError(
+            "Kokorowski source dir not found. Expected decoh.tex and figure4.eps."
+        )
+    tex_path = Path(source) / "decoh.tex"
+    lines = tex_path.read_text(encoding="latin-1", errors="ignore").splitlines()
+    source_sha = sha256_file(tex_path)
+    claims = [
+        {
+            "claim_id": "beam_deflection_values_independent",
+            "patterns": [r"consistent with, and more", r"deflection and broadening"],
+            "evidence_kind": "source_text_independence_claim",
+            "paraphrase": "The paper says the photon-number distribution parameters used for Fig. 4 are determined from beam deflection or broadening, independently of the contrast fit.",
+            "formula_or_values": "nbar and sigma_n are treated as independent inputs for Fig. 4.",
+            "next_validation_question": "Can author tables or a reproduced beam-deflection calibration tighten the effective kappa uncertainty?",
+        },
+        {
+            "claim_id": "kappa_formula_record_width",
+            "patterns": [r"\\kappa\^\{2\}=\\bar"],
+            "evidence_kind": "source_formula",
+            "paraphrase": "The reported decoherence width combines recoil-per-photon spread with photon-number spread.",
+            "formula_or_values": "kappa^2 = nbar * sigma_k^2 + sigma_n^2 * k0^2",
+            "next_validation_question": "Propagate nbar/sigma_n uncertainties through this expression and detector convolution.",
+        },
+        {
+            "claim_id": "calculated_vs_fitted_kappa_prime",
+            "patterns": [r"kappa\\^\\{\\prime\\}", r"Fitting the contrast"],
+            "evidence_kind": "calculated_and_fit_parameter_comparison",
+            "paraphrase": "The source reports calculated kappa-prime values from independent inputs and separately reports fitted values from the contrast curves.",
+            "formula_or_values": "calculated: 2.5(1) k0 and 1.8(1) k0; fitted: 2.39(5) k0 and 1.71(5) k0",
+            "next_validation_question": "Check whether the calculated uncertainty is conservative or can be narrowed from raw calibration data.",
+        },
+        {
+            "claim_id": "figure4_caption_independent_parameters",
+            "patterns": [r"figure4\\.eps", r"independent beam deflection"],
+            "evidence_kind": "figure_caption_parameter_source",
+            "paraphrase": "The Fig. 4 caption ties the plotted branches to independently determined photon-number parameters.",
+            "formula_or_values": "lower branch nbar=4.8(2), sigma_n=1.8(1); upper branch nbar=8.1(3), sigma_n=3.5(1)",
+            "next_validation_question": "Recover numerical calibration data behind the caption values.",
+        },
+    ]
+    rows = []
+    for claim in claims:
+        window = _find_tex_line_window(lines, claim["patterns"], pad_before=2, pad_after=2)
+        line_start, line_end = window if window is not None else (np.nan, np.nan)
+        rows.append(
+            {
+                "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "claim_id": claim["claim_id"],
+                "evidence_kind": claim["evidence_kind"],
+                "source_url": KOKOROWSKI_PAPER_URL,
+                "arxiv_source_url": KOKOROWSKI_ARXIV_SOURCE_URL,
+                "doi": KOKOROWSKI_DOI,
+                "source_file": str(tex_path),
+                "source_file_sha256": source_sha,
+                "source_line_start": line_start,
+                "source_line_end": line_end,
+                "paraphrase": claim["paraphrase"],
+                "formula_or_values": claim["formula_or_values"],
+                "next_validation_question": claim["next_validation_question"],
+            }
+        )
+    provenance = pd.DataFrame(rows)
+    summary = pd.DataFrame(
+        [
+            {
+                "status": "calibration provenance extracted",
+                "claim_count": int(len(provenance)),
+                "claims_with_line_anchors": int(
+                    provenance["source_line_start"].notna().sum()
+                ),
+                "source_file": str(tex_path),
+                "source_file_sha256": source_sha,
+                "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
+            }
+        ]
+    )
+    csv_path = data_dir / "KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv"
+    json_path = data_dir / "KOKOROWSKI_2001_CALIBRATION_PROVENANCE.json"
+    provenance.to_csv(csv_path, index=False)
+    json_path.write_text(
+        json.dumps(
+            {
+                "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "source_url": KOKOROWSKI_PAPER_URL,
+                "arxiv_source_url": KOKOROWSKI_ARXIV_SOURCE_URL,
+                "doi": KOKOROWSKI_DOI,
+                "source_file": str(tex_path),
+                "source_file_sha256": source_sha,
+                "extraction_method": "tex_line_anchor_provenance_v1",
+                "boundary": "Paraphrased line-anchor provenance only; no raw calibration tables are present.",
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    provenance.to_csv(
+        output_dir / "kokorowski_calibration_provenance.csv",
+        index=False,
+    )
+    summary.to_csv(
+        output_dir / "kokorowski_calibration_provenance_summary.csv",
+        index=False,
+    )
+    claim_lines = "\n".join(
+        "- {claim}: lines {start}-{end}; {values}".format(
+            claim=row["claim_id"],
+            start=row["source_line_start"],
+            end=row["source_line_end"],
+            values=row["formula_or_values"],
+        )
+        for _, row in provenance.iterrows()
+    )
+    report = f"""# Kokorowski Calibration Provenance
+
+Status: calibration provenance extracted
+
+This artifact anchors the public-data Kokorowski G11 lead to source-text claims without turning the paper into a copied appendix. It records paraphrased claims, source line anchors, source SHA256, and the next validation question for each calibration claim.
+
+- Source TeX: `{tex_path}`
+- Source SHA256: `{source_sha}`
+- Output CSV: `{csv_path}`
+- Output JSON: `{json_path}`
+- Extraction method: `tex_line_anchor_provenance_v1`
+
+## Anchored Claims
+
+{claim_lines}
+
+## Interpretation
+
+The source supports the independence premise for the Fig. 4 no-refit check, but it does not expose the raw beam-deflection/broadening calibration tables. The kappa-uncertainty profile therefore remains the current public-data bottleneck.
+
+## Boundary
+
+- This does not narrow the kappa uncertainty by itself.
+- This does not clear G11.
+- This does not validate the Lambda/Gamma/Theta product law.
+"""
+    (output_dir / "kokorowski_calibration_provenance_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return provenance, summary
+
+
 def make_breakthrough_author_data_requests(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     targets = [
@@ -15542,6 +15708,14 @@ def run_profile_kokorowski_kappa_uncertainty(
     )
 
 
+def run_extract_kokorowski_calibration_provenance(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_kokorowski_calibration_provenance_outputs(source_dir, output_dir, data_dir)
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -16095,6 +16269,16 @@ def build_parser():
     )
     kokorowski_kappa_profile.add_argument("--n-bootstrap", type=int, default=600)
     kokorowski_kappa_profile.add_argument("--seed", type=int, default=28045)
+    kokorowski_provenance = sub.add_parser(
+        "extract-kokorowski-calibration-provenance",
+        help="extract TeX line-anchor provenance for Kokorowski independent kappa calibration claims",
+    )
+    kokorowski_provenance.add_argument("--source-dir", default=None)
+    kokorowski_provenance.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_calibration_provenance",
+    )
+    kokorowski_provenance.add_argument("--data-dir", default="data/extracted")
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -16380,6 +16564,13 @@ def main(argv=None):
                 Path(args.output_dir),
                 int(args.n_bootstrap),
                 int(args.seed),
+            )
+        elif command == "extract-kokorowski-calibration-provenance":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_extract_kokorowski_calibration_provenance(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
             )
         elif command == "scout-hornberger-collisional":
             source_dir = None if args.source_dir is None else Path(args.source_dir)

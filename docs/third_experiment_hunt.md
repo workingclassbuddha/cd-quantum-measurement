@@ -166,6 +166,7 @@ independent-kappa-only component joint pass: 0.447
 kappa-profile full reported SE joint pass: 0.417
 kappa-profile 0.50x reported SE joint pass: 0.783
 kappa-profile 0.25x reported SE joint pass: 0.975
+calibration provenance: 4 paraphrased source claims with TeX line anchors
 ```
 
 This keeps Kokorowski as the best public second-experiment no-refit lead, but it does not upgrade the project to a breakthrough claim. The component sensitivity points to the independent kappa uncertainty as the weak link; point and visibility digitization uncertainty alone is not what breaks the stress gate. The next useful move is tighter provenance for the beam-deflection/broadening calibration, not looser model freedom.

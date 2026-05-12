@@ -78,6 +78,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_kokorowski_multiphoton_analysis_outputs,
     make_kokorowski_multiphoton_stress_outputs,
     make_kokorowski_kappa_uncertainty_profile_outputs,
+    make_kokorowski_calibration_provenance_outputs,
     kokorowski_fig4_pixel_to_data,
     kokorowski_visibility_from_kappa,
     make_hornberger_collisional_scout_outputs,
@@ -1390,6 +1391,53 @@ def test_kokorowski_kappa_uncertainty_profile_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "kokorowski_kappa_uncertainty_summary.csv").exists()
+
+
+def test_kokorowski_calibration_provenance_outputs_and_cli(tmp_path):
+    source_dir = tmp_path / "kokorowski_source"
+    source_dir.mkdir()
+    (source_dir / "figure4.eps").write_text("%!PS-Adobe test", encoding="utf-8")
+    (source_dir / "decoh.tex").write_text(
+        "\n".join(
+            [
+                "values were consistent with deflection and broadening of the atomic beam",
+                "\\label{eqn:kappa}",
+                "\\kappa^{2}=\\bar{n}\\sigma^{2}_{k}+\\sigma^{2}_{n}k_{0}^{2}",
+                "we calculate \\kappa^{\\prime}=2.5(1)k_{0}",
+                "Fitting the contrast gives \\kappa^{\\prime}=2.39(5)k_{0}",
+                "\\epsffile{figure4.eps}",
+                "parameters determined from independent beam deflection measurements.",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    output_dir = tmp_path / "kokorowski_provenance"
+    data_dir = tmp_path / "data"
+    provenance, summary = make_kokorowski_calibration_provenance_outputs(
+        source_dir,
+        output_dir,
+        data_dir,
+    )
+    assert not provenance.empty
+    assert not summary.empty
+    assert "beam_deflection_values_independent" in set(provenance["claim_id"])
+    assert (data_dir / "KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv").exists()
+    assert (output_dir / "kokorowski_calibration_provenance_report.md").exists()
+
+    cli_output_dir = tmp_path / "kokorowski_provenance_cli"
+    cli_data_dir = tmp_path / "data_cli"
+    main(
+        [
+            "extract-kokorowski-calibration-provenance",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(cli_data_dir),
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_calibration_provenance_summary.csv").exists()
 
 
 def test_public_data_availability_outputs_and_cli(tmp_path):

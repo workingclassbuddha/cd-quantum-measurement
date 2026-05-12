@@ -1,0 +1,2 @@
+status,claim_count,claims_with_line_anchors,source_file,source_file_sha256,primary_gap
+calibration provenance extracted,4,4,outputs/tmp/kokorowski_source/extracted/decoh.tex,4f436a938adf03dfe478a0cc11f780fafb01d4975a5e61f23f617bf6c9566647,raw beam-deflection/broadening calibration data are still not in the public source package

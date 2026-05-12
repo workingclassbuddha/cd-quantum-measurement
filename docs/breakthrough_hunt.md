@@ -59,6 +59,7 @@ Kokorowski independent-kappa-only component joint pass: 0.447
 Kokorowski kappa-profile full reported SE joint pass: 0.417
 Kokorowski kappa-profile 0.50x reported SE joint pass: 0.783
 Kokorowski kappa-profile 0.25x reported SE joint pass: 0.975
+Kokorowski calibration provenance: 4 source claims anchored by TeX line windows
 ```
 
 This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the Kokorowski result is the first second-experiment public no-refit candidate, but its first uncertainty stress pass is mixed. The weak link is the independent kappa uncertainty, not the vector point/visibility digitization. The kappa profile says the public-data path needs substantially tighter beam-calibration provenance, roughly at or below half the conservative reported-SE stress scale.

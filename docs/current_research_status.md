@@ -24,6 +24,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Kokorowski independent-parameter no-refit analysis implemented | `outputs/kokorowski_multiphoton/kokorowski_multiphoton_report.md` | Pass, combined independent-kappa RMSE 0.0240 |
 | Kokorowski uncertainty/null stress test implemented | `outputs/kokorowski_multiphoton_stress/` | Mixed: clean nulls; component sensitivity points to independent-kappa uncertainty as the weak link |
 | Kokorowski kappa-uncertainty profile implemented | `outputs/kokorowski_kappa_uncertainty_profile/` | Pass, full reported SE gives joint pass 0.417; 0.25x reported SE gives 0.975 |
+| Kokorowski calibration provenance extracted | `data/extracted/KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv`; `outputs/kokorowski_calibration_provenance/` | Pass, 4 paraphrased source claims with line anchors |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
@@ -49,6 +50,8 @@ The strongest empirical structure is now Xiao plus Kokorowski: Xiao gives the cl
 This is still not enough for a breakthrough claim because Chapman raw complex phase remains unrepaired and the Lambda/Gamma/Theta product law is not independently validated. Kokorowski has now been stress-tested: the null controls are clean, point/visibility uncertainty alone is stable, but independent-kappa uncertainty is not strong enough to treat it as publication-grade.
 
 The kappa-uncertainty profile makes the next provenance question numerical: full reported kappa SE gives joint stress pass probability 0.417; half reported SE gives 0.783; quarter reported SE gives 0.975. The next useful G11 move is to verify whether the beam-deflection/broadening calibration justifies a tighter effective uncertainty, preferably from source text, author tables, or a reproduced calibration.
+
+The calibration-provenance extractor now anchors the independence premise to the arXiv TeX source by source SHA and line windows. It supports the public-data rationale but also records the remaining gap: raw beam-deflection/broadening calibration tables are not present in the public source package.
 
 ## Open Gates
 
