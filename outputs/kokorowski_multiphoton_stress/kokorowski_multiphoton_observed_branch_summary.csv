@@ -1,0 +1,5 @@
+branch,model,kappa_prime_k0,rmse_visibility,n_points
+bullet_lower_intensity,calculated_independent_kappa,1.8,0.024472092141060567,13
+bullet_lower_intensity,refit_kappa_from_digitized_points,1.7719766472060048,0.02333372941487748,13
+circle_high_intensity,calculated_independent_kappa,2.5,0.023332119489889964,10
+circle_high_intensity,refit_kappa_from_digitized_points,2.396330275229358,0.012276231360258346,10

@@ -76,6 +76,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_kokorowski_multiphoton_scout_outputs,
     make_kokorowski_multiphoton_digitization_outputs,
     make_kokorowski_multiphoton_analysis_outputs,
+    make_kokorowski_multiphoton_stress_outputs,
     kokorowski_fig4_pixel_to_data,
     kokorowski_visibility_from_kappa,
     make_hornberger_collisional_scout_outputs,
@@ -1311,6 +1312,43 @@ def test_kokorowski_digitization_and_analysis_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_analysis_dir / "kokorowski_multiphoton_report.md").exists()
+
+
+def test_kokorowski_stress_outputs_and_cli(tmp_path):
+    input_csv = Path("data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv")
+    assert input_csv.exists()
+
+    output_dir = tmp_path / "kokorowski_stress"
+    summary, bootstrap, null_summary, calibration = make_kokorowski_multiphoton_stress_outputs(
+        input_csv,
+        output_dir,
+        n_bootstrap=40,
+        seed=7,
+    )
+    assert not summary.empty
+    assert not bootstrap.empty
+    assert not null_summary.empty
+    assert not calibration.empty
+    assert float(summary["bootstrap_p_rmse_lt_005"].iloc[0]) >= 0.9
+    assert "standard quantum decoherence" in (
+        output_dir / "kokorowski_multiphoton_stress_report.md"
+    ).read_text(encoding="utf-8")
+
+    cli_output_dir = tmp_path / "kokorowski_stress_cli"
+    main(
+        [
+            "stress-test-kokorowski-multiphoton",
+            "--input",
+            str(input_csv),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "40",
+            "--seed",
+            "7",
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_multiphoton_stress_summary.csv").exists()
 
 
 def test_public_data_availability_outputs_and_cli(tmp_path):

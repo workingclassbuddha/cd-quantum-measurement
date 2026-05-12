@@ -10131,6 +10131,363 @@ This is a stronger public-data lead than the previous near misses because the so
     return summary, predictions
 
 
+def _kokorowski_combined_metrics(df: pd.DataFrame):
+    """Compute Kokorowski independent-kappa and refit RMSE metrics."""
+
+    prediction_rows = []
+    branch_rows = []
+    for branch, branch_df in df.groupby("branch", sort=True):
+        d = branch_df["d_over_lambda"].to_numpy(dtype=float)
+        y = branch_df["visibility"].to_numpy(dtype=float)
+        k_calc = float(branch_df["kappa_prime_calculated_k0"].iloc[0])
+        k_refit, _refit_rmse = fit_kokorowski_refit_kappa(d, y)
+        for model, kappa in [
+            ("calculated_independent_kappa", k_calc),
+            ("refit_kappa_from_digitized_points", k_refit),
+        ]:
+            pred = kokorowski_visibility_from_kappa(d, kappa)
+            residual = y - pred
+            branch_rows.append(
+                {
+                    "branch": branch,
+                    "model": model,
+                    "kappa_prime_k0": float(kappa),
+                    "rmse_visibility": float(np.sqrt(np.mean(residual**2))),
+                    "n_points": int(len(branch_df)),
+                }
+            )
+            for residual_value in residual:
+                prediction_rows.append(
+                    {
+                        "branch": branch,
+                        "model": model,
+                        "residual": float(residual_value),
+                    }
+                )
+    predictions = pd.DataFrame(prediction_rows)
+    combined = {}
+    for model in sorted(predictions["model"].unique()):
+        residual = predictions[predictions["model"] == model]["residual"].to_numpy(
+            dtype=float
+        )
+        combined[model] = float(np.sqrt(np.mean(residual**2)))
+    return pd.DataFrame(branch_rows), combined
+
+
+def make_kokorowski_multiphoton_stress_outputs(
+    input_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int = 1000,
+    seed: int = 28044,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_csv)
+    required = {
+        "branch",
+        "d_over_lambda",
+        "visibility",
+        "visibility_se",
+        "kappa_prime_calculated_k0",
+        "kappa_prime_calculated_se_k0",
+    }
+    missing = sorted(required - set(df.columns))
+    if missing:
+        raise ValueError(f"Kokorowski stress input missing columns: {', '.join(missing)}")
+    if n_bootstrap < 10:
+        raise ValueError("Kokorowski stress test needs at least 10 bootstrap samples")
+
+    observed_branch_summary, observed = _kokorowski_combined_metrics(df)
+    observed_calc_rmse = observed["calculated_independent_kappa"]
+    observed_refit_rmse = observed["refit_kappa_from_digitized_points"]
+    observed_ratio = observed_calc_rmse / max(observed_refit_rmse, EPS)
+    d_sigma = 0.30 / (
+        KOKOROWSKI_FIG4_CALIBRATION["x_max_px"]
+        - KOKOROWSKI_FIG4_CALIBRATION["x_min_px"]
+    )
+    rng = np.random.default_rng(seed)
+    bootstrap_rows = []
+    shuffle_rows = []
+    branch_swap_rows = []
+    branch_names = sorted(df["branch"].unique())
+    branch_kappas = {
+        branch: float(branch_df["kappa_prime_calculated_k0"].iloc[0])
+        for branch, branch_df in df.groupby("branch", sort=True)
+    }
+
+    for sample_id in range(int(n_bootstrap)):
+        sample = df.copy()
+        sample["d_over_lambda"] = np.clip(
+            sample["d_over_lambda"].to_numpy(dtype=float)
+            + rng.normal(0.0, d_sigma, size=len(sample)),
+            0.0,
+            0.32,
+        )
+        sample["visibility"] = np.clip(
+            sample["visibility"].to_numpy(dtype=float)
+            + rng.normal(
+                0.0,
+                sample["visibility_se"].to_numpy(dtype=float),
+                size=len(sample),
+            ),
+            0.0,
+            1.0,
+        )
+        for branch, branch_df in sample.groupby("branch", sort=True):
+            idx = sample["branch"] == branch
+            k_mean = float(branch_df["kappa_prime_calculated_k0"].iloc[0])
+            k_se = float(branch_df["kappa_prime_calculated_se_k0"].iloc[0])
+            sample.loc[idx, "kappa_prime_calculated_k0"] = max(
+                0.05,
+                float(rng.normal(k_mean, k_se)),
+            )
+
+        _branch_summary, metrics = _kokorowski_combined_metrics(sample)
+        calc_rmse = metrics["calculated_independent_kappa"]
+        refit_rmse = metrics["refit_kappa_from_digitized_points"]
+        bootstrap_rows.append(
+            {
+                "sample_id": sample_id,
+                "calculated_independent_kappa_rmse": calc_rmse,
+                "refit_kappa_from_digitized_points_rmse": refit_rmse,
+                "rmse_ratio_to_refit": calc_rmse / max(refit_rmse, EPS),
+                "passes_absolute_rmse_lt_005": bool(calc_rmse < 0.05),
+                "passes_refit_ratio_lte_15": bool(calc_rmse <= 1.5 * refit_rmse),
+                "passes_no_refit_stress_gate": bool(
+                    calc_rmse < 0.05 and calc_rmse <= 1.5 * refit_rmse
+                ),
+            }
+        )
+
+        shuffled = sample.copy()
+        for branch in branch_names:
+            idx = shuffled["branch"] == branch
+            shuffled.loc[idx, "visibility"] = rng.permutation(
+                shuffled.loc[idx, "visibility"].to_numpy(dtype=float)
+            )
+        _branch_summary, shuffled_metrics = _kokorowski_combined_metrics(shuffled)
+        shuffle_rows.append(
+            {
+                "sample_id": sample_id,
+                "null_model": "within_branch_visibility_shuffle",
+                "calculated_independent_kappa_rmse": shuffled_metrics[
+                    "calculated_independent_kappa"
+                ],
+            }
+        )
+
+        swapped = sample.copy()
+        if len(branch_names) == 2:
+            for branch in branch_names:
+                other = [name for name in branch_names if name != branch][0]
+                swapped.loc[
+                    swapped["branch"] == branch,
+                    "kappa_prime_calculated_k0",
+                ] = branch_kappas[other]
+        _branch_summary, swapped_metrics = _kokorowski_combined_metrics(swapped)
+        branch_swap_rows.append(
+            {
+                "sample_id": sample_id,
+                "null_model": "branch_kappa_swap",
+                "calculated_independent_kappa_rmse": swapped_metrics[
+                    "calculated_independent_kappa"
+                ],
+            }
+        )
+
+    bootstrap = pd.DataFrame(bootstrap_rows)
+    shuffle_null = pd.DataFrame(shuffle_rows)
+    branch_swap_null = pd.DataFrame(branch_swap_rows)
+
+    calibration_rows = []
+    for d_scale in [0.98, 0.99, 1.0, 1.01, 1.02]:
+        for visibility_offset in [-0.01, 0.0, 0.01]:
+            shifted = df.copy()
+            shifted["d_over_lambda"] = np.clip(
+                shifted["d_over_lambda"].to_numpy(dtype=float) * d_scale,
+                0.0,
+                0.32,
+            )
+            shifted["visibility"] = np.clip(
+                shifted["visibility"].to_numpy(dtype=float) + visibility_offset,
+                0.0,
+                1.0,
+            )
+            _branch_summary, shifted_metrics = _kokorowski_combined_metrics(shifted)
+            calc_rmse = shifted_metrics["calculated_independent_kappa"]
+            refit_rmse = shifted_metrics["refit_kappa_from_digitized_points"]
+            calibration_rows.append(
+                {
+                    "d_scale": d_scale,
+                    "visibility_offset": visibility_offset,
+                    "calculated_independent_kappa_rmse": calc_rmse,
+                    "refit_kappa_from_digitized_points_rmse": refit_rmse,
+                    "passes_no_refit_stress_gate": bool(
+                        calc_rmse < 0.05 and calc_rmse <= 1.5 * refit_rmse
+                    ),
+                }
+            )
+    calibration_sensitivity = pd.DataFrame(calibration_rows)
+
+    p_abs = float(bootstrap["passes_absolute_rmse_lt_005"].mean())
+    p_ratio = float(bootstrap["passes_refit_ratio_lte_15"].mean())
+    p_joint = float(bootstrap["passes_no_refit_stress_gate"].mean())
+    p_shuffle = float(
+        (
+            shuffle_null["calculated_independent_kappa_rmse"].to_numpy(dtype=float)
+            <= observed_calc_rmse
+        ).mean()
+    )
+    p_branch_swap = float(
+        (
+            branch_swap_null["calculated_independent_kappa_rmse"].to_numpy(dtype=float)
+            <= observed_calc_rmse
+        ).mean()
+    )
+    calibration_pass_fraction = float(
+        calibration_sensitivity["passes_no_refit_stress_gate"].mean()
+    )
+    robust = bool(
+        p_abs >= 0.95
+        and p_ratio >= 0.80
+        and calibration_pass_fraction >= 0.80
+        and p_shuffle <= 0.05
+    )
+    verdict = (
+        "Kokorowski no-refit candidate survives first stress pass"
+        if robust
+        else "Kokorowski no-refit candidate needs more stress evidence"
+    )
+    stress_summary = pd.DataFrame(
+        [
+            {
+                "status": verdict,
+                "input_csv": str(input_csv),
+                "n_bootstrap": int(n_bootstrap),
+                "seed": int(seed),
+                "observed_calculated_independent_kappa_rmse": observed_calc_rmse,
+                "observed_refit_kappa_rmse": observed_refit_rmse,
+                "observed_rmse_ratio_to_refit": observed_ratio,
+                "bootstrap_p_rmse_lt_005": p_abs,
+                "bootstrap_p_ratio_lte_15": p_ratio,
+                "bootstrap_p_joint_stress_gate": p_joint,
+                "bootstrap_rmse_ci_low": float(
+                    bootstrap["calculated_independent_kappa_rmse"].quantile(0.025)
+                ),
+                "bootstrap_rmse_ci_high": float(
+                    bootstrap["calculated_independent_kappa_rmse"].quantile(0.975)
+                ),
+                "calibration_pass_fraction": calibration_pass_fraction,
+                "shuffle_null_p_rmse_lte_observed": p_shuffle,
+                "branch_swap_null_p_rmse_lte_observed": p_branch_swap,
+            }
+        ]
+    )
+    null_summary = pd.DataFrame(
+        [
+            {
+                "null_model": "within_branch_visibility_shuffle",
+                "observed_calculated_independent_kappa_rmse": observed_calc_rmse,
+                "null_rmse_median": float(
+                    shuffle_null["calculated_independent_kappa_rmse"].median()
+                ),
+                "p_rmse_lte_observed": p_shuffle,
+            },
+            {
+                "null_model": "branch_kappa_swap",
+                "observed_calculated_independent_kappa_rmse": observed_calc_rmse,
+                "null_rmse_median": float(
+                    branch_swap_null["calculated_independent_kappa_rmse"].median()
+                ),
+                "p_rmse_lte_observed": p_branch_swap,
+            },
+        ]
+    )
+
+    stress_summary.to_csv(output_dir / "kokorowski_multiphoton_stress_summary.csv", index=False)
+    bootstrap.to_csv(output_dir / "kokorowski_multiphoton_bootstrap_samples.csv", index=False)
+    null_summary.to_csv(output_dir / "kokorowski_multiphoton_null_summary.csv", index=False)
+    shuffle_null.to_csv(output_dir / "kokorowski_multiphoton_shuffle_null_samples.csv", index=False)
+    branch_swap_null.to_csv(output_dir / "kokorowski_multiphoton_branch_swap_null_samples.csv", index=False)
+    calibration_sensitivity.to_csv(
+        output_dir / "kokorowski_multiphoton_calibration_sensitivity.csv",
+        index=False,
+    )
+    observed_branch_summary.to_csv(
+        output_dir / "kokorowski_multiphoton_observed_branch_summary.csv",
+        index=False,
+    )
+
+    write_histogram_svg(
+        output_dir / "figures" / "figure_kokorowski_bootstrap_rmse.svg",
+        bootstrap["calculated_independent_kappa_rmse"].to_numpy(dtype=float),
+        "Kokorowski Bootstrap Independent-Kappa RMSE",
+        "visibility RMSE",
+    )
+    write_histogram_svg(
+        output_dir / "figures" / "figure_kokorowski_shuffle_null_rmse.svg",
+        shuffle_null["calculated_independent_kappa_rmse"].to_numpy(dtype=float),
+        "Kokorowski Shuffled-Visibility Null RMSE",
+        "visibility RMSE",
+    )
+    write_bar_svg(
+        output_dir / "figures" / "figure_kokorowski_calibration_sensitivity.svg",
+        [
+            f"{row.d_scale:.2f}/{row.visibility_offset:+.2f}"
+            for row in calibration_sensitivity.itertuples()
+        ],
+        calibration_sensitivity["calculated_independent_kappa_rmse"].to_numpy(dtype=float),
+        "Kokorowski Calibration Sensitivity",
+        "visibility RMSE",
+    )
+
+    report = f"""# Kokorowski 2001 Multiphoton Stress Test
+
+Status: {verdict}
+
+This stress test asks whether the Kokorowski Fig. 4 no-refit result survives reasonable digitization, calibration, and independent-parameter uncertainty. It perturbs the vector-digitized point coordinates, visibility values, and independently reported kappa values; then it compares the independent-kappa prediction with a per-branch refit and two null controls.
+
+- Input CSV: `{input_csv}`
+- Bootstrap samples: {int(n_bootstrap)}
+- Seed: {int(seed)}
+- d/lambda jitter: one EPS-pixel equivalent ({d_sigma:.5f})
+- visibility jitter: row-level `visibility_se`
+- kappa jitter: row-level `kappa_prime_calculated_se_k0`
+
+## Robust Quantities
+
+- Observed independent-kappa RMSE: {observed_calc_rmse:.4f}
+- Observed refit-kappa RMSE: {observed_refit_rmse:.4f}
+- Observed independent/refit RMSE ratio: {observed_ratio:.3f}
+- Bootstrap P(RMSE < 0.05): {p_abs:.3f}
+- Bootstrap P(independent RMSE <= 1.5 * refit RMSE): {p_ratio:.3f}
+- Bootstrap P(joint stress gate): {p_joint:.3f}
+- Independent-kappa RMSE 95% CI: [{stress_summary['bootstrap_rmse_ci_low'].iloc[0]:.4f}, {stress_summary['bootstrap_rmse_ci_high'].iloc[0]:.4f}]
+- Calibration sensitivity pass fraction: {calibration_pass_fraction:.3f}
+
+## Null Controls
+
+- Within-branch visibility-shuffle P(RMSE <= observed): {p_shuffle:.3f}
+- Branch-kappa-swap P(RMSE <= observed): {p_branch_swap:.3f}
+
+## Interpretation
+
+Passing this stress test would strengthen Kokorowski as a public second-experiment no-refit candidate. It still remains a standard quantum decoherence check and does not validate the Constraint Dynamics product law.
+
+## What This Does Not Show
+
+- No collapse solution.
+- No beyond-standard-quantum-mechanics claim.
+- No Lambda/Gamma/Theta product-law validation.
+- No author-table provenance yet.
+"""
+    (output_dir / "kokorowski_multiphoton_stress_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return stress_summary, bootstrap, null_summary, calibration_sensitivity
+
+
 def make_breakthrough_author_data_requests(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     targets = [
@@ -14821,6 +15178,20 @@ def run_analyze_kokorowski_multiphoton(input_csv: Path, output_dir: Path):
     make_kokorowski_multiphoton_analysis_outputs(input_csv, output_dir)
 
 
+def run_stress_test_kokorowski_multiphoton(
+    input_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int,
+    seed: int,
+):
+    make_kokorowski_multiphoton_stress_outputs(
+        input_csv,
+        output_dir,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+    )
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -15342,6 +15713,20 @@ def build_parser():
         "--output-dir",
         default="outputs/kokorowski_multiphoton",
     )
+    kokorowski_stress = sub.add_parser(
+        "stress-test-kokorowski-multiphoton",
+        help="stress-test the Kokorowski Fig. 4 independent-kappa no-refit candidate",
+    )
+    kokorowski_stress.add_argument(
+        "--input",
+        default="data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv",
+    )
+    kokorowski_stress.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_multiphoton_stress",
+    )
+    kokorowski_stress.add_argument("--n-bootstrap", type=int, default=1000)
+    kokorowski_stress.add_argument("--seed", type=int, default=28044)
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -15612,6 +15997,13 @@ def main(argv=None):
             run_analyze_kokorowski_multiphoton(
                 Path(args.input),
                 Path(args.output_dir),
+            )
+        elif command == "stress-test-kokorowski-multiphoton":
+            run_stress_test_kokorowski_multiphoton(
+                Path(args.input),
+                Path(args.output_dir),
+                int(args.n_bootstrap),
+                int(args.seed),
             )
         elif command == "scout-hornberger-collisional":
             source_dir = None if args.source_dir is None else Path(args.source_dir)

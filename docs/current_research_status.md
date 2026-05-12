@@ -1,6 +1,6 @@
 # Current Research Status
 
-Last updated: 2026-05-11
+Last updated: 2026-05-12
 
 ## Active Objective
 
@@ -18,10 +18,11 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Xiao result kept conservative | `outputs/breakthrough_candidate/breakthrough_candidate_report.md` | Pass |
 | Hackermueller thermal durable-record lane implemented | `outputs/hackermueller_thermal/`; `outputs/hackermueller_thermal_stress/` | Pass |
 | Hornberger collisional guardrail implemented | `outputs/hornberger_collisional_scout/` | Pass |
-| Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass, 15 candidates and zero eligible second targets |
+| Second no-refit target scout implemented | `outputs/no_refit_target_scout/` | Pass, Kokorowski is now the first eligible public second target |
 | Kokorowski multiphoton public-data scout implemented | `outputs/kokorowski_multiphoton_scout/` | Pass |
 | Kokorowski Fig. 4 vector digitization implemented | `data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv`; `outputs/kokorowski_multiphoton_digitization/` | Pass |
 | Kokorowski independent-parameter no-refit analysis implemented | `outputs/kokorowski_multiphoton/kokorowski_multiphoton_report.md` | Pass, combined independent-kappa RMSE 0.0240 |
+| Kokorowski uncertainty/null stress test implemented | `outputs/kokorowski_multiphoton_stress/` | Mixed: clean nulls, but bootstrap stress does not yet clear a publication-grade pass |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
@@ -44,12 +45,12 @@ lead candidate found, breakthrough not yet
 
 The strongest empirical structure is now Xiao plus Kokorowski: Xiao gives the cleanest within-paper no-refit momentum-distribution prediction, and Kokorowski gives a second-experiment public no-refit decoherence prediction from independently reported many-photon parameters.
 
-This is still not enough for a breakthrough claim because Chapman raw complex phase remains unrepaired and the Lambda/Gamma/Theta product law is not independently validated. The Kokorowski result also needs a stress pass before being treated as publication-grade.
+This is still not enough for a breakthrough claim because Chapman raw complex phase remains unrepaired and the Lambda/Gamma/Theta product law is not independently validated. Kokorowski has now been stress-tested: the null controls are clean, but the uncertainty bootstrap is not strong enough to treat it as publication-grade.
 
 ## Open Gates
 
 - **G10:** Chapman raw complex phase remains unrepaired.
-- **G11:** second independent public no-refit candidate found in Kokorowski, pending stress testing.
+- **G11:** second independent public no-refit candidate found in Kokorowski; first stress test is mixed and calls for tighter provenance/uncertainty work.
 - **G12:** Lambda/Gamma/Theta product law remains provisional.
 
 ## Live Coordination
@@ -65,7 +66,7 @@ This is still not enough for a breakthrough claim because Chapman raw complex ph
 Do not add more model freedom until either:
 
 1. author-level numerical data create a second held-out no-refit test; or
-2. Kokorowski survives a robustness/null-control pass as a second independent no-refit validation.
+2. Kokorowski survives a stricter robustness pass as a second independent no-refit validation.
 
 Immediate public-data next step:
 
@@ -78,6 +79,12 @@ python src/constraint_dynamics_quantum_v3.py digitize-kokorowski-multiphoton \
 python src/constraint_dynamics_quantum_v3.py analyze-kokorowski-multiphoton \
   --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
   --output-dir outputs/kokorowski_multiphoton
+
+python src/constraint_dynamics_quantum_v3.py stress-test-kokorowski-multiphoton \
+  --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
+  --output-dir outputs/kokorowski_multiphoton_stress \
+  --n-bootstrap 1000 \
+  --seed 28044
 ```
 
 If neither path produces a second validation, the honest conclusion is that the current breakthrough path has found a strong empirical target but not a breakthrough.

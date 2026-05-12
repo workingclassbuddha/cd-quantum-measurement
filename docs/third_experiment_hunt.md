@@ -143,7 +143,27 @@ python src/constraint_dynamics_quantum_v3.py digitize-kokorowski-multiphoton \
 python src/constraint_dynamics_quantum_v3.py analyze-kokorowski-multiphoton \
   --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
   --output-dir outputs/kokorowski_multiphoton
+
+python src/constraint_dynamics_quantum_v3.py stress-test-kokorowski-multiphoton \
+  --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv \
+  --output-dir outputs/kokorowski_multiphoton_stress \
+  --n-bootstrap 1000 \
+  --seed 28044
 ```
+
+The first stress pass is conservative:
+
+```text
+status: Kokorowski no-refit candidate needs more stress evidence
+observed independent-kappa RMSE: 0.0240
+observed refit-kappa RMSE: 0.0193
+bootstrap P(RMSE < 0.05): 0.866
+bootstrap P(independent RMSE <= 1.5 * refit RMSE): 0.743
+within-branch visibility-shuffle null p: 0.000
+branch-kappa-swap null p: 0.000
+```
+
+This keeps Kokorowski as the best public second-experiment no-refit lead, but it does not upgrade the project to a breakthrough claim. The next useful move is tighter uncertainty/provenance work, not looser model freedom.
 
 ## Success Criteria
 

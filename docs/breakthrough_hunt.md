@@ -51,9 +51,12 @@ Xiao distribution branch-label-null P(RMSE <= observed): 0.000
 Hackermueller stress P(thermal delta-T4 beats exp power): 0.994
 Kokorowski independent-kappa RMSE: 0.0240
 Kokorowski refit-kappa RMSE: 0.0193
+Kokorowski stress P(RMSE < 0.05): 0.866
+Kokorowski stress P(independent RMSE <= 1.5 * refit RMSE): 0.743
+Kokorowski shuffle/null p-values: 0.000 / 0.000
 ```
 
-This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the Kokorowski result is the first second-experiment public no-refit candidate. The next breakthrough-grade move is to stress-test Kokorowski and repair or falsify the remaining Chapman phase/product-law gates.
+This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the Kokorowski result is the first second-experiment public no-refit candidate, but its first uncertainty stress pass is mixed. The next breakthrough-grade move is to tighten Kokorowski provenance/uncertainty and repair or falsify the remaining Chapman phase/product-law gates.
 
 ## Breakthrough-Readiness Dossier
 
@@ -73,14 +76,15 @@ Current pass/fail summary:
 - Chapman raw Fourier-kernel support: pass.
 - Hackermueller durable thermal-record support: pass.
 - Chapman raw complex phase repair: fail.
-- Second independent distribution-to-visibility experiment: pass via Kokorowski, pending stress testing.
+- Second independent distribution-to-visibility experiment: lead via Kokorowski, but first stress pass is mixed.
 - Lambda/Gamma/Theta product-law validation: fail.
 
 Therefore the working breakthrough target is narrow:
 
 ```text
-Stress-test the second independent no-refit candidate and keep the stronger
-breakthrough language blocked until Chapman phase or product-law gates clear.
+Tighten the second independent no-refit candidate and keep the stronger
+breakthrough language blocked until Kokorowski stress, Chapman phase, or
+product-law gates clear.
 ```
 
 ## Second No-Refit Target Scout
@@ -126,9 +130,13 @@ status: independent multiphoton no-refit candidate passes digitized Fig. 4
 combined independent-kappa RMSE: 0.0240
 combined refit-kappa RMSE: 0.0193
 eligible second no-refit targets: 1
+stress status: Kokorowski no-refit candidate needs more stress evidence
+stress bootstrap P(RMSE < 0.05): 0.866
+stress bootstrap P(independent RMSE <= 1.5 * refit RMSE): 0.743
+stress null p-values: 0.000 / 0.000
 ```
 
-Why this matters: the source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. The local vector digitization now shows those parameters predict the digitized contrast without refitting the record-load variable. It remains a standard-QM decoherence result and needs robustness/null testing before publication-grade language.
+Why this matters: the source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. The local vector digitization now shows those parameters predict the digitized contrast without refitting the record-load variable. It remains a standard-QM decoherence result; the first stress pass keeps it as a serious lead but not publication-grade validation.
 
 The public-data audit checks the lead source records for immediately usable numerical tables or source-figure routes. Its current verdict is now that public data can close G11 through the Kokorowski source package and local vector digitization, even though no author numerical table has been found.
 
