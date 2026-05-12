@@ -29,6 +29,11 @@ This dossier does not fit a new model. It scores the current outputs against str
 - Second no-refit scout verdict: second no-refit distribution target found
 - Eligible second no-refit targets: 1
 - Recommended second-target candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
+- Kokorowski stress status: Kokorowski no-refit candidate needs more stress evidence
+- Kokorowski stress P(joint gate): 0.727
+- Kokorowski stress P(RMSE < 0.05): 0.866
+- Kokorowski stress P(independent <= 1.5 * refit): 0.743
+- Kokorowski stress null p-values: 0.0 / 0.0
 - Eibenberger recoil-control status: control_fit
 - Eibenberger best recoil model: visibility_fit_sigma_abs
 - Eibenberger best RMSE: 0.0247268685940939
@@ -39,14 +44,14 @@ This dossier does not fit a new model. It scores the current outputs against str
 
 - Chapman raw phase verdict: model still fails
 - Chapman best mixture raw phase RMSE: 1.3087718496350118
-- Second independent distribution-to-visibility experiment: second no-refit distribution target found
+- Second independent distribution-to-visibility experiment: second no-refit distribution target found; Kokorowski stress status: Kokorowski no-refit candidate needs more stress evidence
 - Lambda/Gamma/Theta product law validation: not yet
 
 ## Gate Score
 
-Passed gates: 10 / 12
+Passed gates: 9 / 12
 
-The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao remains the centerpiece because it gives the cleanest distribution-to-visibility bridge. Kokorowski now supplies the first second-experiment public no-refit candidate: independently reported many-photon beam-deflection/broadening parameters predict Fig. 4 contrast after vector digitization. Chapman, Hackermueller, and Hornberger provide supporting standard-QM record bandwidth/load controls.
+The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao remains the centerpiece because it gives the cleanest distribution-to-visibility bridge. Kokorowski now supplies the first second-experiment public no-refit candidate: independently reported many-photon beam-deflection/broadening parameters predict Fig. 4 contrast after vector digitization, but the current stress result is not yet publication-grade. Chapman, Hackermueller, and Hornberger provide supporting standard-QM record bandwidth/load controls.
 
 Eibenberger is now logged as a useful recoil-control lane: the known photon recoil mechanism predicts visibility reduction at roughly the paper absorption cross section. It strengthens the standard-QM compatibility of the record-kernel framing, but it does not close G11 because the absorption cross section is still extracted from visibility rather than independently measured as a held-out record distribution.
 
@@ -65,4 +70,4 @@ We have a stronger lead candidate: Xiao gives a within-paper no-refit momentum-d
 
 ## Next Move
 
-Promote Kokorowski from candidate to stress-tested validation, then keep the breakthrough language blocked until Chapman raw phase or an independent Lambda/Gamma/Theta product-law experiment clears its gate.
+Tighten Kokorowski independent-kappa provenance or find a cleaner second no-refit target, then keep the breakthrough language blocked until Kokorowski stress, Chapman raw phase, and independent Lambda/Gamma/Theta product-law gates clear.

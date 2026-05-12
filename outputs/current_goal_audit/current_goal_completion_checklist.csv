@@ -1,7 +1,7 @@
 requirement,evidence_path,status,passed,note
 public_repo_clean_green,GitHub Actions and git status,externally_verified_before_commit,True,This command records artifact state; live git/CI checks remain shell/GitHub evidence.
 provenance_rich_scaffolds_implemented,outputs/,pass,True,"Chapman, Xiao, Hackermueller, Hornberger, no-refit scout, public-data audit, author-request, intake, and validation artifacts exist."
-second_independent_distribution_to_visibility_validation,outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv,fail,True,eligible_second=1; public_support=1; author_ready=0
+second_independent_distribution_to_visibility_validation,outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv; outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv,fail,False,eligible_second=1; public_support=1; author_ready=0; kokorowski_joint=0.727; stress_pass=False
 chapman_raw_phase_repaired,outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv,fail,False,G10 remains a blocker unless the scorecard says raw phase repaired.
 product_law_independently_validated,outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv,fail,False,G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law.
 no_overclaiming,README.md; docs/current_research_status.md; outputs/breakthrough_candidate/breakthrough_candidate_report.md,pass,True,"Current reports preserve standard-QM-compatible, not-breakthrough language."

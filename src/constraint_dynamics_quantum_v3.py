@@ -7916,6 +7916,9 @@ def make_current_goal_completion_audit_outputs(
     public_data_summary_csv: Path = Path(
         "outputs/public_data_availability/public_data_availability_summary.csv"
     ),
+    kokorowski_stress_summary_csv: Path = Path(
+        "outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv"
+    ),
     author_validation_summary_csv: Path = Path(
         "outputs/author_data_validation/author_data_manifest_validation_summary.csv"
     ),
@@ -7926,11 +7929,29 @@ def make_current_goal_completion_audit_outputs(
     scorecard = _read_optional_metric_csv(breakthrough_scorecard_csv)
     g11_summary = _read_optional_metric_csv(g11_summary_csv)
     public_summary = _read_optional_metric_csv(public_data_summary_csv)
+    kokorowski_stress = _read_optional_metric_csv(kokorowski_stress_summary_csv)
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
 
     eligible_second = int(_first_value(g11_summary, "eligible_second_no_refit_targets", 0))
     public_support = int(_first_value(public_summary, "supports_g11_without_author_contact", 0))
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
+    kokorowski_joint = float(
+        _first_value(kokorowski_stress, "bootstrap_p_joint_stress_gate", np.nan)
+    )
+    kokorowski_shuffle_p = float(
+        _first_value(kokorowski_stress, "shuffle_null_p_rmse_lte_observed", np.nan)
+    )
+    kokorowski_branch_swap_p = float(
+        _first_value(kokorowski_stress, "branch_swap_null_p_rmse_lte_observed", np.nan)
+    )
+    kokorowski_stress_pass = bool(
+        math.isfinite(kokorowski_joint)
+        and kokorowski_joint >= 0.80
+        and math.isfinite(kokorowski_shuffle_p)
+        and kokorowski_shuffle_p <= 0.05
+        and math.isfinite(kokorowski_branch_swap_p)
+        and kokorowski_branch_swap_p <= 0.05
+    )
     g10_pass = False
     g12_pass = False
     if scorecard is not None and not scorecard.empty and "gate_id" in scorecard.columns:
@@ -7941,8 +7962,9 @@ def make_current_goal_completion_audit_outputs(
         if not g12_rows.empty and "passed" in g12_rows.columns:
             g12_pass = _truthy(g12_rows["passed"].iloc[0])
 
+    second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
-        eligible_second > 0 or public_support > 0 or author_ready > 0
+        author_ready > 0 or (second_candidate_found and kokorowski_stress_pass)
     )
     rows = [
         {
@@ -7961,10 +7983,10 @@ def make_current_goal_completion_audit_outputs(
         },
         {
             "requirement": "second_independent_distribution_to_visibility_validation",
-            "evidence_path": str(g11_summary_csv),
+            "evidence_path": f"{g11_summary_csv}; {kokorowski_stress_summary_csv}",
             "status": "fail",
             "passed": second_validation_found,
-            "note": f"eligible_second={eligible_second}; public_support={public_support}; author_ready={author_ready}",
+            "note": f"eligible_second={eligible_second}; public_support={public_support}; author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; stress_pass={kokorowski_stress_pass}",
         },
         {
             "requirement": "chapman_raw_phase_repaired",
@@ -7997,9 +8019,12 @@ def make_current_goal_completion_audit_outputs(
                 "objective_achieved": achieved,
                 "failed_requirements": int((~checklist["passed"]).sum()),
                 "second_validation_found": second_validation_found,
+                "second_candidate_found": second_candidate_found,
                 "eligible_second_no_refit_targets": eligible_second,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
+                "kokorowski_bootstrap_p_joint_stress_gate": kokorowski_joint,
+                "kokorowski_stress_pass": kokorowski_stress_pass,
                 "verdict": (
                     "objective complete"
                     if achieved
@@ -8028,6 +8053,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Eligible second no-refit targets: {eligible_second}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
+- Kokorowski joint stress probability: {kokorowski_joint if math.isfinite(kokorowski_joint) else "not available"}
+- Kokorowski stress pass: {kokorowski_stress_pass}
 
 ## Failed Or Open Requirements
 
@@ -8035,7 +8062,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 
 ## Rule
 
-Do not mark the goal complete while any failed requirement remains. Passing CI or clearing G11 cannot substitute for the still-open Chapman phase and product-law gates.
+Do not mark the goal complete while any failed requirement remains. Passing CI or finding a G11 candidate cannot substitute for stress-tested second validation, Chapman phase repair, or product-law validation.
 """
     (output_dir / "current_goal_completion_audit.md").write_text(
         report,
@@ -8065,6 +8092,9 @@ def make_breakthrough_candidate_outputs(
     no_refit_target_scout_summary: Path = Path(
         "outputs/no_refit_target_scout/no_refit_target_scout_summary.csv"
     ),
+    kokorowski_stress_summary: Path = Path(
+        "outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv"
+    ),
     eibenberger_recoil_summary: Path = Path(
         "outputs/eibenberger_recoil_scout/eibenberger_recoil_scout_summary.csv"
     ),
@@ -8086,6 +8116,7 @@ def make_breakthrough_candidate_outputs(
     hack_stress = _read_optional_metric_csv(hackermueller_stress_summary)
     synthesis = _read_optional_metric_csv(synthesis_csv)
     no_refit_scout = _read_optional_metric_csv(no_refit_target_scout_summary)
+    kokorowski_stress = _read_optional_metric_csv(kokorowski_stress_summary)
     eibenberger_summary = _read_optional_metric_csv(eibenberger_recoil_summary)
 
     xiao_no_refit = _summary_model_row(xiao_dist, "distribution_no_refit")
@@ -8197,6 +8228,41 @@ def make_breakthrough_candidate_outputs(
         )
         second_target_evidence = no_refit_target_scout_summary
         second_target_pass = second_target_count > 0
+
+    kokorowski_stress_status = "not run"
+    kokorowski_stress_joint = np.nan
+    kokorowski_stress_abs = np.nan
+    kokorowski_stress_ratio = np.nan
+    kokorowski_shuffle_null = np.nan
+    kokorowski_branch_swap_null = np.nan
+    kokorowski_stress_pass = True
+    if kokorowski_stress is not None and not kokorowski_stress.empty:
+        kokorowski_stress_status = str(
+            _first_value(kokorowski_stress, "status", "unknown")
+        )
+        kokorowski_stress_joint = float(
+            _first_value(kokorowski_stress, "bootstrap_p_joint_stress_gate")
+        )
+        kokorowski_stress_abs = float(
+            _first_value(kokorowski_stress, "bootstrap_p_rmse_lt_005")
+        )
+        kokorowski_stress_ratio = float(
+            _first_value(kokorowski_stress, "bootstrap_p_ratio_lte_15")
+        )
+        kokorowski_shuffle_null = float(
+            _first_value(kokorowski_stress, "shuffle_null_p_rmse_lte_observed")
+        )
+        kokorowski_branch_swap_null = float(
+            _first_value(kokorowski_stress, "branch_swap_null_p_rmse_lte_observed")
+        )
+        kokorowski_stress_pass = bool(
+            math.isfinite(kokorowski_stress_joint)
+            and kokorowski_stress_joint >= 0.80
+            and math.isfinite(kokorowski_shuffle_null)
+            and kokorowski_shuffle_null <= 0.05
+            and math.isfinite(kokorowski_branch_swap_null)
+            and kokorowski_branch_swap_null <= 0.05
+        )
 
     eibenberger_status = "not run"
     eibenberger_best_model = "not available"
@@ -8333,12 +8399,16 @@ def make_breakthrough_candidate_outputs(
         _gate_row(
             "G11",
             "External blocker",
-            "Second independent distribution-to-visibility experiment found",
-            second_target_count,
-            "> 0",
-            second_target_pass,
-            second_target_evidence,
-            "The scout keeps this blocker explicit: Xiao is within-paper cross-figure evidence; a true breakthrough needs another independent no-refit distribution test.",
+            "Second independent distribution-to-visibility experiment found and stress-tested",
+            kokorowski_stress_joint
+            if kokorowski_stress is not None
+            else second_target_count,
+            "candidate > 0 and stress joint >= 0.80",
+            second_target_pass and kokorowski_stress_pass,
+            kokorowski_stress_summary
+            if kokorowski_stress is not None
+            else second_target_evidence,
+            "The scout keeps this blocker explicit: Xiao is within-paper cross-figure evidence; a true breakthrough needs another independent no-refit distribution test that survives robustness checks.",
         ),
         _gate_row(
             "G12",
@@ -8364,9 +8434,9 @@ def make_breakthrough_candidate_outputs(
             },
             {
                 "priority": 2,
-                "action": "Find or digitize a second independent distribution-to-visibility dataset",
-                "success_criterion": "Measured record distribution predicts visibility without refitting the bandwidth/load parameter.",
-                "why": f"This is the missing breakthrough gate; latest scout verdict is `{second_target_verdict}`.",
+                "action": "Tighten Kokorowski independent-kappa provenance or find a cleaner second target",
+                "success_criterion": "Second independent no-refit candidate clears the stress joint gate without adding model freedom.",
+                "why": f"Latest scout verdict is `{second_target_verdict}`; latest Kokorowski stress status is `{kokorowski_stress_status}`.",
             },
             {
                 "priority": 3,
@@ -8439,6 +8509,11 @@ This dossier does not fit a new model. It scores the current outputs against str
 - Second no-refit scout verdict: {second_target_verdict}
 - Eligible second no-refit targets: {second_target_count}
 - Recommended second-target candidate: {second_target_candidate}
+- Kokorowski stress status: {kokorowski_stress_status}
+- Kokorowski stress P(joint gate): {kokorowski_stress_joint if math.isfinite(kokorowski_stress_joint) else "not available"}
+- Kokorowski stress P(RMSE < 0.05): {kokorowski_stress_abs if math.isfinite(kokorowski_stress_abs) else "not available"}
+- Kokorowski stress P(independent <= 1.5 * refit): {kokorowski_stress_ratio if math.isfinite(kokorowski_stress_ratio) else "not available"}
+- Kokorowski stress null p-values: {kokorowski_shuffle_null if math.isfinite(kokorowski_shuffle_null) else "not available"} / {kokorowski_branch_swap_null if math.isfinite(kokorowski_branch_swap_null) else "not available"}
 - Eibenberger recoil-control status: {eibenberger_status}
 - Eibenberger best recoil model: {eibenberger_best_model}
 - Eibenberger best RMSE: {eibenberger_best_rmse if math.isfinite(eibenberger_best_rmse) else "not available"}
@@ -8449,14 +8524,14 @@ This dossier does not fit a new model. It scores the current outputs against str
 
 - Chapman raw phase verdict: {raw_phase_verdict}
 - Chapman best mixture raw phase RMSE: {raw_phase_rmse if math.isfinite(raw_phase_rmse) else "not available"}
-- Second independent distribution-to-visibility experiment: {second_target_verdict}
+- Second independent distribution-to-visibility experiment: {second_target_verdict}; Kokorowski stress status: {kokorowski_stress_status}
 - Lambda/Gamma/Theta product law validation: not yet
 
 ## Gate Score
 
 Passed gates: {passed_count} / {total_count}
 
-The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao remains the centerpiece because it gives the cleanest distribution-to-visibility bridge. Kokorowski now supplies the first second-experiment public no-refit candidate: independently reported many-photon beam-deflection/broadening parameters predict Fig. 4 contrast after vector digitization. Chapman, Hackermueller, and Hornberger provide supporting standard-QM record bandwidth/load controls.
+The evidence is strongest where the key variable is measured or reconstructed independently of the fitted visibility curve. Xiao remains the centerpiece because it gives the cleanest distribution-to-visibility bridge. Kokorowski now supplies the first second-experiment public no-refit candidate: independently reported many-photon beam-deflection/broadening parameters predict Fig. 4 contrast after vector digitization, but the current stress result is not yet publication-grade. Chapman, Hackermueller, and Hornberger provide supporting standard-QM record bandwidth/load controls.
 
 Eibenberger is now logged as a useful recoil-control lane: the known photon recoil mechanism predicts visibility reduction at roughly the paper absorption cross section. It strengthens the standard-QM compatibility of the record-kernel framing, but it does not close G11 because the absorption cross section is still extracted from visibility rather than independently measured as a held-out record distribution.
 
@@ -8475,7 +8550,7 @@ We have a stronger lead candidate: Xiao gives a within-paper no-refit momentum-d
 
 ## Next Move
 
-Promote Kokorowski from candidate to stress-tested validation, then keep the breakthrough language blocked until Chapman raw phase or an independent Lambda/Gamma/Theta product-law experiment clears its gate.
+Tighten Kokorowski independent-kappa provenance or find a cleaner second no-refit target, then keep the breakthrough language blocked until Kokorowski stress, Chapman raw phase, and independent Lambda/Gamma/Theta product-law gates clear.
 """
     (output_dir / "breakthrough_candidate_report.md").write_text(
         report,
@@ -15179,6 +15254,7 @@ def run_evaluate_breakthrough_candidate(
     hackermueller_stress_summary: Path,
     synthesis_csv: Path,
     no_refit_target_scout_summary: Path,
+    kokorowski_stress_summary: Path,
     eibenberger_recoil_summary: Path,
 ):
     make_breakthrough_candidate_outputs(
@@ -15190,6 +15266,7 @@ def run_evaluate_breakthrough_candidate(
         hackermueller_stress_summary,
         synthesis_csv,
         no_refit_target_scout_summary,
+        kokorowski_stress_summary,
         eibenberger_recoil_summary,
     )
 
@@ -15661,6 +15738,10 @@ def build_parser():
         default="outputs/no_refit_target_scout/no_refit_target_scout_summary.csv",
     )
     breakthrough.add_argument(
+        "--kokorowski-stress-summary",
+        default="outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv",
+    )
+    breakthrough.add_argument(
         "--eibenberger-recoil-summary",
         default="outputs/eibenberger_recoil_scout/eibenberger_recoil_scout_summary.csv",
     )
@@ -16032,6 +16113,7 @@ def main(argv=None):
                 Path(args.hackermueller_stress_summary),
                 Path(args.synthesis_csv),
                 Path(args.no_refit_target_scout_summary),
+                Path(args.kokorowski_stress_summary),
                 Path(args.eibenberger_recoil_summary),
             )
         elif command == "audit-current-goal-status":
