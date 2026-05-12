@@ -34,7 +34,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Author-data manifest validator prepared | `outputs/author_data_validation/` | Pass, no rows ready for G11 yet |
 | GitHub coordination created | Issues #1-#5 | Pass |
 | Current goal completion audit prepared | `outputs/current_goal_audit/` | Pass, objective not complete |
-| Second independent measured-distribution-to-visibility validation found | `outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv` reports `eligible_second_no_refit_targets = 1` via Kokorowski | Pass, needs stress testing |
+| Second independent measured-distribution-to-visibility validation found | `outputs/current_goal_audit/current_goal_completion_audit.md`; `outputs/kokorowski_multiphoton_stress/` | Not yet: Kokorowski is the first eligible candidate, but stress joint probability is 0.727 |
 | Lambda/Gamma/Theta product law independently validated | `outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv` gate G12 | Fail |
 | Beyond-QM or collapse claim made | README, theory notes, and reports reject this claim | Correctly not claimed |
 
