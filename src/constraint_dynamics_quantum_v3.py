@@ -10664,6 +10664,164 @@ Passing this stress test would strengthen Kokorowski as a public second-experime
     return stress_summary, bootstrap, null_summary, calibration_sensitivity
 
 
+def make_kokorowski_kappa_uncertainty_profile_outputs(
+    input_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int = 600,
+    seed: int = 28045,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    (output_dir / "figures").mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_csv)
+    required = {
+        "branch",
+        "d_over_lambda",
+        "visibility",
+        "kappa_prime_calculated_k0",
+        "kappa_prime_calculated_se_k0",
+    }
+    missing = sorted(required - set(df.columns))
+    if missing:
+        raise ValueError(
+            f"Kokorowski kappa profile input missing columns: {', '.join(missing)}"
+        )
+    if n_bootstrap < 20:
+        raise ValueError("Kokorowski kappa profile needs at least 20 bootstrap samples")
+
+    rng = np.random.default_rng(seed)
+    scale_rows = []
+    sample_rows = []
+    scales = [0.0, 0.25, 0.50, 0.75, 1.0, 1.25, 1.50]
+    for scale in scales:
+        pass_count = 0
+        abs_count = 0
+        ratio_count = 0
+        rmses = []
+        ratios = []
+        for sample_id in range(int(n_bootstrap)):
+            sample = df.copy()
+            for branch, branch_df in sample.groupby("branch", sort=True):
+                idx = sample["branch"] == branch
+                k_mean = float(branch_df["kappa_prime_calculated_k0"].iloc[0])
+                k_se = float(branch_df["kappa_prime_calculated_se_k0"].iloc[0]) * scale
+                sample.loc[idx, "kappa_prime_calculated_k0"] = max(
+                    0.05,
+                    float(rng.normal(k_mean, k_se)),
+                )
+            _branch_summary, metrics = _kokorowski_combined_metrics(sample)
+            calc_rmse = metrics["calculated_independent_kappa"]
+            refit_rmse = metrics["refit_kappa_from_digitized_points"]
+            ratio = calc_rmse / max(refit_rmse, EPS)
+            passes_abs = bool(calc_rmse < 0.05)
+            passes_ratio = bool(calc_rmse <= 1.5 * refit_rmse)
+            passes_joint = bool(passes_abs and passes_ratio)
+            pass_count += int(passes_joint)
+            abs_count += int(passes_abs)
+            ratio_count += int(passes_ratio)
+            rmses.append(calc_rmse)
+            ratios.append(ratio)
+            sample_rows.append(
+                {
+                    "scale": scale,
+                    "sample_id": sample_id,
+                    "calculated_independent_kappa_rmse": calc_rmse,
+                    "rmse_ratio_to_refit": ratio,
+                    "passes_absolute_rmse_lt_005": passes_abs,
+                    "passes_refit_ratio_lte_15": passes_ratio,
+                    "passes_joint_gate": passes_joint,
+                }
+            )
+        scale_rows.append(
+            {
+                "kappa_se_scale": scale,
+                "n_bootstrap": int(n_bootstrap),
+                "rmse_median": float(np.median(rmses)),
+                "rmse_p95": float(np.quantile(rmses, 0.95)),
+                "ratio_median": float(np.median(ratios)),
+                "p_rmse_lt_005": abs_count / float(n_bootstrap),
+                "p_ratio_lte_15": ratio_count / float(n_bootstrap),
+                "p_joint_gate": pass_count / float(n_bootstrap),
+            }
+        )
+
+    profile = pd.DataFrame(scale_rows)
+    samples = pd.DataFrame(sample_rows)
+    passing = profile[profile["p_joint_gate"] >= 0.80]
+    max_passing_scale = (
+        float(passing["kappa_se_scale"].max()) if not passing.empty else np.nan
+    )
+    full_scale_joint = float(
+        profile[profile["kappa_se_scale"] == 1.0]["p_joint_gate"].iloc[0]
+    )
+    verdict = (
+        "reported kappa uncertainty is tight enough for the stress gate"
+        if math.isfinite(max_passing_scale) and max_passing_scale >= 1.0
+        else "reported kappa uncertainty is the limiting stress factor"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "status": verdict,
+                "input_csv": str(input_csv),
+                "n_bootstrap": int(n_bootstrap),
+                "seed": int(seed),
+                "full_reported_se_joint_pass": full_scale_joint,
+                "max_kappa_se_scale_with_joint_pass_ge_080": max_passing_scale,
+            }
+        ]
+    )
+
+    profile.to_csv(output_dir / "kokorowski_kappa_uncertainty_profile.csv", index=False)
+    samples.to_csv(output_dir / "kokorowski_kappa_uncertainty_samples.csv", index=False)
+    summary.to_csv(output_dir / "kokorowski_kappa_uncertainty_summary.csv", index=False)
+    write_bar_svg(
+        output_dir / "figures" / "figure_kokorowski_kappa_uncertainty_profile.svg",
+        [f"{scale:.2f}x" for scale in profile["kappa_se_scale"]],
+        profile["p_joint_gate"].to_numpy(dtype=float),
+        "Kokorowski Kappa-Uncertainty Stress Profile",
+        "P(joint stress gate)",
+    )
+    profile_lines = "\n".join(
+        "- {scale:.2f}x reported SE: P(joint gate) {p_joint:.3f}; median RMSE {rmse:.4f}".format(
+            scale=float(row["kappa_se_scale"]),
+            p_joint=float(row["p_joint_gate"]),
+            rmse=float(row["rmse_median"]),
+        )
+        for _, row in profile.iterrows()
+    )
+    report = f"""# Kokorowski Kappa-Uncertainty Profile
+
+Status: {verdict}
+
+This profile isolates the independent-kappa uncertainty that limited the broader Kokorowski stress test. It rescales only the reported independent `kappa_prime` uncertainty while holding the vector-digitized points fixed, then asks when the no-refit prediction clears the joint stress gate.
+
+- Input CSV: `{input_csv}`
+- Bootstrap samples per scale: {int(n_bootstrap)}
+- Seed: {int(seed)}
+- Full reported-SE joint pass probability: {full_scale_joint:.3f}
+- Largest tested kappa-SE scale with P(joint gate) >= 0.80: {max_passing_scale if math.isfinite(max_passing_scale) else "none"}
+
+## Scale Profile
+
+{profile_lines}
+
+## Interpretation
+
+This does not rescue or reject Kokorowski by itself. It turns the next provenance question into a measurable one: whether the independent beam-deflection/broadening calibration supports a narrower effective kappa uncertainty than the conservative stress model used here.
+
+## Boundary
+
+- No model freedom was added.
+- No collapse or beyond-standard-quantum-mechanics claim follows.
+- This is a targeting aid for provenance and author-data follow-up.
+"""
+    (output_dir / "kokorowski_kappa_uncertainty_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, profile, samples
+
+
 def make_breakthrough_author_data_requests(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     targets = [
@@ -15370,6 +15528,20 @@ def run_stress_test_kokorowski_multiphoton(
     )
 
 
+def run_profile_kokorowski_kappa_uncertainty(
+    input_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int,
+    seed: int,
+):
+    make_kokorowski_kappa_uncertainty_profile_outputs(
+        input_csv,
+        output_dir,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+    )
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -15909,6 +16081,20 @@ def build_parser():
     )
     kokorowski_stress.add_argument("--n-bootstrap", type=int, default=1000)
     kokorowski_stress.add_argument("--seed", type=int, default=28044)
+    kokorowski_kappa_profile = sub.add_parser(
+        "profile-kokorowski-kappa-uncertainty",
+        help="profile how independent-kappa uncertainty limits the Kokorowski stress gate",
+    )
+    kokorowski_kappa_profile.add_argument(
+        "--input",
+        default="data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv",
+    )
+    kokorowski_kappa_profile.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_kappa_uncertainty_profile",
+    )
+    kokorowski_kappa_profile.add_argument("--n-bootstrap", type=int, default=600)
+    kokorowski_kappa_profile.add_argument("--seed", type=int, default=28045)
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -16183,6 +16369,13 @@ def main(argv=None):
             )
         elif command == "stress-test-kokorowski-multiphoton":
             run_stress_test_kokorowski_multiphoton(
+                Path(args.input),
+                Path(args.output_dir),
+                int(args.n_bootstrap),
+                int(args.seed),
+            )
+        elif command == "profile-kokorowski-kappa-uncertainty":
+            run_profile_kokorowski_kappa_uncertainty(
                 Path(args.input),
                 Path(args.output_dir),
                 int(args.n_bootstrap),

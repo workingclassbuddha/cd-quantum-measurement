@@ -1,0 +1,2 @@
+status,input_csv,n_bootstrap,seed,full_reported_se_joint_pass,max_kappa_se_scale_with_joint_pass_ge_080
+reported kappa uncertainty is the limiting stress factor,data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv,600,28045,0.4166666666666667,0.25

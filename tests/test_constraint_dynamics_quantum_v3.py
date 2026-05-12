@@ -77,6 +77,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_kokorowski_multiphoton_digitization_outputs,
     make_kokorowski_multiphoton_analysis_outputs,
     make_kokorowski_multiphoton_stress_outputs,
+    make_kokorowski_kappa_uncertainty_profile_outputs,
     kokorowski_fig4_pixel_to_data,
     kokorowski_visibility_from_kappa,
     make_hornberger_collisional_scout_outputs,
@@ -1353,6 +1354,42 @@ def test_kokorowski_stress_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "kokorowski_multiphoton_stress_summary.csv").exists()
+
+
+def test_kokorowski_kappa_uncertainty_profile_outputs_and_cli(tmp_path):
+    input_csv = Path("data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv")
+    assert input_csv.exists()
+
+    output_dir = tmp_path / "kokorowski_kappa_profile"
+    summary, profile, samples = make_kokorowski_kappa_uncertainty_profile_outputs(
+        input_csv,
+        output_dir,
+        n_bootstrap=40,
+        seed=11,
+    )
+    assert not summary.empty
+    assert not profile.empty
+    assert not samples.empty
+    assert {0.0, 1.0}.issubset(set(profile["kappa_se_scale"]))
+    assert (
+        output_dir / "kokorowski_kappa_uncertainty_report.md"
+    ).exists()
+
+    cli_output_dir = tmp_path / "kokorowski_kappa_profile_cli"
+    main(
+        [
+            "profile-kokorowski-kappa-uncertainty",
+            "--input",
+            str(input_csv),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "40",
+            "--seed",
+            "11",
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_kappa_uncertainty_summary.csv").exists()
 
 
 def test_public_data_availability_outputs_and_cli(tmp_path):
