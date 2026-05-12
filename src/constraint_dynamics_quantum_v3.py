@@ -8900,6 +8900,7 @@ def make_breakthrough_gap_audit_outputs(output_dir: Path):
         source_data_available = source_available or row["implementation_status"] in {
             "implemented",
             "scout implemented",
+            "digitized/analyzed",
         }
         clears_g11 = bool(
             (not is_xiao)
