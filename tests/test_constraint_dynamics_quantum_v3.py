@@ -1333,6 +1333,10 @@ def test_kokorowski_stress_outputs_and_cli(tmp_path):
     assert "standard quantum decoherence" in (
         output_dir / "kokorowski_multiphoton_stress_report.md"
     ).read_text(encoding="utf-8")
+    component_summary = pd.read_csv(
+        output_dir / "kokorowski_multiphoton_component_summary.csv"
+    )
+    assert "independent_kappa_only" in set(component_summary["component"])
 
     cli_output_dir = tmp_path / "kokorowski_stress_cli"
     main(

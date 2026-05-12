@@ -10329,6 +10329,77 @@ def make_kokorowski_multiphoton_stress_outputs(
             )
     calibration_sensitivity = pd.DataFrame(calibration_rows)
 
+    component_rows = []
+    component_samples = min(int(n_bootstrap), 300)
+    component_configs = [
+        ("d_axis_only", True, False, False),
+        ("visibility_only", False, True, False),
+        ("independent_kappa_only", False, False, True),
+        ("d_axis_and_visibility", True, True, False),
+        ("full_uncertainty_recheck", True, True, True),
+    ]
+    component_rng = np.random.default_rng(int(seed) + 1)
+    for component_name, jitter_d, jitter_visibility, jitter_kappa in component_configs:
+        for sample_id in range(component_samples):
+            sample = df.copy()
+            if jitter_d:
+                sample["d_over_lambda"] = np.clip(
+                    sample["d_over_lambda"].to_numpy(dtype=float)
+                    + component_rng.normal(0.0, d_sigma, size=len(sample)),
+                    0.0,
+                    0.32,
+                )
+            if jitter_visibility:
+                sample["visibility"] = np.clip(
+                    sample["visibility"].to_numpy(dtype=float)
+                    + component_rng.normal(
+                        0.0,
+                        sample["visibility_se"].to_numpy(dtype=float),
+                        size=len(sample),
+                    ),
+                    0.0,
+                    1.0,
+                )
+            if jitter_kappa:
+                for branch, branch_df in sample.groupby("branch", sort=True):
+                    idx = sample["branch"] == branch
+                    k_mean = float(branch_df["kappa_prime_calculated_k0"].iloc[0])
+                    k_se = float(branch_df["kappa_prime_calculated_se_k0"].iloc[0])
+                    sample.loc[idx, "kappa_prime_calculated_k0"] = max(
+                        0.05,
+                        float(component_rng.normal(k_mean, k_se)),
+                    )
+            _branch_summary, metrics = _kokorowski_combined_metrics(sample)
+            calc_rmse = metrics["calculated_independent_kappa"]
+            refit_rmse = metrics["refit_kappa_from_digitized_points"]
+            component_rows.append(
+                {
+                    "component": component_name,
+                    "sample_id": sample_id,
+                    "calculated_independent_kappa_rmse": calc_rmse,
+                    "refit_kappa_from_digitized_points_rmse": refit_rmse,
+                    "passes_absolute_rmse_lt_005": bool(calc_rmse < 0.05),
+                    "passes_refit_ratio_lte_15": bool(calc_rmse <= 1.5 * refit_rmse),
+                    "passes_no_refit_stress_gate": bool(
+                        calc_rmse < 0.05 and calc_rmse <= 1.5 * refit_rmse
+                    ),
+                }
+            )
+    component_samples_df = pd.DataFrame(component_rows)
+    component_summary = (
+        component_samples_df.groupby("component", as_index=False)
+        .agg(
+            n_samples=("sample_id", "count"),
+            rmse_median=("calculated_independent_kappa_rmse", "median"),
+            rmse_p95=("calculated_independent_kappa_rmse", lambda s: float(s.quantile(0.95))),
+            p_rmse_lt_005=("passes_absolute_rmse_lt_005", "mean"),
+            p_ratio_lte_15=("passes_refit_ratio_lte_15", "mean"),
+            p_joint_stress_gate=("passes_no_refit_stress_gate", "mean"),
+        )
+        .sort_values("component")
+        .reset_index(drop=True)
+    )
+
     p_abs = float(bootstrap["passes_absolute_rmse_lt_005"].mean())
     p_ratio = float(bootstrap["passes_refit_ratio_lte_15"].mean())
     p_joint = float(bootstrap["passes_no_refit_stress_gate"].mean())
@@ -10413,6 +10484,14 @@ def make_kokorowski_multiphoton_stress_outputs(
         output_dir / "kokorowski_multiphoton_calibration_sensitivity.csv",
         index=False,
     )
+    component_samples_df.to_csv(
+        output_dir / "kokorowski_multiphoton_component_samples.csv",
+        index=False,
+    )
+    component_summary.to_csv(
+        output_dir / "kokorowski_multiphoton_component_summary.csv",
+        index=False,
+    )
     observed_branch_summary.to_csv(
         output_dir / "kokorowski_multiphoton_observed_branch_summary.csv",
         index=False,
@@ -10440,6 +10519,23 @@ def make_kokorowski_multiphoton_stress_outputs(
         "Kokorowski Calibration Sensitivity",
         "visibility RMSE",
     )
+    write_bar_svg(
+        output_dir / "figures" / "figure_kokorowski_component_sensitivity.svg",
+        component_summary["component"].to_list(),
+        component_summary["rmse_median"].to_numpy(dtype=float),
+        "Kokorowski Component Sensitivity",
+        "median visibility RMSE",
+    )
+
+    component_lines = "\n".join(
+        "- {component}: median RMSE {rmse:.4f}; P(RMSE < 0.05) {p_abs:.3f}; P(joint gate) {p_joint:.3f}".format(
+            component=row["component"],
+            rmse=float(row["rmse_median"]),
+            p_abs=float(row["p_rmse_lt_005"]),
+            p_joint=float(row["p_joint_stress_gate"]),
+        )
+        for _, row in component_summary.iterrows()
+    )
 
     report = f"""# Kokorowski 2001 Multiphoton Stress Test
 
@@ -10449,6 +10545,7 @@ This stress test asks whether the Kokorowski Fig. 4 no-refit result survives rea
 
 - Input CSV: `{input_csv}`
 - Bootstrap samples: {int(n_bootstrap)}
+- Component-sensitivity samples per component: {int(component_samples)}
 - Seed: {int(seed)}
 - d/lambda jitter: one EPS-pixel equivalent ({d_sigma:.5f})
 - visibility jitter: row-level `visibility_se`
@@ -10464,6 +10561,10 @@ This stress test asks whether the Kokorowski Fig. 4 no-refit result survives rea
 - Bootstrap P(joint stress gate): {p_joint:.3f}
 - Independent-kappa RMSE 95% CI: [{stress_summary['bootstrap_rmse_ci_low'].iloc[0]:.4f}, {stress_summary['bootstrap_rmse_ci_high'].iloc[0]:.4f}]
 - Calibration sensitivity pass fraction: {calibration_pass_fraction:.3f}
+
+## Component Sensitivity
+
+{component_lines}
 
 ## Null Controls
 

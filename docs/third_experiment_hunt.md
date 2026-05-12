@@ -161,9 +161,11 @@ bootstrap P(RMSE < 0.05): 0.866
 bootstrap P(independent RMSE <= 1.5 * refit RMSE): 0.743
 within-branch visibility-shuffle null p: 0.000
 branch-kappa-swap null p: 0.000
+d-axis+visibility component joint pass: 0.997
+independent-kappa-only component joint pass: 0.447
 ```
 
-This keeps Kokorowski as the best public second-experiment no-refit lead, but it does not upgrade the project to a breakthrough claim. The next useful move is tighter uncertainty/provenance work, not looser model freedom.
+This keeps Kokorowski as the best public second-experiment no-refit lead, but it does not upgrade the project to a breakthrough claim. The component sensitivity points to the independent kappa uncertainty as the weak link; point and visibility digitization uncertainty alone is not what breaks the stress gate. The next useful move is tighter provenance for the beam-deflection/broadening calibration, not looser model freedom.
 
 ## Success Criteria
 

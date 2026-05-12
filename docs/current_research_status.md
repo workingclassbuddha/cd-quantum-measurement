@@ -22,7 +22,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | Kokorowski multiphoton public-data scout implemented | `outputs/kokorowski_multiphoton_scout/` | Pass |
 | Kokorowski Fig. 4 vector digitization implemented | `data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv`; `outputs/kokorowski_multiphoton_digitization/` | Pass |
 | Kokorowski independent-parameter no-refit analysis implemented | `outputs/kokorowski_multiphoton/kokorowski_multiphoton_report.md` | Pass, combined independent-kappa RMSE 0.0240 |
-| Kokorowski uncertainty/null stress test implemented | `outputs/kokorowski_multiphoton_stress/` | Mixed: clean nulls, but bootstrap stress does not yet clear a publication-grade pass |
+| Kokorowski uncertainty/null stress test implemented | `outputs/kokorowski_multiphoton_stress/` | Mixed: clean nulls; component sensitivity points to independent-kappa uncertainty as the weak link |
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
@@ -45,7 +45,7 @@ lead candidate found, breakthrough not yet
 
 The strongest empirical structure is now Xiao plus Kokorowski: Xiao gives the cleanest within-paper no-refit momentum-distribution prediction, and Kokorowski gives a second-experiment public no-refit decoherence prediction from independently reported many-photon parameters.
 
-This is still not enough for a breakthrough claim because Chapman raw complex phase remains unrepaired and the Lambda/Gamma/Theta product law is not independently validated. Kokorowski has now been stress-tested: the null controls are clean, but the uncertainty bootstrap is not strong enough to treat it as publication-grade.
+This is still not enough for a breakthrough claim because Chapman raw complex phase remains unrepaired and the Lambda/Gamma/Theta product law is not independently validated. Kokorowski has now been stress-tested: the null controls are clean, point/visibility uncertainty alone is stable, but independent-kappa uncertainty is not strong enough to treat it as publication-grade.
 
 ## Open Gates
 

@@ -54,9 +54,11 @@ Kokorowski refit-kappa RMSE: 0.0193
 Kokorowski stress P(RMSE < 0.05): 0.866
 Kokorowski stress P(independent RMSE <= 1.5 * refit RMSE): 0.743
 Kokorowski shuffle/null p-values: 0.000 / 0.000
+Kokorowski d-axis+visibility component joint pass: 0.997
+Kokorowski independent-kappa-only component joint pass: 0.447
 ```
 
-This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the Kokorowski result is the first second-experiment public no-refit candidate, but its first uncertainty stress pass is mixed. The next breakthrough-grade move is to tighten Kokorowski provenance/uncertainty and repair or falsify the remaining Chapman phase/product-law gates.
+This is not a breakthrough yet. It does not solve collapse, validate the Lambda/Gamma/Theta product law, or show physics beyond standard quantum mechanics. The Xiao vector result is a strong within-paper cross-figure prediction; the Kokorowski result is the first second-experiment public no-refit candidate, but its first uncertainty stress pass is mixed. The weak link is the independent kappa uncertainty, not the vector point/visibility digitization. The next breakthrough-grade move is to tighten Kokorowski beam-calibration provenance and repair or falsify the remaining Chapman phase/product-law gates.
 
 ## Breakthrough-Readiness Dossier
 
@@ -134,6 +136,7 @@ stress status: Kokorowski no-refit candidate needs more stress evidence
 stress bootstrap P(RMSE < 0.05): 0.866
 stress bootstrap P(independent RMSE <= 1.5 * refit RMSE): 0.743
 stress null p-values: 0.000 / 0.000
+component result: d-axis+visibility passes at 0.997, independent-kappa-only at 0.447
 ```
 
 Why this matters: the source text states that Fig. 4 theory curves use `nbar` and `sigma_n` determined from independent beam-deflection/broadening measurements. The local vector digitization now shows those parameters predict the digitized contrast without refitting the record-load variable. It remains a standard-QM decoherence result; the first stress pass keeps it as a serious lead but not publication-grade validation.
