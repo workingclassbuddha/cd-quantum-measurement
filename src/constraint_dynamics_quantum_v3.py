@@ -8015,6 +8015,22 @@ def make_current_goal_completion_audit_outputs(
     kokorowski_fig3_clears_g11 = bool(
         _truthy(_first_value(kokorowski_fig3_decay, "clears_g11", False))
     )
+    kokorowski_fig3_branch_swap = bool(
+        _truthy(
+            _first_value(
+                kokorowski_fig3_decay,
+                "matched_curve_beats_branch_swap_nulls",
+                False,
+            )
+        )
+    )
+    kokorowski_fig3_null_margin = float(
+        _first_value(
+            kokorowski_fig3_decay,
+            "min_wrong_minus_matched_log10_rmse",
+            np.nan,
+        )
+    )
     kokorowski_stress_pass = bool(
         math.isfinite(kokorowski_joint)
         and kokorowski_joint >= 0.80
@@ -8072,6 +8088,8 @@ def make_current_goal_completion_audit_outputs(
                 f"provenance_blocker={kokorowski_provenance_blocker}; "
                 f"fig3_status={kokorowski_fig3_status}; "
                 f"fig3_log10_rmse={kokorowski_fig3_log_rmse:.3f}; "
+                f"fig3_branch_swap_pass={kokorowski_fig3_branch_swap}; "
+                f"fig3_null_margin={kokorowski_fig3_null_margin:.3f}; "
                 f"fig3_clears_g11={kokorowski_fig3_clears_g11}; "
                 f"stress_pass={kokorowski_stress_pass}"
             ),
@@ -8119,6 +8137,8 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_calibration_provenance_blocker": kokorowski_provenance_blocker,
                 "kokorowski_fig3_decay_status": kokorowski_fig3_status,
                 "kokorowski_fig3_decay_log10_rmse": kokorowski_fig3_log_rmse,
+                "kokorowski_fig3_branch_swap_null_pass": kokorowski_fig3_branch_swap,
+                "kokorowski_fig3_min_wrong_minus_matched_log10_rmse": kokorowski_fig3_null_margin,
                 "kokorowski_fig3_decay_clears_g11": kokorowski_fig3_clears_g11,
                 "kokorowski_stress_pass": kokorowski_stress_pass,
                 "verdict": (
@@ -8155,7 +8175,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski max SE scale with joint pass >= 0.80: {kokorowski_max_se_scale if math.isfinite(kokorowski_max_se_scale) else "not available"}
 - Kokorowski calibration provenance status: {kokorowski_provenance_status}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
-- Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
+- Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; branch-swap pass: {kokorowski_fig3_branch_swap}; null margin: {kokorowski_fig3_null_margin if math.isfinite(kokorowski_fig3_null_margin) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
 - Kokorowski stress pass: {kokorowski_stress_pass}
 
 ## Failed Or Open Requirements
@@ -10516,6 +10536,74 @@ def make_kokorowski_fig3_decay_check_outputs(
             )
 
     residuals = pd.DataFrame(residual_rows)
+    null_rows = []
+    for branch, branch_data in data.groupby("branch", sort=True):
+        for curve_branch, branch_curve in curves.groupby("branch", sort=True):
+            branch_curve = branch_curve.sort_values("nbar")
+            curve_x = branch_curve["nbar"].to_numpy(dtype=float)
+            curve_y = np.log10(
+                np.clip(branch_curve["visibility"].to_numpy(dtype=float), EPS, None)
+            )
+            residual_values = []
+            for row in branch_data.to_dict("records"):
+                observed_log = math.log10(max(float(row["visibility"]), EPS))
+                predicted_log = float(np.interp(float(row["nbar"]), curve_x, curve_y))
+                residual_values.append(observed_log - predicted_log)
+            residual_array = np.asarray(residual_values, dtype=float)
+            null_rows.append(
+                {
+                    "branch": branch,
+                    "tested_curve_branch": curve_branch,
+                    "is_matched_curve": bool(branch == curve_branch),
+                    "log10_rmse": float(np.sqrt(np.mean(residual_array**2))),
+                    "median_abs_log10_residual": float(np.median(np.abs(residual_array))),
+                    "n_points": int(len(residual_array)),
+                }
+            )
+    null_controls = pd.DataFrame(null_rows)
+    matched_nulls = null_controls[null_controls["is_matched_curve"]].copy()
+    wrong_nulls = null_controls[~null_controls["is_matched_curve"]].copy()
+    if wrong_nulls.empty:
+        null_summary = pd.DataFrame(
+            columns=[
+                "branch",
+                "matched_log10_rmse",
+                "best_wrong_curve_branch",
+                "best_wrong_log10_rmse",
+                "wrong_minus_matched_log10_rmse",
+                "matched_beats_wrong_curves",
+            ]
+        )
+    else:
+        best_wrong = (
+            wrong_nulls.sort_values(["branch", "log10_rmse"])
+            .groupby("branch", as_index=False)
+            .first()
+            .rename(
+                columns={
+                    "tested_curve_branch": "best_wrong_curve_branch",
+                    "log10_rmse": "best_wrong_log10_rmse",
+                }
+            )
+        )
+        null_summary = (
+            matched_nulls[["branch", "log10_rmse"]]
+            .rename(columns={"log10_rmse": "matched_log10_rmse"})
+            .merge(
+                best_wrong[
+                    ["branch", "best_wrong_curve_branch", "best_wrong_log10_rmse"]
+                ],
+                on="branch",
+                how="left",
+            )
+        )
+        null_summary["wrong_minus_matched_log10_rmse"] = (
+            null_summary["best_wrong_log10_rmse"]
+            - null_summary["matched_log10_rmse"]
+        )
+        null_summary["matched_beats_wrong_curves"] = (
+            null_summary["wrong_minus_matched_log10_rmse"] > 0.0
+        )
     branch_summary = (
         residuals.groupby("branch", as_index=False)
         .agg(
@@ -10536,9 +10624,13 @@ def make_kokorowski_fig3_decay_check_outputs(
         )
     )
     max_abs_log = float(residuals["abs_log10_visibility_residual"].max())
+    matched_beats_all_wrong = bool(null_summary["matched_beats_wrong_curves"].all())
+    min_null_margin = float(null_summary["wrong_minus_matched_log10_rmse"].min())
     status = (
         "fig3 public-vector consistency check passes as supporting evidence"
-        if combined_log_rmse <= 0.08 and max_abs_log <= 0.20
+        if combined_log_rmse <= 0.08
+        and max_abs_log <= 0.20
+        and matched_beats_all_wrong
         else "fig3 public-vector consistency check is too loose for support"
     )
     summary = pd.DataFrame(
@@ -10551,6 +10643,8 @@ def make_kokorowski_fig3_decay_check_outputs(
                 "theory_curve_point_count": int(len(curves)),
                 "combined_log10_visibility_rmse": combined_log_rmse,
                 "max_abs_log10_visibility_residual": max_abs_log,
+                "matched_curve_beats_branch_swap_nulls": matched_beats_all_wrong,
+                "min_wrong_minus_matched_log10_rmse": min_null_margin,
                 "clears_g11": False,
                 "g11_boundary": "supporting Kokorowski public-source consistency only; same experiment and not a second independent closure",
             }
@@ -10578,6 +10672,14 @@ def make_kokorowski_fig3_decay_check_outputs(
     data.to_csv(output_dir / "kokorowski_fig3_decay_digitized_points.csv", index=False)
     curves.to_csv(output_dir / "kokorowski_fig3_decay_theory_curves.csv", index=False)
     residuals.to_csv(output_dir / "kokorowski_fig3_decay_residuals.csv", index=False)
+    null_controls.to_csv(
+        output_dir / "kokorowski_fig3_decay_branch_swap_nulls.csv",
+        index=False,
+    )
+    null_summary.to_csv(
+        output_dir / "kokorowski_fig3_decay_branch_swap_null_summary.csv",
+        index=False,
+    )
     branch_summary.to_csv(
         output_dir / "kokorowski_fig3_decay_branch_summary.csv",
         index=False,
@@ -10593,6 +10695,16 @@ def make_kokorowski_fig3_decay_check_outputs(
             max_res=float(row["max_abs_log10_residual"]),
         )
         for _, row in branch_summary.iterrows()
+    )
+    null_lines = "\n".join(
+        "- **{branch}**: matched log10 RMSE {matched:.4f}; best wrong curve `{wrong}` RMSE {wrong_rmse:.4f}; margin {margin:.4f}".format(
+            branch=row["branch"],
+            matched=float(row["matched_log10_rmse"]),
+            wrong=row["best_wrong_curve_branch"],
+            wrong_rmse=float(row["best_wrong_log10_rmse"]),
+            margin=float(row["wrong_minus_matched_log10_rmse"]),
+        )
+        for _, row in null_summary.iterrows()
     )
     report = f"""# Kokorowski Fig. 3 Public-Vector Decay Check
 
@@ -10612,9 +10724,15 @@ This check extracts Kokorowski Fig. 3 data markers and paper theory curves direc
 - Theory-curve vertices extracted: {int(len(curves))}
 - Combined log10 visibility RMSE: {combined_log_rmse:.4f}
 - Max abs log10 visibility residual: {max_abs_log:.4f}
+- Matched curve beats branch-swap nulls: {matched_beats_all_wrong}
+- Minimum wrong-minus-matched log10 RMSE margin: {min_null_margin:.4f}
 - Clears G11: False
 
 {branch_lines}
+
+## Branch-Swap Null
+
+{null_lines}
 
 ## Interpretation
 

@@ -989,6 +989,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             {
                 "status": "fig3 public-vector consistency check passes as supporting evidence",
                 "combined_log10_visibility_rmse": 0.046,
+                "matched_curve_beats_branch_swap_nulls": True,
+                "min_wrong_minus_matched_log10_rmse": 0.247,
                 "clears_g11": False,
             }
         ]
@@ -1027,6 +1029,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "calibration provenance extracted"
     )
     assert summary["kokorowski_fig3_decay_status"].iloc[0].startswith("fig3")
+    assert bool(summary["kokorowski_fig3_branch_swap_null_pass"].iloc[0]) is True
     assert bool(summary["kokorowski_fig3_decay_clears_g11"].iloc[0]) is False
     assert "second_independent_distribution_to_visibility_validation" in set(
         checklist["requirement"]
@@ -1037,6 +1040,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "fig3_log10_rmse=0.046" in second_row["note"]
+    assert "fig3_branch_swap_pass=True" in second_row["note"]
+    assert "fig3_null_margin=0.247" in second_row["note"]
     assert "fig3_clears_g11=False" in second_row["note"]
     assert "raw beam-deflection/broadening calibration data" in second_row["note"]
     assert (output_dir / "current_goal_completion_audit.md").exists()
@@ -1490,9 +1495,15 @@ def test_kokorowski_fig3_decay_check_outputs_and_cli(tmp_path):
     assert int(summary["data_point_count"].iloc[0]) >= 20
     assert int(summary["theory_curve_point_count"].iloc[0]) >= 100
     assert bool(summary["clears_g11"].iloc[0]) is False
+    assert bool(summary["matched_curve_beats_branch_swap_nulls"].iloc[0]) is True
+    assert float(summary["min_wrong_minus_matched_log10_rmse"].iloc[0]) > 0.0
     assert not branch_summary.empty
     assert not residuals.empty
     assert (output_dir / "kokorowski_fig3_decay_check_report.md").exists()
+    assert (output_dir / "kokorowski_fig3_decay_branch_swap_nulls.csv").exists()
+    assert (
+        output_dir / "kokorowski_fig3_decay_branch_swap_null_summary.csv"
+    ).exists()
     assert (data_dir / "KOKOROWSKI_2001_FIG3_DECAY_DIGITIZED.csv").exists()
     assert (data_dir / "KOKOROWSKI_2001_FIG3_DECAY_THEORY_CURVES.csv").exists()
 
@@ -1510,6 +1521,9 @@ def test_kokorowski_fig3_decay_check_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "kokorowski_fig3_decay_summary.csv").exists()
+    assert (
+        cli_output_dir / "kokorowski_fig3_decay_branch_swap_null_summary.csv"
+    ).exists()
 
 
 def test_kokorowski_stress_outputs_and_cli(tmp_path):

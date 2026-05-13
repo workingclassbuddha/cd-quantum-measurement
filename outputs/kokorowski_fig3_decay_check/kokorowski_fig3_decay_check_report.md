@@ -16,11 +16,19 @@ This check extracts Kokorowski Fig. 3 data markers and paper theory curves direc
 - Theory-curve vertices extracted: 276
 - Combined log10 visibility RMSE: 0.0458
 - Max abs log10 visibility residual: 0.1192
+- Matched curve beats branch-swap nulls: True
+- Minimum wrong-minus-matched log10 RMSE margin: 0.2472
 - Clears G11: False
 
 - **triangle_d_over_lambda_006** (`d/lambda=0.06`): 9 points; log10 RMSE 0.0268; max abs residual 0.0600
 - **diamond_d_over_lambda_013** (`d/lambda=0.13`): 11 points; log10 RMSE 0.0550; max abs residual 0.1192
 - **circle_d_over_lambda_016** (`d/lambda=0.16`): 8 points; log10 RMSE 0.0488; max abs residual 0.0867
+
+## Branch-Swap Null
+
+- **circle_d_over_lambda_016**: matched log10 RMSE 0.0488; best wrong curve `diamond_d_over_lambda_013` RMSE 0.2959; margin 0.2472
+- **diamond_d_over_lambda_013**: matched log10 RMSE 0.0550; best wrong curve `circle_d_over_lambda_016` RMSE 0.3248; margin 0.2698
+- **triangle_d_over_lambda_006**: matched log10 RMSE 0.0268; best wrong curve `diamond_d_over_lambda_013` RMSE 0.4506; margin 0.4238
 
 ## Interpretation
 
