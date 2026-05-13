@@ -1,0 +1,37 @@
+{
+  "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+  "source_url": "https://arxiv.org/abs/quant-ph/0009044",
+  "doi": "https://doi.org/10.1103/PhysRevLett.86.2191",
+  "source_file": "outputs/tmp/kokorowski_source/extracted/figure3.eps",
+  "source_file_sha256": "485b2c0acad7e68ef40d3b43eb7ff20601bd1ace42a6736e109e1426008656ba",
+  "source_tex_sha256": "4f436a938adf03dfe478a0cc11f780fafb01d4975a5e61f23f617bf6c9566647",
+  "axis_calibration": {
+    "x_min_px": 170.52,
+    "x_max_px": 456.5996,
+    "x_min_nbar": 0.0,
+    "x_max_nbar": 14.0,
+    "y_one_px": 549.96,
+    "y_tenth_px": 379.3203,
+    "y_one_visibility": 1.0,
+    "y_tenth_visibility": 0.1
+  },
+  "branch_map": {
+    "triangle_d_over_lambda_006": {
+      "d_over_lambda": 0.06,
+      "marker": "triangle",
+      "theory_rank": 0
+    },
+    "diamond_d_over_lambda_013": {
+      "d_over_lambda": 0.13,
+      "marker": "diamond",
+      "theory_rank": 1
+    },
+    "circle_d_over_lambda_016": {
+      "d_over_lambda": 0.16,
+      "marker": "circle",
+      "theory_rank": 2
+    }
+  },
+  "extraction_method": "eps_vector_marker_and_path_extraction_v1",
+  "provenance_note": "Fig. 3 checks contrast decay versus mean scattered photons at fixed path separations. It is a public-source consistency check for Kokorowski, not an independent second-experiment G11 closure."
+}

@@ -7931,6 +7931,9 @@ def make_current_goal_completion_audit_outputs(
     kokorowski_calibration_provenance_summary_csv: Path = Path(
         "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv"
     ),
+    kokorowski_fig3_decay_summary_csv: Path = Path(
+        "outputs/kokorowski_fig3_decay_check/kokorowski_fig3_decay_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7945,6 +7948,7 @@ def make_current_goal_completion_audit_outputs(
     kokorowski_calibration_provenance = _read_optional_metric_csv(
         kokorowski_calibration_provenance_summary_csv
     )
+    kokorowski_fig3_decay = _read_optional_metric_csv(kokorowski_fig3_decay_summary_csv)
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
 
@@ -7998,6 +8002,19 @@ def make_current_goal_completion_audit_outputs(
             ),
         )
     )
+    kokorowski_fig3_status = str(
+        _first_value(kokorowski_fig3_decay, "status", "not available")
+    )
+    kokorowski_fig3_log_rmse = float(
+        _first_value(
+            kokorowski_fig3_decay,
+            "combined_log10_visibility_rmse",
+            np.nan,
+        )
+    )
+    kokorowski_fig3_clears_g11 = bool(
+        _truthy(_first_value(kokorowski_fig3_decay, "clears_g11", False))
+    )
     kokorowski_stress_pass = bool(
         math.isfinite(kokorowski_joint)
         and kokorowski_joint >= 0.80
@@ -8041,7 +8058,8 @@ def make_current_goal_completion_audit_outputs(
             "evidence_path": (
                 f"{g11_summary_csv}; {kokorowski_stress_summary_csv}; "
                 f"{kokorowski_kappa_profile_summary_csv}; "
-                f"{kokorowski_calibration_provenance_summary_csv}"
+                f"{kokorowski_calibration_provenance_summary_csv}; "
+                f"{kokorowski_fig3_decay_summary_csv}"
             ),
             "status": "fail",
             "passed": second_validation_found,
@@ -8052,6 +8070,9 @@ def make_current_goal_completion_audit_outputs(
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
                 f"provenance_status={kokorowski_provenance_status}; "
                 f"provenance_blocker={kokorowski_provenance_blocker}; "
+                f"fig3_status={kokorowski_fig3_status}; "
+                f"fig3_log10_rmse={kokorowski_fig3_log_rmse:.3f}; "
+                f"fig3_clears_g11={kokorowski_fig3_clears_g11}; "
                 f"stress_pass={kokorowski_stress_pass}"
             ),
         },
@@ -8096,6 +8117,9 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_max_kappa_se_scale_with_joint_pass_ge_080": kokorowski_max_se_scale,
                 "kokorowski_calibration_provenance_status": kokorowski_provenance_status,
                 "kokorowski_calibration_provenance_blocker": kokorowski_provenance_blocker,
+                "kokorowski_fig3_decay_status": kokorowski_fig3_status,
+                "kokorowski_fig3_decay_log10_rmse": kokorowski_fig3_log_rmse,
+                "kokorowski_fig3_decay_clears_g11": kokorowski_fig3_clears_g11,
                 "kokorowski_stress_pass": kokorowski_stress_pass,
                 "verdict": (
                     "objective complete"
@@ -8131,6 +8155,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski max SE scale with joint pass >= 0.80: {kokorowski_max_se_scale if math.isfinite(kokorowski_max_se_scale) else "not available"}
 - Kokorowski calibration provenance status: {kokorowski_provenance_status}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
+- Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
 - Kokorowski stress pass: {kokorowski_stress_pass}
 
 ## Failed Or Open Requirements
@@ -10237,6 +10262,52 @@ KOKOROWSKI_FIG4_CALIBRATION = {
 }
 
 
+KOKOROWSKI_FIG3_CALIBRATION = {
+    "x_min_px": 170.52,
+    "x_max_px": 456.5996,
+    "x_min_nbar": 0.0,
+    "x_max_nbar": 14.0,
+    "y_one_px": 549.96,
+    "y_tenth_px": 379.3203,
+    "y_one_visibility": 1.0,
+    "y_tenth_visibility": 0.1,
+}
+
+
+KOKOROWSKI_FIG3_BRANCHES = {
+    "triangle_d_over_lambda_006": {
+        "d_over_lambda": 0.06,
+        "marker": "triangle",
+        "theory_rank": 0,
+    },
+    "diamond_d_over_lambda_013": {
+        "d_over_lambda": 0.13,
+        "marker": "diamond",
+        "theory_rank": 1,
+    },
+    "circle_d_over_lambda_016": {
+        "d_over_lambda": 0.16,
+        "marker": "circle",
+        "theory_rank": 2,
+    },
+}
+
+
+def kokorowski_fig3_pixel_to_data(x_px: float, y_px: float):
+    cal = KOKOROWSKI_FIG3_CALIBRATION
+    nbar = cal["x_min_nbar"] + (
+        (float(x_px) - cal["x_min_px"])
+        / (cal["x_max_px"] - cal["x_min_px"])
+        * (cal["x_max_nbar"] - cal["x_min_nbar"])
+    )
+    log_visibility = math.log10(cal["y_one_visibility"]) + (
+        (float(y_px) - cal["y_one_px"])
+        / (cal["y_one_px"] - cal["y_tenth_px"])
+    )
+    visibility = 10.0**log_visibility
+    return float(nbar), float(np.clip(visibility, 0.0, 1.2))
+
+
 def kokorowski_fig4_pixel_to_data(x_px: float, y_px: float):
     cal = KOKOROWSKI_FIG4_CALIBRATION
     d = cal["x_min_d_over_lambda"] + (
@@ -10250,6 +10321,317 @@ def kokorowski_fig4_pixel_to_data(x_px: float, y_px: float):
         * (cal["y_top_visibility"] - cal["y_bottom_visibility"])
     )
     return float(d), float(visibility)
+
+
+def _parse_kokorowski_fig3_long_theory_paths(text: str):
+    path_pattern = re.compile(
+        r"((?:[0-9.]+\s+[0-9.]+\s+[ml]\n){20,})S",
+        flags=re.MULTILINE,
+    )
+    candidates = []
+    for match in path_pattern.finditer(text):
+        points = []
+        for x_str, y_str, cmd in re.findall(
+            r"([0-9.]+)\s+([0-9.]+)\s+([ml])",
+            match.group(1),
+        ):
+            x_px = float(x_str)
+            y_px = float(y_str)
+            if 165.0 <= x_px <= 480.0 and 280.0 <= y_px <= 560.0:
+                nbar, visibility = kokorowski_fig3_pixel_to_data(x_px, y_px)
+                points.append(
+                    {
+                        "pixel_x": x_px,
+                        "pixel_y": y_px,
+                        "nbar": nbar,
+                        "visibility": visibility,
+                    }
+                )
+        if len(points) >= 20 and abs(points[0]["nbar"]) < 0.2:
+            candidates.append(points)
+    candidates = sorted(
+        candidates,
+        key=lambda pts: pts[-1]["visibility"],
+        reverse=True,
+    )
+    branches_by_rank = {
+        spec["theory_rank"]: branch
+        for branch, spec in KOKOROWSKI_FIG3_BRANCHES.items()
+    }
+    rows = []
+    for rank, points in enumerate(candidates[: len(branches_by_rank)]):
+        branch = branches_by_rank[rank]
+        for point_index, point in enumerate(sorted(points, key=lambda row: row["nbar"])):
+            rows.append(
+                {
+                    "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                    "figure": "Figure 3",
+                    "series_type": "paper_theory_curve",
+                    "branch": branch,
+                    "marker": KOKOROWSKI_FIG3_BRANCHES[branch]["marker"],
+                    "d_over_lambda": KOKOROWSKI_FIG3_BRANCHES[branch][
+                        "d_over_lambda"
+                    ],
+                    "point_index": int(point_index),
+                    "nbar": point["nbar"],
+                    "visibility": point["visibility"],
+                    "pixel_x": point["pixel_x"],
+                    "pixel_y": point["pixel_y"],
+                    "extraction_method": "eps_vector_path_extraction_v1",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def _parse_kokorowski_fig3_marker_centers(text: str):
+    triangle_centers = [
+        (172.9199, 549.0),
+        (406.2002, 485.8799),
+        (343.5596, 507.48),
+        (317.6396, 509.6401),
+        (278.2798, 524.04),
+        (236.52, 533.1602),
+        (210.6001, 537.96),
+        (195.7202, 541.7998),
+        (170.52, 549.96),
+    ]
+    diamond_pattern = re.compile(
+        r"([0-9.]+)\s+([0-9.]+)\s+m\n"
+        r"[0-9.]+\s+[0-9.]+\s+l\n"
+        r"[0-9.]+\s+[0-9.]+\s+l\n"
+        r"[0-9.]+\s+[0-9.]+\s+l\n"
+        r"\1\s+\2\s+l\ns",
+        flags=re.MULTILINE,
+    )
+    circle_pattern = re.compile(
+        r"([0-9.]+)\s+([0-9.]+)\s+m\n"
+        r"[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+([0-9.]+)\s+([0-9.]+)\s+c\n"
+        r"[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+c\n"
+        r"[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+c\n"
+        r"[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+[0-9.]+\s+\1\s+\2\s+c\nS",
+        flags=re.MULTILINE,
+    )
+
+    centers_by_branch = {
+        "triangle_d_over_lambda_006": triangle_centers,
+        "diamond_d_over_lambda_013": [
+            (float(match.group(1)), float(match.group(2)))
+            for match in diamond_pattern.finditer(text)
+            if 160.0 <= float(match.group(1)) <= 430.0
+            and 330.0 <= float(match.group(2)) <= 555.0
+        ],
+        "circle_d_over_lambda_016": [
+            (float(match.group(3)), float(match.group(4)))
+            for match in circle_pattern.finditer(text)
+            if 160.0 <= float(match.group(3)) <= 310.0
+            and 340.0 <= float(match.group(4)) <= 555.0
+        ],
+    }
+    rows = []
+    for branch, centers in centers_by_branch.items():
+        unique_centers = sorted(
+            {
+                (round(float(x), 4), round(float(y), 4))
+                for x, y in centers
+                if 165.0 <= float(x) <= 430.0 and 330.0 <= float(y) <= 560.0
+            }
+        )
+        for point_index, (x_px, y_px) in enumerate(unique_centers):
+            nbar, visibility = kokorowski_fig3_pixel_to_data(x_px, y_px)
+            rows.append(
+                {
+                    "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                    "figure": "Figure 3",
+                    "series_type": "digitized_data_point",
+                    "branch": branch,
+                    "marker": KOKOROWSKI_FIG3_BRANCHES[branch]["marker"],
+                    "d_over_lambda": KOKOROWSKI_FIG3_BRANCHES[branch][
+                        "d_over_lambda"
+                    ],
+                    "point_index": int(point_index),
+                    "nbar": nbar,
+                    "visibility": visibility,
+                    "visibility_se_log10": 0.03,
+                    "pixel_x": x_px,
+                    "pixel_y": y_px,
+                    "extraction_method": "eps_vector_marker_extraction_v1",
+                }
+            )
+    return pd.DataFrame(rows).sort_values(["branch", "nbar"]).reset_index(drop=True)
+
+
+def parse_kokorowski_figure3_eps(eps_path: Path):
+    """Extract Fig. 3 marker centers and paper theory curves from EPS vectors."""
+
+    text = Path(eps_path).read_text(encoding="latin-1", errors="ignore")
+    data = _parse_kokorowski_fig3_marker_centers(text)
+    curves = _parse_kokorowski_fig3_long_theory_paths(text)
+    if data.empty or curves.empty:
+        return data, curves
+    data["source_file"] = str(eps_path)
+    curves["source_file"] = str(eps_path)
+    return data, curves
+
+
+def make_kokorowski_fig3_decay_check_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    source = resolve_kokorowski_source_dir(source_dir)
+    if source is None:
+        raise ValueError(
+            "Kokorowski source dir not found. Expected decoh.tex and figure3.eps."
+        )
+    eps_path = Path(source) / "figure3.eps"
+    data, curves = parse_kokorowski_figure3_eps(eps_path)
+    if data.empty or curves.empty:
+        raise ValueError(f"No Kokorowski Fig. 3 data/curves extracted from {eps_path}")
+
+    residual_rows = []
+    for branch, branch_data in data.groupby("branch", sort=True):
+        branch_curve = curves[curves["branch"] == branch].sort_values("nbar")
+        if branch_curve.empty:
+            continue
+        curve_x = branch_curve["nbar"].to_numpy(dtype=float)
+        curve_y = np.log10(
+            np.clip(branch_curve["visibility"].to_numpy(dtype=float), EPS, None)
+        )
+        for row in branch_data.to_dict("records"):
+            observed_log = math.log10(max(float(row["visibility"]), EPS))
+            predicted_log = float(np.interp(float(row["nbar"]), curve_x, curve_y))
+            residual_rows.append(
+                {
+                    "branch": branch,
+                    "marker": row["marker"],
+                    "d_over_lambda": row["d_over_lambda"],
+                    "nbar": row["nbar"],
+                    "visibility_observed": row["visibility"],
+                    "visibility_predicted_from_paper_curve": 10.0**predicted_log,
+                    "log10_visibility_residual": observed_log - predicted_log,
+                    "abs_log10_visibility_residual": abs(observed_log - predicted_log),
+                }
+            )
+
+    residuals = pd.DataFrame(residual_rows)
+    branch_summary = (
+        residuals.groupby("branch", as_index=False)
+        .agg(
+            d_over_lambda=("d_over_lambda", "first"),
+            n_points=("nbar", "count"),
+            log10_rmse=("log10_visibility_residual", lambda s: float(np.sqrt(np.mean(s.to_numpy(dtype=float) ** 2)))),
+            median_abs_log10_residual=("abs_log10_visibility_residual", "median"),
+            max_abs_log10_residual=("abs_log10_visibility_residual", "max"),
+        )
+        .sort_values("d_over_lambda")
+        .reset_index(drop=True)
+    )
+    combined_log_rmse = float(
+        np.sqrt(
+            np.mean(
+                residuals["log10_visibility_residual"].to_numpy(dtype=float) ** 2
+            )
+        )
+    )
+    max_abs_log = float(residuals["abs_log10_visibility_residual"].max())
+    status = (
+        "fig3 public-vector consistency check passes as supporting evidence"
+        if combined_log_rmse <= 0.08 and max_abs_log <= 0.20
+        else "fig3 public-vector consistency check is too loose for support"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "status": status,
+                "input_eps": str(eps_path),
+                "source_file_sha256": sha256_file(eps_path),
+                "data_point_count": int(len(data)),
+                "theory_curve_point_count": int(len(curves)),
+                "combined_log10_visibility_rmse": combined_log_rmse,
+                "max_abs_log10_visibility_residual": max_abs_log,
+                "clears_g11": False,
+                "g11_boundary": "supporting Kokorowski public-source consistency only; same experiment and not a second independent closure",
+            }
+        ]
+    )
+
+    data.to_csv(data_dir / "KOKOROWSKI_2001_FIG3_DECAY_DIGITIZED.csv", index=False)
+    curves.to_csv(data_dir / "KOKOROWSKI_2001_FIG3_DECAY_THEORY_CURVES.csv", index=False)
+    metadata = {
+        "study_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+        "source_url": KOKOROWSKI_PAPER_URL,
+        "doi": KOKOROWSKI_DOI,
+        "source_file": str(eps_path),
+        "source_file_sha256": sha256_file(eps_path),
+        "source_tex_sha256": sha256_file(Path(source) / "decoh.tex"),
+        "axis_calibration": KOKOROWSKI_FIG3_CALIBRATION,
+        "branch_map": KOKOROWSKI_FIG3_BRANCHES,
+        "extraction_method": "eps_vector_marker_and_path_extraction_v1",
+        "provenance_note": "Fig. 3 checks contrast decay versus mean scattered photons at fixed path separations. It is a public-source consistency check for Kokorowski, not an independent second-experiment G11 closure.",
+    }
+    (data_dir / "KOKOROWSKI_2001_FIG3_DECAY_DIGITIZATION.json").write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+    data.to_csv(output_dir / "kokorowski_fig3_decay_digitized_points.csv", index=False)
+    curves.to_csv(output_dir / "kokorowski_fig3_decay_theory_curves.csv", index=False)
+    residuals.to_csv(output_dir / "kokorowski_fig3_decay_residuals.csv", index=False)
+    branch_summary.to_csv(
+        output_dir / "kokorowski_fig3_decay_branch_summary.csv",
+        index=False,
+    )
+    summary.to_csv(output_dir / "kokorowski_fig3_decay_summary.csv", index=False)
+
+    branch_lines = "\n".join(
+        "- **{branch}** (`d/lambda={d:.2f}`): {n} points; log10 RMSE {rmse:.4f}; max abs residual {max_res:.4f}".format(
+            branch=row["branch"],
+            d=float(row["d_over_lambda"]),
+            n=int(row["n_points"]),
+            rmse=float(row["log10_rmse"]),
+            max_res=float(row["max_abs_log10_residual"]),
+        )
+        for _, row in branch_summary.iterrows()
+    )
+    report = f"""# Kokorowski Fig. 3 Public-Vector Decay Check
+
+Status: {status}
+
+This check extracts Kokorowski Fig. 3 data markers and paper theory curves directly from the public EPS source. It tests whether the separate contrast-versus-mean-photon-number family is internally consistent with the paper's plotted theory curves.
+
+- Source URL: {KOKOROWSKI_PAPER_URL}
+- DOI: {KOKOROWSKI_DOI}
+- EPS: `{eps_path}`
+- EPS SHA256: `{sha256_file(eps_path)}`
+- Extraction method: `eps_vector_marker_and_path_extraction_v1`
+
+## Result
+
+- Data points extracted: {int(len(data))}
+- Theory-curve vertices extracted: {int(len(curves))}
+- Combined log10 visibility RMSE: {combined_log_rmse:.4f}
+- Max abs log10 visibility residual: {max_abs_log:.4f}
+- Clears G11: False
+
+{branch_lines}
+
+## Interpretation
+
+This is useful because it attacks Kokorowski from another public vector surface instead of asking authors for tables. It does not close the missing second-validation gate by itself: Fig. 3 is the same experiment as Fig. 4, and it compares digitized points to plotted paper curves rather than independently re-deriving every calibration input from raw beam-broadening data.
+
+## Boundary
+
+- No collapse solution.
+- No beyond-standard-quantum-mechanics claim.
+- No Lambda/Gamma/Theta product-law validation.
+- No G11 closure from this artifact alone.
+"""
+    (output_dir / "kokorowski_fig3_decay_check_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, branch_summary, residuals
 
 
 def parse_kokorowski_figure4_eps(eps_path: Path):
@@ -16432,6 +16814,14 @@ def run_digitize_kokorowski_multiphoton(
     make_kokorowski_multiphoton_digitization_outputs(source_dir, output_dir, data_dir)
 
 
+def run_check_kokorowski_fig3_decay(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_kokorowski_fig3_decay_check_outputs(source_dir, output_dir, data_dir)
+
+
 def run_analyze_kokorowski_multiphoton(input_csv: Path, output_dir: Path):
     make_kokorowski_multiphoton_analysis_outputs(input_csv, output_dir)
 
@@ -17052,6 +17442,16 @@ def build_parser():
         default="outputs/kokorowski_multiphoton_digitization",
     )
     kokorowski_digitize.add_argument("--data-dir", default="data/extracted")
+    kokorowski_fig3 = sub.add_parser(
+        "check-kokorowski-fig3-decay",
+        help="extract Kokorowski Fig. 3 EPS vectors as a supporting public-source consistency check",
+    )
+    kokorowski_fig3.add_argument("--source-dir", default=None)
+    kokorowski_fig3.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_fig3_decay_check",
+    )
+    kokorowski_fig3.add_argument("--data-dir", default="data/extracted")
     kokorowski_analyze = sub.add_parser(
         "analyze-kokorowski-multiphoton",
         help="test Kokorowski Fig. 4 independent multiphoton parameters against visibility",
@@ -17382,6 +17782,13 @@ def main(argv=None):
         elif command == "digitize-kokorowski-multiphoton":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_digitize_kokorowski_multiphoton(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "check-kokorowski-fig3-decay":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_check_kokorowski_fig3_decay(
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),

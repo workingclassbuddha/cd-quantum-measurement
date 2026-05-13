@@ -77,11 +77,13 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_hochrainer_momentum_correlation_scout_outputs,
     make_kokorowski_multiphoton_scout_outputs,
     make_kokorowski_multiphoton_digitization_outputs,
+    make_kokorowski_fig3_decay_check_outputs,
     make_kokorowski_multiphoton_analysis_outputs,
     make_kokorowski_multiphoton_stress_outputs,
     make_kokorowski_kappa_uncertainty_profile_outputs,
     make_kokorowski_calibration_provenance_outputs,
     kokorowski_fig4_pixel_to_data,
+    kokorowski_fig3_pixel_to_data,
     kokorowski_visibility_from_kappa,
     make_hornberger_collisional_scout_outputs,
     make_record_bandwidth_synthesis_outputs,
@@ -982,6 +984,15 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    fig3_summary = pd.DataFrame(
+        [
+            {
+                "status": "fig3 public-vector consistency check passes as supporting evidence",
+                "combined_log10_visibility_rmse": 0.046,
+                "clears_g11": False,
+            }
+        ]
+    )
     paths = {}
     for name, frame in [
         ("scorecard", scorecard),
@@ -990,6 +1001,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("author", author_summary),
         ("kappa", kappa_profile),
         ("provenance", provenance_summary),
+        ("fig3", fig3_summary),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -1003,6 +1015,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         author_validation_summary_csv=paths["author"],
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
         kokorowski_calibration_provenance_summary_csv=paths["provenance"],
+        kokorowski_fig3_decay_summary_csv=paths["fig3"],
     )
     assert not checklist.empty
     assert not bool(summary["objective_achieved"].iloc[0])
@@ -1013,6 +1026,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         summary["kokorowski_calibration_provenance_status"].iloc[0]
         == "calibration provenance extracted"
     )
+    assert summary["kokorowski_fig3_decay_status"].iloc[0].startswith("fig3")
+    assert bool(summary["kokorowski_fig3_decay_clears_g11"].iloc[0]) is False
     assert "second_independent_distribution_to_visibility_validation" in set(
         checklist["requirement"]
     )
@@ -1021,6 +1036,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "second_independent_distribution_to_visibility_validation"
     ].iloc[0]
     assert "full_reported_se_joint=0.417" in second_row["note"]
+    assert "fig3_log10_rmse=0.046" in second_row["note"]
+    assert "fig3_clears_g11=False" in second_row["note"]
     assert "raw beam-deflection/broadening calibration data" in second_row["note"]
     assert (output_dir / "current_goal_completion_audit.md").exists()
 
@@ -1449,6 +1466,50 @@ def test_kokorowski_digitization_and_analysis_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_analysis_dir / "kokorowski_multiphoton_report.md").exists()
+
+
+def test_kokorowski_fig3_decay_check_outputs_and_cli(tmp_path):
+    source_dir = Path("outputs/tmp/kokorowski_source/extracted")
+    if not (source_dir / "figure3.eps").exists():
+        pytest.skip("Kokorowski source package not available")
+
+    n0, v0 = kokorowski_fig3_pixel_to_data(170.52, 549.96)
+    n14, v01 = kokorowski_fig3_pixel_to_data(456.5996, 379.3203)
+    assert n0 == pytest.approx(0.0)
+    assert n14 == pytest.approx(14.0)
+    assert v0 == pytest.approx(1.0)
+    assert v01 == pytest.approx(0.1)
+
+    output_dir = tmp_path / "kokorowski_fig3"
+    data_dir = tmp_path / "data"
+    summary, branch_summary, residuals = make_kokorowski_fig3_decay_check_outputs(
+        source_dir,
+        output_dir,
+        data_dir,
+    )
+    assert int(summary["data_point_count"].iloc[0]) >= 20
+    assert int(summary["theory_curve_point_count"].iloc[0]) >= 100
+    assert bool(summary["clears_g11"].iloc[0]) is False
+    assert not branch_summary.empty
+    assert not residuals.empty
+    assert (output_dir / "kokorowski_fig3_decay_check_report.md").exists()
+    assert (data_dir / "KOKOROWSKI_2001_FIG3_DECAY_DIGITIZED.csv").exists()
+    assert (data_dir / "KOKOROWSKI_2001_FIG3_DECAY_THEORY_CURVES.csv").exists()
+
+    cli_output_dir = tmp_path / "kokorowski_fig3_cli"
+    cli_data_dir = tmp_path / "data_cli"
+    main(
+        [
+            "check-kokorowski-fig3-decay",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(cli_data_dir),
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_fig3_decay_summary.csv").exists()
 
 
 def test_kokorowski_stress_outputs_and_cli(tmp_path):

@@ -1,0 +1,2 @@
+status,input_eps,source_file_sha256,data_point_count,theory_curve_point_count,combined_log10_visibility_rmse,max_abs_log10_visibility_residual,clears_g11,g11_boundary
+fig3 public-vector consistency check passes as supporting evidence,outputs/tmp/kokorowski_source/extracted/figure3.eps,485b2c0acad7e68ef40d3b43eb7ff20601bd1ace42a6736e109e1426008656ba,28,276,0.045823968263503136,0.11922201829700274,False,supporting Kokorowski public-source consistency only; same experiment and not a second independent closure

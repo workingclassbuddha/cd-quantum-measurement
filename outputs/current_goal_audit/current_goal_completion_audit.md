@@ -19,11 +19,12 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski max SE scale with joint pass >= 0.80: 0.25
 - Kokorowski calibration provenance status: calibration provenance extracted
 - Kokorowski calibration provenance blocker: raw beam-deflection/broadening calibration data are still not in the public source package
+- Kokorowski Fig. 3 public-vector check: fig3 public-vector consistency check passes as supporting evidence; log10 RMSE: 0.0458239682635031; clears G11: False
 - Kokorowski stress pass: False
 
 ## Failed Or Open Requirements
 
-- **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; full_reported_se_joint=0.417; max_se_scale_for_joint_gate=0.250; provenance_status=calibration provenance extracted; provenance_blocker=raw beam-deflection/broadening calibration data are still not in the public source package; stress_pass=False
+- **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; full_reported_se_joint=0.417; max_se_scale_for_joint_gate=0.250; provenance_status=calibration provenance extracted; provenance_blocker=raw beam-deflection/broadening calibration data are still not in the public source package; fig3_status=fig3 public-vector consistency check passes as supporting evidence; fig3_log10_rmse=0.046; fig3_clears_g11=False; stress_pass=False
 - **chapman_raw_phase_repaired**: G10 remains a blocker unless the scorecard says raw phase repaired.
 - **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready=0.
 
