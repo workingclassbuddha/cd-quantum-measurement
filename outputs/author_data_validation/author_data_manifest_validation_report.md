@@ -6,17 +6,19 @@ This validator checks whether received author/numerical data satisfy the target 
 
 ## Summary
 
-- Manifest rows: 4
+- Manifest rows: 6
 - Received rows: 0
 - Schema-passing rows: 0
 - G11-ready rows: 0
 
 ## Rows
 
+- **kokorowski_2001_beam_calibration**: not_received; schema ok = False; G11 ready = False
 - **xiao_2019_author_data**: not_received; schema ok = False; G11 ready = False
 - **hochrainer_2017_independent_widths**: not_received; schema ok = False; G11 ready = False
 - **mir_2007_visibility_context**: not_received; schema ok = False; G11 ready = False
 - **eibenberger_2014_recoil_controls**: not_received; schema ok = False; G11 ready = False
+- **chapman_1995_raw_phase_trace**: not_received; schema ok = False; G11 ready = False
 
 ## Rule
 

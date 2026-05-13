@@ -50,6 +50,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_chapman_complex_mixture_outputs,
     make_chapman_complex_kernel_outputs,
     make_chapman_phase_grade_outputs,
+    make_chapman_raw_phase_blocker_audit_outputs,
     make_chapman_kernel_stress_outputs,
     make_cormann_visibility_phase_scout_outputs,
     make_hackermueller_thermal_analysis_outputs,
@@ -2186,6 +2187,61 @@ def test_chapman_phase_grade_outputs_and_cli(tmp_path):
             "phase still fails",
         ]
     )
+
+
+def test_chapman_raw_phase_blocker_audit_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    phase_grade_dir = tmp_path / "phase_grade"
+    audit_dir = tmp_path / "phase_audit"
+    cli_output_dir = tmp_path / "phase_audit_cli"
+    data_dir.mkdir()
+    visibility = chapman_digitized_dataframe(chapman_default_digitization_metadata())
+    visibility.to_csv(data_dir / "CHAPMAN_1995_SCATTER_DIGITIZED.csv", index=False)
+
+    make_chapman_phase_grade_outputs(
+        None,
+        data_dir,
+        phase_grade_dir,
+        render_pdf=False,
+        grid_mode="test",
+    )
+    status, summary, residual_rollup, needed = (
+        make_chapman_raw_phase_blocker_audit_outputs(
+            audit_dir,
+            data_dir / "CHAPMAN_1995_PHASE_GRADED.csv",
+            phase_grade_dir / "phase_grade_complex_summary.csv",
+            phase_grade_dir / "phase_grade_mixture_summary.csv",
+            phase_grade_dir / "phase_grade_complex_predictions.csv",
+            phase_grade_dir / "phase_grade_mixture_predictions.csv",
+        )
+    )
+
+    assert not status.empty
+    assert not summary.empty
+    assert not residual_rollup.empty
+    assert not needed.empty
+    assert status["verdict"].iloc[0] == "G10 still blocked by raw phase"
+    assert not bool(status["g10_repaired"].iloc[0])
+    assert (audit_dir / "chapman_raw_phase_blocker_audit.md").exists()
+
+    main(
+        [
+            "audit-chapman-raw-phase-blocker",
+            "--phase-csv",
+            str(data_dir / "CHAPMAN_1995_PHASE_GRADED.csv"),
+            "--complex-summary",
+            str(phase_grade_dir / "phase_grade_complex_summary.csv"),
+            "--mixture-summary",
+            str(phase_grade_dir / "phase_grade_mixture_summary.csv"),
+            "--complex-predictions",
+            str(phase_grade_dir / "phase_grade_complex_predictions.csv"),
+            "--mixture-predictions",
+            str(phase_grade_dir / "phase_grade_mixture_predictions.csv"),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "chapman_raw_phase_blocker_status.csv").exists()
 
 
 def test_decompose_eraser_recovers_known_synthetic_values():

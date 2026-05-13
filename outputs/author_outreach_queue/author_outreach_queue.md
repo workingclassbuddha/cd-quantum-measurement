@@ -6,9 +6,9 @@ This queue is the current action surface for the missing G11 gate. It does not c
 
 ## Queue Summary
 
-- Queue rows: 5
+- Queue rows: 6
 - Ready to send now: 0
-- Held for contact verification: 5
+- Held for contact verification: 6
 - Possible G11 closers if received and independently validated: 4
 - Author-data G11-ready rows already received: 0
 
@@ -19,6 +19,7 @@ This queue is the current action surface for the missing G11 gate. It does not c
 - **Priority 3: Hochrainer et al. 2017** - hold_until_contact_verified; blocker: verify_current_contact_route; G11 role: possible second no-refit closer if independence is confirmed; draft: `outputs/author_data_requests/hochrainer_2017_independent_widths_request.md`
 - **Priority 4: Mir et al. 2007** - hold_until_contact_verified; blocker: verify_current_contact_route; G11 role: possible second no-refit closer if independence is confirmed; draft: `outputs/author_data_requests/mir_2007_visibility_context_request.md`
 - **Priority 5: Eibenberger et al. 2014** - hold_until_contact_verified; blocker: verify_current_contact_route; G11 role: possible second no-refit closer if independence is confirmed; draft: `outputs/author_data_requests/eibenberger_2014_recoil_controls_request.md`
+- **Priority 6: Chapman et al. 1995** - hold_until_contact_verified; blocker: verify_current_contact_route; G11 role: calibration/control data; useful but cannot close G11 alone; draft: `outputs/author_data_requests/chapman_1995_raw_phase_trace_request.md`
 
 ## Contact Verification Routes
 
@@ -27,6 +28,7 @@ This queue is the current action surface for the missing G11 gate. It does not c
 - **Hochrainer et al. 2017**: verify via PMC correspondence line for Hochrainer/Zeilinger. Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC5320961/
 - **Mir et al. 2007**: verify via Lundeen Lab publication page / arXiv author record. Source: https://quantumphotonics.uottawa.ca/Publications/A-double-slit-which-way-experiment-on-the-complementarity-uncertainty-debate
 - **Eibenberger et al. 2014**: verify via University of Vienna publication page / corresponding author route. Source: https://ucrisportal.univie.ac.at/en/publications/absolute-absorption-cross-sections-from-photon-recoil-in-a-matter/
+- **Chapman et al. 1995**: verify via DOI publisher page / author institutional records. Source: https://chapmanlabs.gatech.edu/papers/scattering_ifm_prl95.pdf
 
 ## Possible G11 Closers
 

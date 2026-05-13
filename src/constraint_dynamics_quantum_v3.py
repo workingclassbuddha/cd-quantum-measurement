@@ -11060,6 +11060,19 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "status": "draft_ready_not_sent",
             "g11_use_if_received": "possible held-out recoil/load control if sigma_abs calibration is independent",
         },
+        {
+            "target_id": "chapman_1995_raw_phase_trace",
+            "study": "Chapman et al. 1995",
+            "why": "current G10 blocker; ask for numerical Fig. 2 raw phase/fringe-fit trace and wrap provenance before adding more model freedom",
+            "needed_data": "Fig. 2 raw phase-shift points, fringe-fit phase uncertainties, wrap/index notes near contrast zeros, paired raw visibility values, and any original numerical tables behind the plotted phase panel",
+            "gate": "could repair or falsify the Chapman raw-phase overconstraint without changing the visibility-kernel result",
+            "source_url": CHAPMAN_SOURCE_URL,
+            "doi": "https://doi.org/10.1103/PhysRevLett.75.3783",
+            "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/8",
+            "send_priority": 6,
+            "status": "draft_ready_not_sent",
+            "g11_use_if_received": "G10 phase-repair data; useful but cannot close G11 alone",
+        },
     ]
     register = pd.DataFrame(targets)
     register.to_csv(output_dir / "author_data_request_register.csv", index=False)
@@ -11121,6 +11134,15 @@ def make_breakthrough_author_data_requests(output_dir: Path):
                 "contact_source_url": "https://ucrisportal.univie.ac.at/en/publications/absolute-absorption-cross-sections-from-photon-recoil-in-a-matter/",
                 "source_evidence": "University of Vienna record marks Sandra Eibenberger as corresponding author",
                 "next_action": "verify current contact and ask for held-out recoil/load calibration",
+            },
+            {
+                "target_id": "chapman_1995_raw_phase_trace",
+                "study": "Chapman et al. 1995",
+                "contact_status": "candidate_route_verify_before_send",
+                "contact_route": "DOI publisher page / author institutional records",
+                "contact_source_url": CHAPMAN_SOURCE_URL,
+                "source_evidence": "paper DOI and public source identify the study; current author contact route must be verified before any request is sent",
+                "next_action": "verify current author contact and request numerical Fig. 2 raw phase/fringe-fit data",
             },
         ]
     )
@@ -11424,6 +11446,16 @@ def make_author_data_intake_outputs(output_dir: Path):
             "can_close_g11": True,
             "validation_rule": "sigma_abs or equivalent recoil/load calibration must not be inferred from the same visibility reduction",
             "next_cli_if_received": "extend scout-eibenberger-recoil-absorption with held-out calibration input",
+        },
+        {
+            "target_id": "chapman_1995_raw_phase_trace",
+            "dataset_id": "chapman_raw_phase_trace",
+            "minimum_required_files": "fig2_raw_phase_trace.csv; fig2_phase_wrap_notes.md",
+            "required_columns": "d_over_lambda,phase_rad,phase_se,displayed_phase_rad,unwrap_group,visibility,source_note",
+            "g11_role": "G10 phase-repair data",
+            "can_close_g11": False,
+            "validation_rule": "raw phase values must come from numerical fringe fits or author tables rather than model-inferred unwrapping",
+            "next_cli_if_received": "extend audit-chapman-raw-phase-blocker with author phase input",
         },
     ]
     schema = pd.DataFrame(schemas)
@@ -15222,6 +15254,311 @@ Current binary verdict: **{verdict}**.
     )
 
 
+def _best_chapman_phase_row(summary: pd.DataFrame, scope: str):
+    rows = summary[
+        (summary["analysis_scope"].astype(str) == scope)
+        & (summary["branch"].astype(str) == "raw")
+        & summary["model"].astype(str).isin(
+            ["complex_mixture_no_smear", "complex_mixture_with_smear"]
+        )
+    ].copy()
+    if rows.empty:
+        return None
+    rows["_objective_numeric"] = pd.to_numeric(rows["objective"], errors="coerce")
+    return rows.sort_values("_objective_numeric").iloc[0]
+
+
+def _chapman_phase_bool_count(frame: pd.DataFrame, column: str):
+    if column not in frame.columns:
+        return 0
+    return int(frame[column].map(_truthy).sum())
+
+
+def make_chapman_raw_phase_blocker_audit_outputs(
+    output_dir: Path,
+    phase_csv: Path = Path("data/extracted/CHAPMAN_1995_PHASE_GRADED.csv"),
+    complex_summary_csv: Path = Path(
+        "outputs/chapman_phase_grade/phase_grade_complex_summary.csv"
+    ),
+    mixture_summary_csv: Path = Path(
+        "outputs/chapman_phase_grade/phase_grade_mixture_summary.csv"
+    ),
+    complex_predictions_csv: Path = Path(
+        "outputs/chapman_phase_grade/phase_grade_complex_predictions.csv"
+    ),
+    mixture_predictions_csv: Path = Path(
+        "outputs/chapman_phase_grade/phase_grade_mixture_predictions.csv"
+    ),
+):
+    """Write a strict G10 audit for the Chapman raw-phase blocker."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    phase = _read_metric_csv(phase_csv)
+    complex_summary = _read_metric_csv(complex_summary_csv)
+    mixture_summary = _read_metric_csv(mixture_summary_csv)
+    complex_predictions = _read_metric_csv(complex_predictions_csv)
+    mixture_predictions = _read_metric_csv(mixture_predictions_csv)
+
+    raw_phase = phase[phase["visibility_type"].astype(str) == "raw"].copy()
+    raw_phase["x_key"] = raw_phase["x_value"].astype(float).round(6)
+    quality_counts = (
+        raw_phase["phase_quality"]
+        .astype(str)
+        .value_counts()
+        .reindex(["high", "medium", "low"], fill_value=0)
+    )
+
+    rows = []
+    for scope in ["all_phase_points", "high_confidence_raw"]:
+        simple_phase = _phase_grade_metric(
+            complex_summary,
+            scope,
+            "raw",
+            "beta_recoil_complex",
+            "rmse_phase_rad",
+        )
+        simple_visibility = _phase_grade_metric(
+            complex_summary,
+            scope,
+            "raw",
+            "beta_recoil_complex",
+            "rmse_visibility",
+        )
+        best_mix = _best_chapman_phase_row(mixture_summary, scope)
+        if best_mix is None:
+            best_model = "not available"
+            best_phase = np.nan
+            best_visibility = np.nan
+            stable_phase = np.nan
+            wrap_phase = np.nan
+        else:
+            best_model = str(best_mix["model"])
+            best_phase = float(best_mix["rmse_phase_rad"])
+            best_visibility = float(best_mix["rmse_visibility"])
+            stable_phase = float(best_mix.get("stable_phase_rmse_rad", np.nan))
+            wrap_phase = float(best_mix.get("wrap_sensitive_phase_rmse_rad", np.nan))
+        best_available_phase = np.nanmin([simple_phase, best_phase])
+        best_available_visibility = np.nanmin([simple_visibility, best_visibility])
+        rows.append(
+            {
+                "analysis_scope": scope,
+                "simple_complex_phase_rmse_rad": simple_phase,
+                "simple_complex_visibility_rmse": simple_visibility,
+                "best_mixture_model": best_model,
+                "best_mixture_phase_rmse_rad": best_phase,
+                "best_mixture_visibility_rmse": best_visibility,
+                "best_available_phase_rmse_rad": best_available_phase,
+                "best_available_visibility_rmse": best_available_visibility,
+                "phase_gate_threshold_rad": 0.75,
+                "phase_rmse_excess_over_gate_rad": best_available_phase - 0.75,
+                "stable_phase_rmse_rad": stable_phase,
+                "wrap_sensitive_phase_rmse_rad": wrap_phase,
+                "phase_gate_pass": bool(
+                    math.isfinite(best_available_phase)
+                    and best_available_phase <= 0.75
+                    and math.isfinite(best_available_visibility)
+                    and best_available_visibility <= 0.06
+                ),
+            }
+        )
+    gate_summary = pd.DataFrame(rows)
+    gate_summary.to_csv(output_dir / "chapman_raw_phase_blocker_summary.csv", index=False)
+
+    all_best = _best_chapman_phase_row(mixture_summary, "all_phase_points")
+    high_best = _best_chapman_phase_row(mixture_summary, "high_confidence_raw")
+    residual_frames = []
+    for scope, best_row in [
+        ("all_phase_points", all_best),
+        ("high_confidence_raw", high_best),
+    ]:
+        if best_row is None:
+            continue
+        best_model = str(best_row["model"])
+        predictions = mixture_predictions[
+            (mixture_predictions["analysis_scope"].astype(str) == scope)
+            & (mixture_predictions["branch"].astype(str) == "raw")
+            & (mixture_predictions["model"].astype(str) == best_model)
+            & (mixture_predictions["grid_type"].astype(str) == "observed")
+            & (mixture_predictions["observable"].astype(str) == "phase")
+        ].copy()
+        if predictions.empty:
+            continue
+        predictions["x_key"] = predictions["x_value"].astype(float).round(6)
+        joined = predictions.merge(
+            raw_phase[
+                [
+                    "x_key",
+                    "phase_quality",
+                    "phase_se",
+                    "wrap_ambiguous",
+                    "low_contrast_ambiguous",
+                ]
+            ],
+            on="x_key",
+            how="left",
+        )
+        joined["analysis_scope"] = scope
+        joined["best_model"] = best_model
+        joined["abs_residual_rad"] = joined["residual"].astype(float).abs()
+        residual_frames.append(joined)
+
+    if residual_frames:
+        residuals = pd.concat(residual_frames, ignore_index=True)
+        residuals.to_csv(
+            output_dir / "chapman_raw_phase_blocker_residuals.csv",
+            index=False,
+        )
+        residual_rollup = (
+            residuals.groupby(["analysis_scope", "phase_quality"], dropna=False)
+            .agg(
+                n=("abs_residual_rad", "size"),
+                mean_abs_residual_rad=("abs_residual_rad", "mean"),
+                max_abs_residual_rad=("abs_residual_rad", "max"),
+                mean_phase_se_rad=("phase_se", "mean"),
+                wrap_ambiguous_rows=("wrap_ambiguous", lambda values: sum(_truthy(v) for v in values)),
+                low_contrast_ambiguous_rows=(
+                    "low_contrast_ambiguous",
+                    lambda values: sum(_truthy(v) for v in values),
+                ),
+            )
+            .reset_index()
+        )
+    else:
+        residuals = pd.DataFrame()
+        residual_rollup = pd.DataFrame(
+            columns=[
+                "analysis_scope",
+                "phase_quality",
+                "n",
+                "mean_abs_residual_rad",
+                "max_abs_residual_rad",
+                "mean_phase_se_rad",
+                "wrap_ambiguous_rows",
+                "low_contrast_ambiguous_rows",
+            ]
+        )
+    residual_rollup.to_csv(
+        output_dir / "chapman_raw_phase_blocker_residual_rollup.csv",
+        index=False,
+    )
+
+    all_row = gate_summary[gate_summary["analysis_scope"] == "all_phase_points"].iloc[0]
+    high_row = gate_summary[gate_summary["analysis_scope"] == "high_confidence_raw"].iloc[0]
+    all_pass = bool(all_row["phase_gate_pass"])
+    high_pass = bool(high_row["phase_gate_pass"])
+    if all_pass:
+        verdict = "raw phase repaired"
+    elif high_pass:
+        verdict = "phase failure is wrap-limited"
+    else:
+        verdict = "G10 still blocked by raw phase"
+
+    source_needs = pd.DataFrame(
+        [
+            {
+                "needed_artifact": "fig2_raw_phase_trace.csv",
+                "minimum_columns": "d_over_lambda,phase_rad,phase_se,displayed_phase_rad,unwrap_group,visibility,source_note",
+                "why_needed": "replace manual plotted-point unwrapping with numerical fringe-fit phase values",
+                "can_change_g10": True,
+            },
+            {
+                "needed_artifact": "fig2_phase_wrap_notes.md",
+                "minimum_columns": "text provenance",
+                "why_needed": "document whether phase jumps near contrast zeros are plot wrapping, fit branch choices, or physical phase discontinuities",
+                "can_change_g10": True,
+            },
+            {
+                "needed_artifact": "paired_raw_visibility_table.csv",
+                "minimum_columns": "d_over_lambda,visibility,visibility_se,source_note",
+                "why_needed": "keep the phase repair paired to the same raw fringe fits and avoid model-only phase surgery",
+                "can_change_g10": True,
+            },
+        ]
+    )
+    source_needs.to_csv(output_dir / "chapman_raw_phase_needed_data.csv", index=False)
+
+    quality_line = (
+        f"high={int(quality_counts.get('high', 0))}, "
+        f"medium={int(quality_counts.get('medium', 0))}, "
+        f"low={int(quality_counts.get('low', 0))}"
+    )
+    report = f"""# Chapman Raw Phase Blocker Audit
+
+Verdict: {verdict}
+
+This audit does not add model freedom. It summarizes why G10 remains blocked after the calibrated phase-grade pass and names the minimum data needed to repair or falsify the raw-phase overconstraint.
+
+## Inputs
+
+- Phase CSV: `{phase_csv}`
+- Complex summary: `{complex_summary_csv}`
+- Mixture summary: `{mixture_summary_csv}`
+- Complex predictions: `{complex_predictions_csv}`
+- Mixture predictions: `{mixture_predictions_csv}`
+
+## Current G10 State
+
+- Raw phase rows: {len(raw_phase)}
+- Raw phase quality counts: {quality_line}
+- Wrap-ambiguous raw rows: {_chapman_phase_bool_count(raw_phase, "wrap_ambiguous")}
+- Low-contrast ambiguous raw rows: {_chapman_phase_bool_count(raw_phase, "low_contrast_ambiguous")}
+- All-points best phase RMSE: {float(all_row['best_available_phase_rmse_rad']):.4f} rad
+- All-points excess over 0.75 rad gate: {float(all_row['phase_rmse_excess_over_gate_rad']):.4f} rad
+- High-confidence best phase RMSE: {float(high_row['best_available_phase_rmse_rad']):.4f} rad
+- High-confidence excess over 0.75 rad gate: {float(high_row['phase_rmse_excess_over_gate_rad']):.4f} rad
+- All-points phase gate pass: {all_pass}
+- High-confidence phase gate pass: {high_pass}
+
+## Interpretation
+
+The visibility-kernel story is not the failing part of G10. The failure is the raw complex phase: neither the all-points fit nor the high-confidence masked fit reaches the 0.75 rad phase gate while preserving the visibility gate. Because the remaining input phase picks are still manual plotted-point extractions, the next valid move is numerical source data or publication-grade redigitization, not a looser model.
+
+## Needed Data
+
+1. `fig2_raw_phase_trace.csv` with numerical fringe-fit phase, uncertainty, displayed phase, unwrap group, and paired visibility.
+2. `fig2_phase_wrap_notes.md` explaining phase branch choices near contrast zeros.
+3. `paired_raw_visibility_table.csv` from the same underlying fits, so phase and visibility stay paired.
+
+## Boundary
+
+- This does not repair G10.
+- This does not affect G11.
+- This does not validate the Lambda/Gamma/Theta product law.
+- This preserves the current no-overclaiming boundary.
+"""
+    (output_dir / "chapman_raw_phase_blocker_audit.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    status = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "g10_repaired": all_pass,
+                "high_confidence_only_pass": high_pass and not all_pass,
+                "raw_phase_rows": int(len(raw_phase)),
+                "wrap_ambiguous_rows": _chapman_phase_bool_count(
+                    raw_phase,
+                    "wrap_ambiguous",
+                ),
+                "low_contrast_ambiguous_rows": _chapman_phase_bool_count(
+                    raw_phase,
+                    "low_contrast_ambiguous",
+                ),
+                "all_points_best_phase_rmse_rad": float(
+                    all_row["best_available_phase_rmse_rad"]
+                ),
+                "high_confidence_best_phase_rmse_rad": float(
+                    high_row["best_available_phase_rmse_rad"]
+                ),
+                "next_valid_move": "author numerical phase trace or publication-grade redigitization",
+            }
+        ]
+    )
+    status.to_csv(output_dir / "chapman_raw_phase_blocker_status.csv", index=False)
+    return status, gate_summary, residual_rollup, source_needs
+
+
 def make_accessibility_benchmark_outputs(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "figures").mkdir(parents=True, exist_ok=True)
@@ -15820,6 +16157,24 @@ def run_digitize_chapman_phase_grade(
     )
 
 
+def run_audit_chapman_raw_phase_blocker(
+    output_dir: Path,
+    phase_csv: Path,
+    complex_summary_csv: Path,
+    mixture_summary_csv: Path,
+    complex_predictions_csv: Path,
+    mixture_predictions_csv: Path,
+):
+    make_chapman_raw_phase_blocker_audit_outputs(
+        output_dir,
+        phase_csv,
+        complex_summary_csv,
+        mixture_summary_csv,
+        complex_predictions_csv,
+        mixture_predictions_csv,
+    )
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         description="Constraint Dynamics quantum-measurement V3 scaffold"
@@ -15901,6 +16256,34 @@ def build_parser():
         default="focused",
     )
     phase_grade.add_argument("--skip-render", action="store_true")
+    phase_blocker = sub.add_parser(
+        "audit-chapman-raw-phase-blocker",
+        help="summarize the remaining Chapman G10 raw-phase blocker",
+    )
+    phase_blocker.add_argument(
+        "--output-dir",
+        default="outputs/chapman_raw_phase_blocker",
+    )
+    phase_blocker.add_argument(
+        "--phase-csv",
+        default="data/extracted/CHAPMAN_1995_PHASE_GRADED.csv",
+    )
+    phase_blocker.add_argument(
+        "--complex-summary",
+        default="outputs/chapman_phase_grade/phase_grade_complex_summary.csv",
+    )
+    phase_blocker.add_argument(
+        "--mixture-summary",
+        default="outputs/chapman_phase_grade/phase_grade_mixture_summary.csv",
+    )
+    phase_blocker.add_argument(
+        "--complex-predictions",
+        default="outputs/chapman_phase_grade/phase_grade_complex_predictions.csv",
+    )
+    phase_blocker.add_argument(
+        "--mixture-predictions",
+        default="outputs/chapman_phase_grade/phase_grade_mixture_predictions.csv",
+    )
     xiao_digitize = sub.add_parser(
         "digitize-xiao-momentum",
         help="digitize Xiao 2019 momentum-disturbance versus visibility data",
@@ -16400,6 +16783,15 @@ def main(argv=None):
                 Path(args.output_dir),
                 args.grid_mode,
                 not args.skip_render,
+            )
+        elif command == "audit-chapman-raw-phase-blocker":
+            run_audit_chapman_raw_phase_blocker(
+                Path(args.output_dir),
+                Path(args.phase_csv),
+                Path(args.complex_summary),
+                Path(args.mixture_summary),
+                Path(args.complex_predictions),
+                Path(args.mixture_predictions),
             )
         elif command == "digitize-xiao-momentum":
             source_dir = None if args.source_dir is None else Path(args.source_dir)

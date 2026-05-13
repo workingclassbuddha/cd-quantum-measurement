@@ -13,10 +13,11 @@ Data can affect G11 only when the record distribution, bandwidth, width, or load
 - **hochrainer_2017_independent_widths**: possible second no-refit test; can close G11 = True; rule: record width must be measured or simulated independently of the visibility FWHM being predicted
 - **mir_2007_visibility_context**: possible weak-value distribution control; can close G11 = True; rule: P_wv(q) and visibility/contrast must be paired by controlled which-way settings
 - **eibenberger_2014_recoil_controls**: possible held-out recoil/load control; can close G11 = True; rule: sigma_abs or equivalent recoil/load calibration must not be inferred from the same visibility reduction
+- **chapman_1995_raw_phase_trace**: G10 phase-repair data; can close G11 = False; rule: raw phase values must come from numerical fringe fits or author tables rather than model-inferred unwrapping
 
 ## Summary
 
-- Intake targets: 5
+- Intake targets: 6
 - Targets that could close G11 if the independence rule is satisfied: 4
 - Manifest template: `author_data_received_manifest_template.csv`
 

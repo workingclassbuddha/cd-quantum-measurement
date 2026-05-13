@@ -1,5 +1,7 @@
 target_id,received,data_path,schema_found,schema_ok,schema_can_close_g11,supports_g11_claimed,g11_ready_for_analysis,status,missing_columns,validation_rule
+kokorowski_2001_beam_calibration,False,,True,False,True,False,False,not_received,,"nbar, sigma_n, or kappa_prime uncertainty must come from beam calibration independent of Fig. 4 contrast fitting"
 xiao_2019_author_data,False,,True,False,False,False,False,not_received,,recompute Fig. 3 branch moments and Fig. 4 no-refit RMSE; compare to current vector extraction
 hochrainer_2017_independent_widths,False,,True,False,True,False,False,not_received,,record width must be measured or simulated independently of the visibility FWHM being predicted
 mir_2007_visibility_context,False,,True,False,True,False,False,not_received,,P_wv(q) and visibility/contrast must be paired by controlled which-way settings
 eibenberger_2014_recoil_controls,False,,True,False,True,False,False,not_received,,sigma_abs or equivalent recoil/load calibration must not be inferred from the same visibility reduction
+chapman_1995_raw_phase_trace,False,,True,False,False,False,False,not_received,,raw phase values must come from numerical fringe fits or author tables rather than model-inferred unwrapping

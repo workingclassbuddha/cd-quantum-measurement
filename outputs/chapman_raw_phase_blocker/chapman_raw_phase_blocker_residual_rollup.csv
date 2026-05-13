@@ -1,0 +1,6 @@
+analysis_scope,phase_quality,n,mean_abs_residual_rad,max_abs_residual_rad,mean_phase_se_rad,wrap_ambiguous_rows,low_contrast_ambiguous_rows
+all_phase_points,high,9,1.7608329652217485,3.3746029873326826,0.20666666666666667,0,0
+all_phase_points,low,5,1.4394306857099939,3.3182153395936886,0.67,5,5
+all_phase_points,medium,7,1.1566170992164349,3.1033028652133527,0.32857142857142857,0,3
+high_confidence_raw,high,9,1.5077845794045326,1.9456448148249832,0.20666666666666667,0,0
+high_confidence_raw,medium,7,1.5748907003206905,2.435519189483008,0.32857142857142857,0,3

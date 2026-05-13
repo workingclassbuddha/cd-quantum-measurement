@@ -1,0 +1,2 @@
+verdict,g10_repaired,high_confidence_only_pass,raw_phase_rows,wrap_ambiguous_rows,low_contrast_ambiguous_rows,all_points_best_phase_rmse_rad,high_confidence_best_phase_rmse_rad,next_valid_move
+G10 still blocked by raw phase,False,False,21,5,8,1.475301576166102,1.620728406817644,author numerical phase trace or publication-grade redigitization

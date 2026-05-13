@@ -1,0 +1,4 @@
+needed_artifact,minimum_columns,why_needed,can_change_g10
+fig2_raw_phase_trace.csv,"d_over_lambda,phase_rad,phase_se,displayed_phase_rad,unwrap_group,visibility,source_note",replace manual plotted-point unwrapping with numerical fringe-fit phase values,True
+fig2_phase_wrap_notes.md,text provenance,"document whether phase jumps near contrast zeros are plot wrapping, fit branch choices, or physical phase discontinuities",True
+paired_raw_visibility_table.csv,"d_over_lambda,visibility,visibility_se,source_note",keep the phase repair paired to the same raw fringe fits and avoid model-only phase surgery,True
