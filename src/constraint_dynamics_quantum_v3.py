@@ -10992,6 +10992,19 @@ def make_breakthrough_author_data_requests(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     targets = [
         {
+            "target_id": "kokorowski_2001_beam_calibration",
+            "study": "Kokorowski et al. 2001",
+            "why": "current strongest public second-experiment no-refit candidate; ask for raw beam-deflection/broadening calibration tables behind Fig. 4 kappa-prime",
+            "needed_data": "beam-deflection and beam-broadening calibration data, nbar/sigma_n tables, kappa-prime uncertainty propagation notes, detector-convolution notes, and numerical Fig. 4 contrast data if available",
+            "gate": "could turn the Kokorowski public-data lead into a stress-tested second no-refit validation if the independent kappa uncertainty is tightened without refitting visibility",
+            "source_url": KOKOROWSKI_PAPER_URL,
+            "doi": KOKOROWSKI_DOI,
+            "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/7",
+            "send_priority": 1,
+            "status": "draft_ready_not_sent",
+            "g11_use_if_received": "could close G11 if independent calibration data justify tighter kappa uncertainty",
+        },
+        {
             "target_id": "xiao_2019_author_data",
             "study": "Xiao et al. 2019",
             "why": "current lead; ask for numerical Fig. 3 probability curves and Fig. 4 visibility/momentum data",
@@ -11000,7 +11013,7 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "source_url": XIAO_PAPER_URL,
             "doi": XIAO_DOI,
             "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/2",
-            "send_priority": 1,
+            "send_priority": 2,
             "status": "draft_ready_not_sent",
             "g11_use_if_received": "calibrates current lead but does not close second-experiment gate",
         },
@@ -11013,7 +11026,7 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "source_url": HOCHRAINER_PAPER_URL,
             "doi": HOCHRAINER_DOI,
             "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/3",
-            "send_priority": 2,
+            "send_priority": 3,
             "status": "draft_ready_not_sent",
             "g11_use_if_received": "possible G11 closer if independent momentum widths exist",
         },
@@ -11026,7 +11039,7 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "source_url": MIR_PAPER_URL,
             "doi": MIR_DOI,
             "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/4",
-            "send_priority": 3,
+            "send_priority": 4,
             "status": "draft_ready_not_sent",
             "g11_use_if_received": "possible weak-value no-refit control if paired visibility sweep exists",
         },
@@ -11039,7 +11052,7 @@ def make_breakthrough_author_data_requests(output_dir: Path):
             "source_url": "https://arxiv.org/abs/1402.5307",
             "doi": "https://doi.org/10.1103/PhysRevLett.112.250402",
             "issue_url": "https://github.com/workingclassbuddha/cd-quantum-measurement/issues/5",
-            "send_priority": 4,
+            "send_priority": 5,
             "status": "draft_ready_not_sent",
             "g11_use_if_received": "possible held-out recoil/load control if sigma_abs calibration is independent",
         },
@@ -11060,6 +11073,15 @@ def make_breakthrough_author_data_requests(output_dir: Path):
     tracker.to_csv(output_dir / "author_data_request_tracker.csv", index=False)
     contacts = pd.DataFrame(
         [
+            {
+                "target_id": "kokorowski_2001_beam_calibration",
+                "study": "Kokorowski et al. 2001",
+                "contact_status": "candidate_route_verify_before_send",
+                "contact_route": "MIT atom interferometer group / arXiv author record / DOI publisher page",
+                "contact_source_url": KOKOROWSKI_PAPER_URL,
+                "source_evidence": "arXiv record and DOI identify the paper; current contact route must be verified before any request is sent",
+                "next_action": "verify current author contact and request beam-deflection/broadening calibration tables",
+            },
             {
                 "target_id": "xiao_2019_author_data",
                 "study": "Xiao et al. 2019",
@@ -11141,7 +11163,7 @@ Purpose: attack the missing G11 gate directly.
 Current G11 blocker:
 
 ```text
-Second independent distribution-to-visibility experiment found: 0
+Second independent candidate found, but Kokorowski stress/provenance still needs tighter independent calibration uncertainty
 ```
 
 This packet prepares concise data requests for the strongest candidates and near misses. The goal is to find out whether any author-level numerical data can turn a near miss into a held-out no-refit distribution-to-visibility test.
@@ -11349,6 +11371,16 @@ def make_author_data_intake_outputs(output_dir: Path):
 
     output_dir.mkdir(parents=True, exist_ok=True)
     schemas = [
+        {
+            "target_id": "kokorowski_2001_beam_calibration",
+            "dataset_id": "kokorowski_beam_calibration",
+            "minimum_required_files": "beam_deflection_broadening_calibration.csv; kappa_uncertainty_notes.md",
+            "required_columns": "branch_or_intensity,calibration_observable,value,value_se,units,independence_basis,source_note",
+            "g11_role": "possible second no-refit validation closer",
+            "can_close_g11": True,
+            "validation_rule": "nbar, sigma_n, or kappa_prime uncertainty must come from beam calibration independent of Fig. 4 contrast fitting",
+            "next_cli_if_received": "extend profile-kokorowski-kappa-uncertainty with author calibration input",
+        },
         {
             "target_id": "xiao_2019_author_data",
             "dataset_id": "xiao_fig3_fig4_numerical",

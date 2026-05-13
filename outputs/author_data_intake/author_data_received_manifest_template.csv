@@ -1,4 +1,5 @@
 target_id,received,data_path,provenance_path,contact_or_source,date_received,license_or_permission,passes_schema_check,supports_g11,notes
+kokorowski_2001_beam_calibration,False,,,,,,False,False,
 xiao_2019_author_data,False,,,,,,False,False,
 hochrainer_2017_independent_widths,False,,,,,,False,False,
 mir_2007_visibility_context,False,,,,,,False,False,

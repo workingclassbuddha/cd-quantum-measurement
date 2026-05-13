@@ -28,7 +28,7 @@ Keep the Constraint Dynamics quantum-measurement scaffold public, clean, reprodu
 | G11 gap audit implemented | `outputs/breakthrough_gap_audit/` | Pass |
 | Public records checked for immediate G11 data | `outputs/public_data_availability/` | Pass, but public data does not close G11 |
 | Author-data request packet prepared | `outputs/author_data_requests/` | Pass |
-| Author-data request tracker prepared | `outputs/author_data_requests/author_data_request_tracker.csv`; issues #2-#5 | Pass, drafts ready but not sent |
+| Author-data request tracker prepared | `outputs/author_data_requests/author_data_request_tracker.csv`; issues #2-#7 | Pass, Kokorowski calibration request added and all drafts ready but not sent |
 | Author contact route candidates recorded | `outputs/author_data_requests/author_contact_candidate_register.csv` | Pass, verify before sending |
 | Author outreach queue prepared | `outputs/author_outreach_queue/` | Pass, 4 rows held until contact verification |
 | Author-data intake schemas prepared | `outputs/author_data_intake/` | Pass |
@@ -62,6 +62,7 @@ The calibration-provenance extractor now anchors the independence premise to the
 ## Live Coordination
 
 - Parent G11 tracker: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/1
+- Kokorowski beam-calibration data: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/7
 - Xiao author data: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/2
 - Hochrainer author data: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/3
 - Mir author data: https://github.com/workingclassbuddha/cd-quantum-measurement/issues/4

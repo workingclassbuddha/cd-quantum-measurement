@@ -8,6 +8,7 @@ Data can affect G11 only when the record distribution, bandwidth, width, or load
 
 ## Schemas
 
+- **kokorowski_2001_beam_calibration**: possible second no-refit validation closer; can close G11 = True; rule: nbar, sigma_n, or kappa_prime uncertainty must come from beam calibration independent of Fig. 4 contrast fitting
 - **xiao_2019_author_data**: lead calibration only; can close G11 = False; rule: recompute Fig. 3 branch moments and Fig. 4 no-refit RMSE; compare to current vector extraction
 - **hochrainer_2017_independent_widths**: possible second no-refit test; can close G11 = True; rule: record width must be measured or simulated independently of the visibility FWHM being predicted
 - **mir_2007_visibility_context**: possible weak-value distribution control; can close G11 = True; rule: P_wv(q) and visibility/contrast must be paired by controlled which-way settings
@@ -15,8 +16,8 @@ Data can affect G11 only when the record distribution, bandwidth, width, or load
 
 ## Summary
 
-- Intake targets: 4
-- Targets that could close G11 if the independence rule is satisfied: 3
+- Intake targets: 5
+- Targets that could close G11 if the independence rule is satisfied: 4
 - Manifest template: `author_data_received_manifest_template.csv`
 
 ## Next Step
