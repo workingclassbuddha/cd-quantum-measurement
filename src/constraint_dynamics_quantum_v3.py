@@ -7922,6 +7922,9 @@ def make_current_goal_completion_audit_outputs(
     author_validation_summary_csv: Path = Path(
         "outputs/author_data_validation/author_data_manifest_validation_summary.csv"
     ),
+    product_law_status_csv: Path = Path(
+        "outputs/product_law_readiness/product_law_readiness_status.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7931,10 +7934,17 @@ def make_current_goal_completion_audit_outputs(
     public_summary = _read_optional_metric_csv(public_data_summary_csv)
     kokorowski_stress = _read_optional_metric_csv(kokorowski_stress_summary_csv)
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
+    product_law_status = _read_optional_metric_csv(product_law_status_csv)
 
     eligible_second = int(_first_value(g11_summary, "eligible_second_no_refit_targets", 0))
     public_support = int(_first_value(public_summary, "supports_g11_without_author_contact", 0))
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
+    empirical_product_ready = int(
+        _first_value(product_law_status, "empirical_product_law_ready_datasets", 0)
+    )
+    g12_validated_by_audit = bool(
+        _truthy(_first_value(product_law_status, "g12_validated", False))
+    )
     kokorowski_joint = float(
         _first_value(kokorowski_stress, "bootstrap_p_joint_stress_gate", np.nan)
     )
@@ -7961,6 +7971,7 @@ def make_current_goal_completion_audit_outputs(
             g10_pass = _truthy(g10_rows["passed"].iloc[0])
         if not g12_rows.empty and "passed" in g12_rows.columns:
             g12_pass = _truthy(g12_rows["passed"].iloc[0])
+    g12_pass = bool(g12_pass or g12_validated_by_audit)
 
     second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
@@ -7997,10 +8008,10 @@ def make_current_goal_completion_audit_outputs(
         },
         {
             "requirement": "product_law_independently_validated",
-            "evidence_path": str(breakthrough_scorecard_csv),
+            "evidence_path": f"{breakthrough_scorecard_csv}; {product_law_status_csv}",
             "status": "pass" if g12_pass else "fail",
             "passed": g12_pass,
-            "note": "G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law.",
+            "note": f"G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready={empirical_product_ready}.",
         },
         {
             "requirement": "no_overclaiming",
@@ -8023,6 +8034,7 @@ def make_current_goal_completion_audit_outputs(
                 "eligible_second_no_refit_targets": eligible_second,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
+                "empirical_product_law_ready_datasets": empirical_product_ready,
                 "kokorowski_bootstrap_p_joint_stress_gate": kokorowski_joint,
                 "kokorowski_stress_pass": kokorowski_stress_pass,
                 "verdict": (
@@ -8053,6 +8065,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Eligible second no-refit targets: {eligible_second}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
+- Empirical product-law-ready datasets: {empirical_product_ready}
 - Kokorowski joint stress probability: {kokorowski_joint if math.isfinite(kokorowski_joint) else "not available"}
 - Kokorowski stress pass: {kokorowski_stress_pass}
 
@@ -8069,6 +8082,284 @@ Do not mark the goal complete while any failed requirement remains. Passing CI o
         encoding="utf-8",
     )
     return checklist, summary
+
+
+def _safe_numeric_range(frame: pd.DataFrame, column: str):
+    if column not in frame.columns:
+        return np.nan
+    values = pd.to_numeric(frame[column], errors="coerce").dropna()
+    if values.empty:
+        return np.nan
+    return float(values.max() - values.min())
+
+
+def make_product_law_readiness_audit_outputs(
+    output_dir: Path,
+    data_dir: Path = Path("data/extracted"),
+    identifiability_design_summary_csv: Path = Path(
+        "outputs/identifiability_design_summary.csv"
+    ),
+    identifiability_model_comparison_csv: Path = Path(
+        "outputs/identifiability_model_comparison.csv"
+    ),
+    accessibility_benchmark_csv: Path = Path(
+        "outputs/accessibility_benchmark/accessibility_benchmark_dataset.csv"
+    ),
+):
+    """Audit whether existing empirical data can validate the product law."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    dataset_rows = []
+    for csv_path in sorted(data_dir.glob("*.csv")):
+        try:
+            frame = pd.read_csv(csv_path)
+        except Exception as exc:
+            dataset_rows.append(
+                {
+                    "dataset_path": str(csv_path),
+                    "rows": 0,
+                    "has_visibility_obs": False,
+                    "has_all_product_factors": False,
+                    "complete_product_rows": 0,
+                    "independent_factor_ranges": 0,
+                    "max_abs_factor_correlation": np.nan,
+                    "product_law_ready": False,
+                    "blocker": f"could not read CSV: {exc}",
+                }
+            )
+            continue
+        factor_cols = ["Lambda", "Gamma", "Theta"]
+        has_factors = all(col in frame.columns for col in factor_cols)
+        has_visibility = "visibility_obs" in frame.columns
+        complete = pd.DataFrame()
+        if has_factors and has_visibility:
+            complete = frame[factor_cols + ["visibility_obs"]].apply(
+                pd.to_numeric,
+                errors="coerce",
+            ).dropna()
+        factor_ranges = {
+            col: _safe_numeric_range(complete, col) if not complete.empty else np.nan
+            for col in factor_cols
+        }
+        independent_ranges = int(
+            sum(math.isfinite(value) and value > 0.05 for value in factor_ranges.values())
+        )
+        max_corr = np.nan
+        if len(complete) >= 4 and independent_ranges >= 2:
+            corr = complete[factor_cols].corr().abs()
+            upper = corr.where(np.triu(np.ones(corr.shape), k=1).astype(bool))
+            if upper.notna().any().any():
+                max_corr = float(upper.max().max())
+        ready = bool(
+            len(complete) >= 12
+            and independent_ranges == 3
+            and math.isfinite(max_corr)
+            and max_corr <= 0.50
+        )
+        if ready:
+            blocker = "none"
+        elif not has_factors:
+            blocker = "missing Lambda/Gamma/Theta columns"
+        elif not has_visibility:
+            blocker = "missing visibility_obs column"
+        elif len(complete) == 0:
+            blocker = "Lambda/Gamma/Theta columns are empty or unpaired to visibility"
+        elif independent_ranges < 3:
+            blocker = "fewer than three independently varied factors"
+        elif not math.isfinite(max_corr) or max_corr > 0.50:
+            blocker = "factor correlation/confounding too high"
+        else:
+            blocker = "too few complete rows for held-out product-law validation"
+        dataset_rows.append(
+            {
+                "dataset_path": str(csv_path),
+                "rows": int(len(frame)),
+                "has_visibility_obs": bool(has_visibility),
+                "has_all_product_factors": bool(has_factors),
+                "complete_product_rows": int(len(complete)),
+                "lambda_range": factor_ranges["Lambda"],
+                "gamma_range": factor_ranges["Gamma"],
+                "theta_range": factor_ranges["Theta"],
+                "independent_factor_ranges": independent_ranges,
+                "max_abs_factor_correlation": max_corr,
+                "product_law_ready": ready,
+                "blocker": blocker,
+            }
+        )
+    dataset_scan = pd.DataFrame(dataset_rows)
+    dataset_scan.to_csv(output_dir / "product_law_dataset_scan.csv", index=False)
+
+    design = _read_optional_metric_csv(identifiability_design_summary_csv)
+    models = _read_optional_metric_csv(identifiability_model_comparison_csv)
+    benchmark = _read_optional_metric_csv(accessibility_benchmark_csv)
+    benchmark_rows = []
+    if design is not None and not design.empty:
+        for _, row in design.iterrows():
+            design_name = str(row.get("design", "unknown"))
+            model_rows = (
+                models[models["design"].astype(str) == design_name]
+                if models is not None and not models.empty and "design" in models.columns
+                else pd.DataFrame()
+            )
+            best_model = "not available"
+            product_delta = np.nan
+            product_weight = np.nan
+            if not model_rows.empty:
+                sorted_models = model_rows.sort_values("delta_aicc")
+                best_model = str(sorted_models.iloc[0]["model"])
+                product_rows = model_rows[model_rows["model"].astype(str) == "product"]
+                if not product_rows.empty:
+                    product_delta = float(product_rows.iloc[0]["delta_aicc"])
+                    product_weight = float(product_rows.iloc[0]["akaike_weight"])
+            benchmark_rows.append(
+                {
+                    "design": design_name,
+                    "source": "synthetic_identifiability_benchmark",
+                    "n": int(row.get("n", 0)),
+                    "max_abs_factor_correlation": float(
+                        row.get("max_abs_factor_correlation", np.nan)
+                    ),
+                    "max_vif": float(row.get("max_vif", np.nan)),
+                    "best_model": best_model,
+                    "product_delta_aicc": product_delta,
+                    "product_akaike_weight": product_weight,
+                    "empirical_validation": False,
+                    "interpretation": (
+                        "balanced synthetic design shows what a valid product-law test would need"
+                        if "balanced" in design_name
+                        else "confounded synthetic design shows why single latent-load sweeps are not enough"
+                    ),
+                }
+            )
+    benchmark_summary = pd.DataFrame(benchmark_rows)
+    benchmark_summary.to_csv(output_dir / "product_law_benchmark_summary.csv", index=False)
+
+    empirical_ready = int(dataset_scan["product_law_ready"].sum()) if not dataset_scan.empty else 0
+    complete_factor_datasets = int(
+        (dataset_scan["complete_product_rows"] > 0).sum()
+    ) if not dataset_scan.empty else 0
+    synthetic_rows = int(len(benchmark)) if benchmark is not None else 0
+    balanced_benchmark = benchmark_summary[
+        benchmark_summary["design"].astype(str) == "balanced_factorial"
+    ] if not benchmark_summary.empty else pd.DataFrame()
+    balanced_product_delta = (
+        float(balanced_benchmark.iloc[0]["product_delta_aicc"])
+        if not balanced_benchmark.empty
+        else np.nan
+    )
+    balanced_max_corr = (
+        float(balanced_benchmark.iloc[0]["max_abs_factor_correlation"])
+        if not balanced_benchmark.empty
+        else np.nan
+    )
+    verdict = (
+        "G12 ready for validation"
+        if empirical_ready > 0
+        else "G12 blocked: no empirical independent-factor product-law dataset"
+    )
+    status = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "empirical_product_law_ready_datasets": empirical_ready,
+                "datasets_with_complete_product_rows": complete_factor_datasets,
+                "synthetic_benchmark_rows": synthetic_rows,
+                "balanced_synthetic_product_delta_aicc": balanced_product_delta,
+                "balanced_synthetic_max_abs_factor_correlation": balanced_max_corr,
+                "g12_validated": False,
+                "next_valid_move": "collect or design a dataset with independent Lambda, Gamma, and Theta variation",
+            }
+        ]
+    )
+    status.to_csv(output_dir / "product_law_readiness_status.csv", index=False)
+
+    needed_design = pd.DataFrame(
+        [
+            {
+                "requirement": "independent Lambda sweep",
+                "minimum": "at least 3 path-separation or distinguishability settings",
+                "reason": "separate spatial record distinguishability from record persistence/load",
+            },
+            {
+                "requirement": "independent Gamma sweep",
+                "minimum": "at least 3 timing/coherence/response settings",
+                "reason": "prevent timing/coherence from being absorbed into Lambda or Theta",
+            },
+            {
+                "requirement": "independent Theta sweep",
+                "minimum": "at least 3 record-accessibility/load settings",
+                "reason": "test whether inaccessible record load contributes multiplicatively",
+            },
+            {
+                "requirement": "held-out prediction",
+                "minimum": "fit on a subset and predict withheld factor combinations",
+                "reason": "distinguish the product term from additive or pairwise alternatives",
+            },
+            {
+                "requirement": "low factor confounding",
+                "minimum": "max absolute factor correlation <= 0.50 and max VIF <= 5",
+                "reason": "avoid mistaking a single latent load axis for product-law support",
+            },
+        ]
+    )
+    needed_design.to_csv(output_dir / "product_law_needed_design.csv", index=False)
+
+    top_blockers = (
+        dataset_scan["blocker"].value_counts().head(6).to_dict()
+        if not dataset_scan.empty
+        else {}
+    )
+    blocker_lines = "\n".join(
+        f"- {blocker}: {count}" for blocker, count in top_blockers.items()
+    ) or "- none"
+    report = f"""# Product-Law Readiness Audit
+
+Verdict: {verdict}
+
+This audit asks whether the current public empirical artifacts can validate:
+
+```text
+kappa_eff = kappa0 * Lambda * Gamma * Theta
+```
+
+It deliberately separates empirical readiness from the synthetic identifiability benchmark. A synthetic benchmark can define the target design, but it cannot validate G12.
+
+## Empirical Dataset Scan
+
+- CSV datasets scanned: {len(dataset_scan)}
+- Datasets with complete product-law rows: {complete_factor_datasets}
+- Empirical product-law-ready datasets: {empirical_ready}
+
+Top blockers:
+
+{blocker_lines}
+
+## Synthetic Benchmark
+
+- Synthetic benchmark rows: {synthetic_rows}
+- Balanced synthetic product delta AICc: {balanced_product_delta if math.isfinite(balanced_product_delta) else "not available"}
+- Balanced synthetic max factor correlation: {balanced_max_corr if math.isfinite(balanced_max_corr) else "not available"}
+
+The balanced synthetic benchmark says the scaffold can recognize a product-law-shaped design when the factors are independently varied. The confounded synthetic benchmark says the opposite danger is real: a single latent load can look excellent under a product term while Lambda, Gamma, and Theta are not separately identifiable.
+
+## Needed Before G12 Can Pass
+
+1. Independently varied Lambda, Gamma, and Theta factors.
+2. Low factor correlation and acceptable VIF.
+3. Held-out factor-combination prediction against additive, pairwise, and background alternatives.
+4. Provenance showing the factors were measured or set by apparatus controls, not inferred from the same visibility curve.
+
+## Boundary
+
+- This does not validate the product law.
+- This does not affect the Xiao/Kokorowski no-refit distribution gates.
+- This keeps G12 failed until an empirical independent-factor dataset exists.
+"""
+    (output_dir / "product_law_readiness_audit.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return status, dataset_scan, benchmark_summary, needed_design
 
 
 def make_breakthrough_candidate_outputs(
@@ -15972,6 +16263,22 @@ def run_audit_current_goal_status(output_dir: Path):
     make_current_goal_completion_audit_outputs(output_dir)
 
 
+def run_audit_product_law_readiness(
+    output_dir: Path,
+    data_dir: Path,
+    identifiability_design_summary: Path,
+    identifiability_model_comparison: Path,
+    accessibility_benchmark: Path,
+):
+    make_product_law_readiness_audit_outputs(
+        output_dir,
+        data_dir,
+        identifiability_design_summary,
+        identifiability_model_comparison,
+        accessibility_benchmark,
+    )
+
+
 def run_scout_no_refit_targets(output_dir: Path):
     make_no_refit_target_scout_outputs(output_dir)
 
@@ -16522,6 +16829,27 @@ def build_parser():
         "--output-dir",
         default="outputs/current_goal_audit",
     )
+    product_law_audit = sub.add_parser(
+        "audit-product-law-readiness",
+        help="audit whether current empirical data can validate the product law",
+    )
+    product_law_audit.add_argument(
+        "--output-dir",
+        default="outputs/product_law_readiness",
+    )
+    product_law_audit.add_argument("--data-dir", default="data/extracted")
+    product_law_audit.add_argument(
+        "--identifiability-design-summary",
+        default="outputs/identifiability_design_summary.csv",
+    )
+    product_law_audit.add_argument(
+        "--identifiability-model-comparison",
+        default="outputs/identifiability_model_comparison.csv",
+    )
+    product_law_audit.add_argument(
+        "--accessibility-benchmark",
+        default="outputs/accessibility_benchmark/accessibility_benchmark_dataset.csv",
+    )
     no_refit_scout = sub.add_parser(
         "scout-no-refit-targets",
         help="rank candidate experiments for the missing second no-refit distribution gate",
@@ -16916,6 +17244,14 @@ def main(argv=None):
             )
         elif command == "audit-current-goal-status":
             run_audit_current_goal_status(Path(args.output_dir))
+        elif command == "audit-product-law-readiness":
+            run_audit_product_law_readiness(
+                Path(args.output_dir),
+                Path(args.data_dir),
+                Path(args.identifiability_design_summary),
+                Path(args.identifiability_model_comparison),
+                Path(args.accessibility_benchmark),
+            )
         elif command == "scout-no-refit-targets":
             run_scout_no_refit_targets(Path(args.output_dir))
         elif command == "prepare-author-data-requests":

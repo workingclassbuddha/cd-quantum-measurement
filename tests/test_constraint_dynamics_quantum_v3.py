@@ -69,6 +69,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_author_data_intake_outputs,
     make_breakthrough_gap_audit_outputs,
     make_current_goal_completion_audit_outputs,
+    make_product_law_readiness_audit_outputs,
     make_public_data_availability_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
@@ -1000,6 +1001,103 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "current_goal_completion_summary.csv").exists()
+
+
+def test_product_law_readiness_audit_outputs_and_cli(tmp_path):
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    pd.DataFrame(
+        [
+            {"x_value": 0.0, "visibility_obs": 1.0},
+            {"x_value": 1.0, "visibility_obs": 0.5},
+        ]
+    ).to_csv(data_dir / "missing_factors.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "Lambda": 0.1 + idx * 0.01,
+                "Gamma": 0.2 + idx * 0.01,
+                "Theta": 0.3 + idx * 0.01,
+                "visibility_obs": 0.9 - idx * 0.01,
+            }
+            for idx in range(6)
+        ]
+    ).to_csv(data_dir / "confounded_factors.csv", index=False)
+
+    design = pd.DataFrame(
+        [
+            {
+                "design": "balanced_factorial",
+                "n": 216,
+                "max_abs_factor_correlation": 0.0,
+                "max_vif": 1.0,
+            },
+            {
+                "design": "confounded_latent_load",
+                "n": 216,
+                "max_abs_factor_correlation": 0.96,
+                "max_vif": 41.0,
+            },
+        ]
+    )
+    models = pd.DataFrame(
+        [
+            {
+                "design": "balanced_factorial",
+                "model": "product",
+                "delta_aicc": 0.0,
+                "akaike_weight": 0.35,
+            },
+            {
+                "design": "confounded_latent_load",
+                "model": "product",
+                "delta_aicc": 0.0,
+                "akaike_weight": 0.55,
+            },
+        ]
+    )
+    benchmark = build_accessibility_benchmark_dataset()
+    design_path = tmp_path / "design.csv"
+    models_path = tmp_path / "models.csv"
+    benchmark_path = tmp_path / "benchmark.csv"
+    design.to_csv(design_path, index=False)
+    models.to_csv(models_path, index=False)
+    benchmark.to_csv(benchmark_path, index=False)
+
+    output_dir = tmp_path / "product_law"
+    status, scan, bench, needed = make_product_law_readiness_audit_outputs(
+        output_dir,
+        data_dir,
+        design_path,
+        models_path,
+        benchmark_path,
+    )
+    assert status["verdict"].iloc[0] == (
+        "G12 blocked: no empirical independent-factor product-law dataset"
+    )
+    assert int(status["empirical_product_law_ready_datasets"].iloc[0]) == 0
+    assert not scan.empty
+    assert not bench.empty
+    assert not needed.empty
+    assert (output_dir / "product_law_readiness_audit.md").exists()
+
+    cli_output_dir = tmp_path / "product_law_cli"
+    main(
+        [
+            "audit-product-law-readiness",
+            "--data-dir",
+            str(data_dir),
+            "--identifiability-design-summary",
+            str(design_path),
+            "--identifiability-model-comparison",
+            str(models_path),
+            "--accessibility-benchmark",
+            str(benchmark_path),
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "product_law_readiness_status.csv").exists()
 
 
 def test_no_refit_target_scout_outputs_and_cli(tmp_path):

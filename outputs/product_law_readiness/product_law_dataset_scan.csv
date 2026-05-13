@@ -1,0 +1,17 @@
+dataset_path,rows,has_visibility_obs,has_all_product_factors,complete_product_rows,lambda_range,gamma_range,theta_range,independent_factor_ranges,max_abs_factor_correlation,product_law_ready,blocker
+data/extracted/CHAPMAN_1995_PHASE_DIGITIZED.csv,32,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/CHAPMAN_1995_PHASE_GRADED.csv,40,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/CHAPMAN_1995_SCATTER.csv,36,True,True,0,,,,0,,False,Lambda/Gamma/Theta columns are empty or unpaired to visibility
+data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv,36,True,True,0,,,,0,,False,Lambda/Gamma/Theta columns are empty or unpaired to visibility
+data/extracted/CORMANN_2016_VISIBILITY_PHASE_SCOUT.csv,211,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/EIBENBERGER_2014_RECOIL_ABSORPTION_SCOUT.csv,12,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/HACKERMUELLER_2004_THERMAL_DIGITIZED.csv,31,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/HOCHRAINER_2017_MOMENTUM_CORRELATION_SCOUT.csv,2,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/HORNBERGER_2003_COLLISIONAL_SCOUT.csv,28,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv,4,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv,23,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/KOKOROWSKI_2001_MULTIPHOTON_SCOUT.csv,3,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/MIR_2007_WEAK_VALUE_SCOUT.csv,4,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/XIAO_2019_MOMENTUM_VISIBILITY_DIGITIZED.csv,6,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/XIAO_2019_PROBABILITY_DIGITIZED.csv,365,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+data/extracted/XIAO_2019_PROBABILITY_VECTOR_DIGITIZED.csv,511,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns

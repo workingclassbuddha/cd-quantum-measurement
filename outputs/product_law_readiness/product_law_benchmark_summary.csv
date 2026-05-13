@@ -1,0 +1,3 @@
+design,source,n,max_abs_factor_correlation,max_vif,best_model,product_delta_aicc,product_akaike_weight,empirical_validation,interpretation
+balanced_factorial,synthetic_identifiability_benchmark,216,6.644793704683637e-16,1.0000000000000002,product,0.0,0.3485755044898521,False,balanced synthetic design shows what a valid product-law test would need
+confounded_latent_load,synthetic_identifiability_benchmark,216,0.9669758810521384,41.598231402966306,product,0.0,0.5476324836933882,False,confounded synthetic design shows why single latent-load sweeps are not enough

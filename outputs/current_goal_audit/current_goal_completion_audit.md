@@ -13,6 +13,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Eligible second no-refit targets: 1
 - Public G11 support without author contact: 0
 - Author-data G11-ready rows: 0
+- Empirical product-law-ready datasets: 0
 - Kokorowski joint stress probability: 0.727
 - Kokorowski stress pass: False
 
@@ -20,7 +21,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 
 - **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; stress_pass=False
 - **chapman_raw_phase_repaired**: G10 remains a blocker unless the scorecard says raw phase repaired.
-- **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law.
+- **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready=0.
 
 ## Rule
 

@@ -1,0 +1,6 @@
+requirement,minimum,reason
+independent Lambda sweep,at least 3 path-separation or distinguishability settings,separate spatial record distinguishability from record persistence/load
+independent Gamma sweep,at least 3 timing/coherence/response settings,prevent timing/coherence from being absorbed into Lambda or Theta
+independent Theta sweep,at least 3 record-accessibility/load settings,test whether inaccessible record load contributes multiplicatively
+held-out prediction,fit on a subset and predict withheld factor combinations,distinguish the product term from additive or pairwise alternatives
+low factor confounding,max absolute factor correlation <= 0.50 and max VIF <= 5,avoid mistaking a single latent load axis for product-law support
