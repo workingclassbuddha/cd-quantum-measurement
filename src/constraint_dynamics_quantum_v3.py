@@ -8929,15 +8929,29 @@ def no_refit_target_candidate_register():
             "local_source_available": Path(
                 "outputs/tmp/kokorowski_source/extracted/figure4.eps"
             ).exists(),
-            "candidate_role": "new strongest public-data G11 candidate, pending digitized no-refit validation",
+            "candidate_role": (
+                "strongest public-data G11 candidate; digitized/analyzed/stress-tested but not stress-closed"
+                if Path("outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv").exists()
+                else "new strongest public-data G11 candidate, pending digitized no-refit validation"
+            ),
             "implementation_status": (
-                "digitized/analyzed"
+                "digitized/analyzed/stress-tested"
+                if Path("outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv").exists()
+                else "digitized/analyzed"
                 if Path("outputs/kokorowski_multiphoton/kokorowski_multiphoton_summary.csv").exists()
                 else "source package local, scout implemented"
             ),
-            "next_command": "digitize-kokorowski-multiphoton; analyze-kokorowski-multiphoton",
+            "next_command": (
+                "stress-test-kokorowski-multiphoton; profile-kokorowski-kappa-uncertainty; audit-kokorowski-calibration-provenance"
+                if Path("outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv").exists()
+                else "digitize-kokorowski-multiphoton; analyze-kokorowski-multiphoton"
+            ),
             "no_refit_gate_score": 0.84,
-            "blocker": "source text reports independent beam-deflection parameters; G11 requires committed digitization and no-refit reproduction",
+            "blocker": (
+                "joint stress gate is below closure threshold; independent kappa calibration provenance/uncertainty is the limiting factor"
+                if Path("outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv").exists()
+                else "source text reports independent beam-deflection parameters; G11 requires committed digitization and no-refit reproduction"
+            ),
             "source_basis": "arXiv source says Fig. 4 theory curves use nbar and sigma_n determined from independent beam-deflection measurements; the source package contains EPS figures.",
         },
         {
@@ -9171,11 +9185,8 @@ def make_no_refit_target_scout_outputs(output_dir: Path):
         if gate_found
         else "no second no-refit distribution target yet"
     )
-    recommended_next = (
-        eligible_second.iloc[0]["candidate_id"]
-        if gate_found
-        else str(top_non_xiao["candidate_id"])
-    )
+    recommended_row = eligible_second.iloc[0] if gate_found else top_non_xiao
+    recommended_next = str(recommended_row["candidate_id"])
 
     summary = pd.DataFrame(
         [
@@ -9184,9 +9195,9 @@ def make_no_refit_target_scout_outputs(output_dir: Path):
                 "candidate_count": int(len(register)),
                 "eligible_second_distribution_targets": int(len(eligible_second)),
                 "recommended_next_candidate": recommended_next,
-                "recommended_next_command": str(top_non_xiao["next_command"]),
-                "recommended_next_role": str(top_non_xiao["candidate_role"]),
-                "recommended_next_blocker": str(top_non_xiao["blocker"]),
+                "recommended_next_command": str(recommended_row["next_command"]),
+                "recommended_next_role": str(recommended_row["candidate_role"]),
+                "recommended_next_blocker": str(recommended_row["blocker"]),
             }
         ]
     )
@@ -9222,9 +9233,9 @@ This scout asks a narrow question: is there a second experiment, independent of 
 - Candidate count: {len(register)}
 - Eligible second distribution targets: {len(eligible_second)}
 - Recommended next candidate: `{recommended_next}`
-- Recommended next command: `{top_non_xiao['next_command']}`
+- Recommended next command: `{recommended_row['next_command']}`
 
-The answer is currently negative for the strict Xiao-like gate. The best next practical target is Eibenberger 2014 because it has a clean photon-recoil mechanism and visibility reduction in a matter-wave interferometer. But it is a recoil-control scout, not yet the missing independent measured-distribution prediction.
+The current answer is not a breakthrough closure. Kokorowski is now the first eligible public second-experiment no-refit candidate, with digitization, no-refit analysis, null controls, kappa-uncertainty profiling, and calibration-provenance extraction in the repo. It still does not close G11 because the current stress evidence leaves independent-kappa calibration uncertainty as the limiting factor.
 
 ## Candidate Register
 
@@ -9232,11 +9243,11 @@ The answer is currently negative for the strict Xiao-like gate. The best next pr
 
 ## Interpretation
 
-Xiao remains the lead because it uniquely combines an experimentally reconstructed momentum-disturbance distribution with a visibility-loss curve in a way that supports a no-refit cross-figure prediction. Chapman, Hackermueller, Hornberger, and Eibenberger are strong standard-QM-compatible controls for record bandwidth/load, but they do not presently clear the second independent distribution-to-visibility gate.
+Xiao remains the cleanest within-paper distribution-to-visibility validation. Kokorowski is the strongest public second-experiment candidate, but its status is still candidate rather than closure. Chapman, Hackermueller, Hornberger, and Eibenberger remain standard-QM-compatible controls for record bandwidth/load, not replacements for the missing stress-closed second validation.
 
 ## Next Move
 
-Build `scout-eibenberger-recoil-absorption` only as a recoil-control lane, while continuing the literature search for a true second measured-distribution dataset.
+Tighten Kokorowski independent-kappa provenance or find a cleaner second no-refit dataset. Keep breakthrough language blocked until the second validation stress gate, Chapman raw phase gate, and independent Lambda/Gamma/Theta product-law gate clear.
 """
     (output_dir / "second_no_refit_target_scout_report.md").write_text(
         report,

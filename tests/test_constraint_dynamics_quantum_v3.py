@@ -1112,9 +1112,12 @@ def test_no_refit_target_scout_outputs_and_cli(tmp_path):
         summary["recommended_next_candidate"].iloc[0]
         == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
-    assert (
-        output_dir / "second_no_refit_target_scout_report.md"
-    ).exists()
+    report_path = output_dir / "second_no_refit_target_scout_report.md"
+    assert report_path.exists()
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "not a breakthrough closure" in report_text
+    assert "Eibenberger 2014 because" not in report_text
+    assert "answer is currently negative" not in report_text
     assert (
         output_dir / "no_refit_target_candidate_register.csv"
     ).exists()
