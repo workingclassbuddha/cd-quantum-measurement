@@ -1446,8 +1446,11 @@ def test_public_data_availability_outputs_and_cli(tmp_path):
     assert not availability.empty
     assert not summary.empty
     assert "XIAO_2019_INTERNAL_LEAD" in set(availability["candidate_id"])
-    assert int(summary["supports_g11_without_author_contact"].iloc[0]) == 1
-    assert summary["verdict"].iloc[0] == "public data closes G11"
+    assert int(summary["supports_g11_without_author_contact"].iloc[0]) == 0
+    assert bool(summary["public_second_candidate_found"].iloc[0])
+    assert summary["verdict"].iloc[0] == (
+        "public data yields candidate but does not close G11"
+    )
     assert (output_dir / "public_data_availability.csv").exists()
     assert (output_dir / "public_data_availability_report.md").exists()
 

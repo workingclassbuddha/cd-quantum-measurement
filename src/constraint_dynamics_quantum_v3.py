@@ -9186,11 +9186,9 @@ def make_public_data_availability_outputs(output_dir: Path):
             "public_full_text_or_record": True,
             "public_source_package_or_figures": True,
             "numerical_tables_found": False,
-            "supports_g11_without_author_contact": Path(
-                "outputs/kokorowski_multiphoton/kokorowski_multiphoton_summary.csv"
-            ).exists(),
-            "evidence_summary": "arXiv source includes TeX and EPS figures; text reports independent beam-deflection/broadening parameters for Fig. 4, and the local vector digitization/analyze path tests the no-refit contrast prediction.",
-            "next_action": "stress-test Kokorowski Fig. 4 extraction and compare against null/refit controls",
+            "supports_g11_without_author_contact": False,
+            "evidence_summary": "arXiv source includes TeX and EPS figures; local vector digitization/analyze path gives a strong no-refit candidate, but stress/profile artifacts show independent-kappa uncertainty still prevents publication-grade G11 closure.",
+            "next_action": "obtain raw beam-deflection/broadening calibration tables or tighter independent kappa uncertainty provenance",
         },
         {
             "candidate_id": "DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD",
@@ -9214,10 +9212,15 @@ def make_public_data_availability_outputs(output_dir: Path):
                 "candidate_count": int(len(availability)),
                 "numerical_public_tables_found": numeric_count,
                 "supports_g11_without_author_contact": support_count,
+                "public_second_candidate_found": bool(
+                    Path(
+                        "outputs/kokorowski_multiphoton/kokorowski_multiphoton_summary.csv"
+                    ).exists()
+                ),
                 "verdict": (
                     "public data closes G11"
                     if support_count > 0
-                    else "public data does not close G11"
+                    else "public data yields candidate but does not close G11"
                 ),
             }
         ]
@@ -9245,6 +9248,7 @@ This audit asks whether public records, source packages, or article pages alread
 - Candidates checked: {len(availability)}
 - Public numerical tables found: {numeric_count}
 - Candidates that close G11 without author contact: {support_count}
+- Public second-candidate route found: {bool(summary['public_second_candidate_found'].iloc[0])}
 
 ## Candidate Checks
 
@@ -9252,7 +9256,7 @@ This audit asks whether public records, source packages, or article pages alread
 
 ## Interpretation
 
-The public record now supplies one route through the missing G11 gate: Kokorowski's arXiv source package plus vector Fig. 4 digitization tests independently reported many-photon parameters against contrast loss without author contact. Author numerical tables would still improve provenance, and the Kokorowski result still needs robustness/null testing.
+The public record supplies a serious route toward G11, not a completed closure. Kokorowski's arXiv source package plus vector Fig. 4 digitization tests independently reported many-photon parameters against contrast loss, but the stress/profile artifacts identify independent-kappa uncertainty as the limiting factor. Author numerical tables or a reproduced calibration are still needed before treating the second validation as closed.
 """
     (output_dir / "public_data_availability_report.md").write_text(
         report,
