@@ -7925,6 +7925,12 @@ def make_current_goal_completion_audit_outputs(
     product_law_status_csv: Path = Path(
         "outputs/product_law_readiness/product_law_readiness_status.csv"
     ),
+    kokorowski_kappa_profile_summary_csv: Path = Path(
+        "outputs/kokorowski_kappa_uncertainty_profile/kokorowski_kappa_uncertainty_summary.csv"
+    ),
+    kokorowski_calibration_provenance_summary_csv: Path = Path(
+        "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7933,6 +7939,12 @@ def make_current_goal_completion_audit_outputs(
     g11_summary = _read_optional_metric_csv(g11_summary_csv)
     public_summary = _read_optional_metric_csv(public_data_summary_csv)
     kokorowski_stress = _read_optional_metric_csv(kokorowski_stress_summary_csv)
+    kokorowski_kappa_profile = _read_optional_metric_csv(
+        kokorowski_kappa_profile_summary_csv
+    )
+    kokorowski_calibration_provenance = _read_optional_metric_csv(
+        kokorowski_calibration_provenance_summary_csv
+    )
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
 
@@ -7953,6 +7965,38 @@ def make_current_goal_completion_audit_outputs(
     )
     kokorowski_branch_swap_p = float(
         _first_value(kokorowski_stress, "branch_swap_null_p_rmse_lte_observed", np.nan)
+    )
+    kokorowski_full_se_joint = float(
+        _first_value(
+            kokorowski_kappa_profile,
+            "full_reported_se_joint_pass",
+            np.nan,
+        )
+    )
+    kokorowski_max_se_scale = float(
+        _first_value(
+            kokorowski_kappa_profile,
+            "max_kappa_se_scale_with_joint_pass_ge_080",
+            np.nan,
+        )
+    )
+    kokorowski_provenance_status = str(
+        _first_value(
+            kokorowski_calibration_provenance,
+            "status",
+            "not available",
+        )
+    )
+    kokorowski_provenance_blocker = str(
+        _first_value(
+            kokorowski_calibration_provenance,
+            "primary_gap",
+            _first_value(
+                kokorowski_calibration_provenance,
+                "remaining_blocker",
+                "not available",
+            ),
+        )
     )
     kokorowski_stress_pass = bool(
         math.isfinite(kokorowski_joint)
@@ -7994,10 +8038,22 @@ def make_current_goal_completion_audit_outputs(
         },
         {
             "requirement": "second_independent_distribution_to_visibility_validation",
-            "evidence_path": f"{g11_summary_csv}; {kokorowski_stress_summary_csv}",
+            "evidence_path": (
+                f"{g11_summary_csv}; {kokorowski_stress_summary_csv}; "
+                f"{kokorowski_kappa_profile_summary_csv}; "
+                f"{kokorowski_calibration_provenance_summary_csv}"
+            ),
             "status": "fail",
             "passed": second_validation_found,
-            "note": f"eligible_second={eligible_second}; public_support={public_support}; author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; stress_pass={kokorowski_stress_pass}",
+            "note": (
+                f"eligible_second={eligible_second}; public_support={public_support}; "
+                f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
+                f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
+                f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
+                f"provenance_status={kokorowski_provenance_status}; "
+                f"provenance_blocker={kokorowski_provenance_blocker}; "
+                f"stress_pass={kokorowski_stress_pass}"
+            ),
         },
         {
             "requirement": "chapman_raw_phase_repaired",
@@ -8036,6 +8092,10 @@ def make_current_goal_completion_audit_outputs(
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
                 "kokorowski_bootstrap_p_joint_stress_gate": kokorowski_joint,
+                "kokorowski_full_reported_se_joint_pass": kokorowski_full_se_joint,
+                "kokorowski_max_kappa_se_scale_with_joint_pass_ge_080": kokorowski_max_se_scale,
+                "kokorowski_calibration_provenance_status": kokorowski_provenance_status,
+                "kokorowski_calibration_provenance_blocker": kokorowski_provenance_blocker,
                 "kokorowski_stress_pass": kokorowski_stress_pass,
                 "verdict": (
                     "objective complete"
@@ -8067,6 +8127,10 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
 - Kokorowski joint stress probability: {kokorowski_joint if math.isfinite(kokorowski_joint) else "not available"}
+- Kokorowski full reported-SE joint pass probability: {kokorowski_full_se_joint if math.isfinite(kokorowski_full_se_joint) else "not available"}
+- Kokorowski max SE scale with joint pass >= 0.80: {kokorowski_max_se_scale if math.isfinite(kokorowski_max_se_scale) else "not available"}
+- Kokorowski calibration provenance status: {kokorowski_provenance_status}
+- Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
 - Kokorowski stress pass: {kokorowski_stress_pass}
 
 ## Failed Or Open Requirements

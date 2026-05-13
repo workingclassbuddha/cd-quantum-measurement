@@ -966,12 +966,30 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     author_summary = pd.DataFrame(
         [{"g11_ready_rows": 0}]
     )
+    kappa_profile = pd.DataFrame(
+        [
+            {
+                "full_reported_se_joint_pass": 0.417,
+                "max_kappa_se_scale_with_joint_pass_ge_080": 0.25,
+            }
+        ]
+    )
+    provenance_summary = pd.DataFrame(
+        [
+            {
+                "status": "calibration provenance extracted",
+                "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
+            }
+        ]
+    )
     paths = {}
     for name, frame in [
         ("scorecard", scorecard),
         ("g11", g11_summary),
         ("public", public_summary),
         ("author", author_summary),
+        ("kappa", kappa_profile),
+        ("provenance", provenance_summary),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -982,13 +1000,28 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         paths["scorecard"],
         paths["g11"],
         paths["public"],
-        paths["author"],
+        author_validation_summary_csv=paths["author"],
+        kokorowski_kappa_profile_summary_csv=paths["kappa"],
+        kokorowski_calibration_provenance_summary_csv=paths["provenance"],
     )
     assert not checklist.empty
     assert not bool(summary["objective_achieved"].iloc[0])
+    assert (
+        float(summary["kokorowski_full_reported_se_joint_pass"].iloc[0]) == 0.417
+    )
+    assert (
+        summary["kokorowski_calibration_provenance_status"].iloc[0]
+        == "calibration provenance extracted"
+    )
     assert "second_independent_distribution_to_visibility_validation" in set(
         checklist["requirement"]
     )
+    second_row = checklist[
+        checklist["requirement"]
+        == "second_independent_distribution_to_visibility_validation"
+    ].iloc[0]
+    assert "full_reported_se_joint=0.417" in second_row["note"]
+    assert "raw beam-deflection/broadening calibration data" in second_row["note"]
     assert (output_dir / "current_goal_completion_audit.md").exists()
 
     cli_output_dir = tmp_path / "goal_audit_cli"

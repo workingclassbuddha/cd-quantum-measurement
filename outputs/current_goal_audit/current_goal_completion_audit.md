@@ -15,11 +15,15 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Author-data G11-ready rows: 0
 - Empirical product-law-ready datasets: 0
 - Kokorowski joint stress probability: 0.727
+- Kokorowski full reported-SE joint pass probability: 0.4166666666666667
+- Kokorowski max SE scale with joint pass >= 0.80: 0.25
+- Kokorowski calibration provenance status: calibration provenance extracted
+- Kokorowski calibration provenance blocker: raw beam-deflection/broadening calibration data are still not in the public source package
 - Kokorowski stress pass: False
 
 ## Failed Or Open Requirements
 
-- **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; stress_pass=False
+- **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; full_reported_se_joint=0.417; max_se_scale_for_joint_gate=0.250; provenance_status=calibration provenance extracted; provenance_blocker=raw beam-deflection/broadening calibration data are still not in the public source package; stress_pass=False
 - **chapman_raw_phase_repaired**: G10 remains a blocker unless the scorecard says raw phase repaired.
 - **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready=0.
 
