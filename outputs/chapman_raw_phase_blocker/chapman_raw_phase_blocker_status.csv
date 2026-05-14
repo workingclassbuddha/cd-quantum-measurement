@@ -1,2 +1,2 @@
-verdict,g10_repaired,high_confidence_only_pass,raw_phase_rows,wrap_ambiguous_rows,low_contrast_ambiguous_rows,all_points_best_phase_rmse_rad,high_confidence_best_phase_rmse_rad,next_valid_move
-G10 still blocked by raw phase,False,False,21,5,8,1.475301576166102,1.620728406817644,author numerical phase trace or publication-grade redigitization
+verdict,g10_repaired,high_confidence_only_pass,raw_phase_rows,wrap_ambiguous_rows,low_contrast_ambiguous_rows,all_points_best_phase_rmse_rad,high_confidence_best_phase_rmse_rad,branch_optimized_best_phase_rmse_rad,branch_optimized_gate_pass,branch_optimized_best_scope,branch_optimized_best_model,branch_optimized_best_group_shifts_json,next_valid_move
+G10 still blocked by raw phase,False,False,21,5,8,1.475301576166102,1.620728406817644,1.4753015761661024,False,all_phase_points,complex:beta_recoil_complex,"{""0"": 1, ""1"": 1, ""2"": 1, ""3"": 1, ""4"": 1}",author numerical phase trace or publication-grade redigitization

@@ -1,0 +1,9 @@
+analysis_scope,prediction_source,model,n_phase,unwrap_group_count,max_group_shift,current_phase_rmse_rad,branch_optimized_phase_rmse_rad,branch_optimized_excess_over_gate_rad,branch_gate_threshold_rad,branch_gate_pass,best_global_offset_rad,best_group_shifts_json
+all_phase_points,complex,beta_recoil_complex,21,5,1,1.4753015761661021,1.4753015761661024,0.7253015761661024,0.75,False,6.283185307179585,"{""0"": 1, ""1"": 1, ""2"": 1, ""3"": 1, ""4"": 1}"
+all_phase_points,complex,uniform_recoil_complex,21,5,1,3.675485321048519,1.7295185387390932,0.9795185387390932,0.75,False,0.29919930034188463,"{""0"": 1, ""1"": 0, ""2"": 0, ""3"": -1, ""4"": -1}"
+high_confidence_raw,complex,beta_recoil_complex,16,4,1,1.6207284068176437,1.6207284068176433,0.8707284068176433,0.75,False,6.283185307179586,"{""0"": 1, ""1"": 1, ""2"": 1, ""3"": 1}"
+high_confidence_raw,complex,uniform_recoil_complex,16,4,1,3.3094773401448987,1.560238112462682,0.8102381124626821,0.75,False,3.5342917352885177,"{""0"": 1, ""1"": 1, ""2"": 0, ""3"": 0}"
+all_phase_points,mixture,complex_mixture_no_smear,21,5,1,1.9321574535240065,1.6075326816569289,0.8575326816569289,0.75,False,-4.787188805470161,"{""0"": -1, ""1"": -1, ""2"": 0, ""3"": -1, ""4"": -1}"
+all_phase_points,mixture,complex_mixture_with_smear,21,5,1,1.8942943829630832,1.5661446239709458,0.8161446239709458,0.75,False,-4.787188805470161,"{""0"": -1, ""1"": -1, ""2"": 0, ""3"": -1, ""4"": -1}"
+high_confidence_raw,mixture,complex_mixture_no_smear,16,4,1,1.639021752661537,1.6390217526615365,0.8890217526615365,0.75,False,6.283185307179586,"{""0"": 1, ""1"": 1, ""2"": 1, ""3"": 1}"
+high_confidence_raw,mixture,complex_mixture_with_smear,16,4,1,1.639021752661537,1.6390217526615365,0.8890217526615365,0.75,False,6.283185307179586,"{""0"": 1, ""1"": 1, ""2"": 1, ""3"": 1}"

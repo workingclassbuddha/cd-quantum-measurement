@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import html
+import itertools
 import json
 import math
 import re
@@ -7933,6 +7934,9 @@ def make_current_goal_completion_audit_outputs(
     product_law_status_csv: Path = Path(
         "outputs/product_law_readiness/product_law_readiness_status.csv"
     ),
+    chapman_phase_blocker_status_csv: Path = Path(
+        "outputs/chapman_raw_phase_blocker/chapman_raw_phase_blocker_status.csv"
+    ),
     kokorowski_kappa_profile_summary_csv: Path = Path(
         "outputs/kokorowski_kappa_uncertainty_profile/kokorowski_kappa_uncertainty_summary.csv"
     ),
@@ -7969,6 +7973,7 @@ def make_current_goal_completion_audit_outputs(
     mir_fig4_eraser_phase = _read_optional_metric_csv(mir_fig4_eraser_phase_summary_csv)
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
+    chapman_phase_blocker = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
 
     eligible_second = int(_first_value(g11_summary, "eligible_second_no_refit_targets", 0))
     public_support = int(_first_value(public_summary, "supports_g11_without_author_contact", 0))
@@ -8127,6 +8132,32 @@ def make_current_goal_completion_audit_outputs(
         if not g12_rows.empty and "passed" in g12_rows.columns:
             g12_pass = _truthy(g12_rows["passed"].iloc[0])
     g12_pass = bool(g12_pass or g12_validated_by_audit)
+    chapman_phase_verdict = str(
+        _first_value(chapman_phase_blocker, "verdict", "not available")
+    )
+    chapman_branch_rmse = float(
+        _first_value(
+            chapman_phase_blocker,
+            "branch_optimized_best_phase_rmse_rad",
+            np.nan,
+        )
+    )
+    chapman_branch_gate_pass = bool(
+        _truthy(
+            _first_value(
+                chapman_phase_blocker,
+                "branch_optimized_gate_pass",
+                False,
+            )
+        )
+    )
+    chapman_branch_model = str(
+        _first_value(
+            chapman_phase_blocker,
+            "branch_optimized_best_model",
+            "not available",
+        )
+    )
 
     second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
@@ -8186,10 +8217,16 @@ def make_current_goal_completion_audit_outputs(
         },
         {
             "requirement": "chapman_raw_phase_repaired",
-            "evidence_path": str(breakthrough_scorecard_csv),
+            "evidence_path": f"{breakthrough_scorecard_csv}; {chapman_phase_blocker_status_csv}",
             "status": "pass" if g10_pass else "fail",
             "passed": g10_pass,
-            "note": "G10 remains a blocker unless the scorecard says raw phase repaired.",
+            "note": (
+                "G10 remains a blocker unless the scorecard says raw phase repaired; "
+                f"phase_verdict={chapman_phase_verdict}; "
+                f"branch_optimized_rmse={chapman_branch_rmse:.3f}; "
+                f"branch_gate_pass={chapman_branch_gate_pass}; "
+                f"branch_model={chapman_branch_model}."
+            ),
         },
         {
             "requirement": "product_law_independently_validated",
@@ -8230,6 +8267,9 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_detector_all_within_two_reported_se": kokorowski_detector_all_within_two_se,
                 "kokorowski_detector_max_abs_predicted_minus_reported_k0": kokorowski_detector_max_delta,
                 "kokorowski_detector_convolution_clears_g11": kokorowski_detector_clears_g11,
+                "chapman_raw_phase_verdict": chapman_phase_verdict,
+                "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
+                "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
                 "kokorowski_fig3_decay_status": kokorowski_fig3_status,
                 "kokorowski_fig3_decay_log10_rmse": kokorowski_fig3_log_rmse,
                 "kokorowski_fig3_branch_swap_null_pass": kokorowski_fig3_branch_swap,
@@ -8277,6 +8317,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski calibration provenance scope warning: {kokorowski_provenance_scope_warning}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
 - Kokorowski detector-convolution check: {kokorowski_detector_status}; all within two reported SE: {kokorowski_detector_all_within_two_se}; max delta: {kokorowski_detector_max_delta if math.isfinite(kokorowski_detector_max_delta) else "not available"}; clears G11: {kokorowski_detector_clears_g11}
+- Chapman raw-phase blocker: {chapman_phase_verdict}; branch-optimized RMSE: {chapman_branch_rmse if math.isfinite(chapman_branch_rmse) else "not available"}; branch gate pass: {chapman_branch_gate_pass}
 - Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; branch-swap pass: {kokorowski_fig3_branch_swap}; null margin: {kokorowski_fig3_null_margin if math.isfinite(kokorowski_fig3_null_margin) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
 - Mir Fig. 4 eraser phase control: {mir_fig4_status}; supports eraser control: {mir_fig4_supports_eraser_control}; zero-lag correlation: {mir_fig4_zero_lag_corr if math.isfinite(mir_fig4_zero_lag_corr) else "not available"}; best shifted correlation: {mir_fig4_best_shift_corr if math.isfinite(mir_fig4_best_shift_corr) else "not available"}; clears G11: {mir_fig4_clears_g11}
 - Kokorowski stress pass: {kokorowski_stress_pass}
@@ -16745,6 +16786,107 @@ def _chapman_phase_bool_count(frame: pd.DataFrame, column: str):
     return int(frame[column].map(_truthy).sum())
 
 
+def _chapman_phase_branch_sensitivity(
+    raw_phase: pd.DataFrame,
+    prediction_frames: list[tuple[str, pd.DataFrame]],
+    phase_gate_threshold_rad: float = 0.75,
+    max_group_shift: int = 1,
+) -> pd.DataFrame:
+    """Test whether whole unwrap-group branch shifts can rescue raw phase."""
+
+    rows = []
+    phase_lookup = raw_phase[
+        [
+            "x_key",
+            "unwrap_group",
+            "phase_quality",
+            "wrap_ambiguous",
+            "low_contrast_ambiguous",
+        ]
+    ].copy()
+    for source_name, predictions in prediction_frames:
+        phase_predictions = predictions[
+            (predictions["branch"].astype(str) == "raw")
+            & (predictions["grid_type"].astype(str) == "observed")
+            & (predictions["observable"].astype(str) == "phase")
+        ].copy()
+        if phase_predictions.empty:
+            continue
+        phase_predictions["x_key"] = phase_predictions["x_value"].astype(float).round(6)
+        for (scope, model), group in phase_predictions.groupby(
+            ["analysis_scope", "model"],
+            dropna=False,
+        ):
+            joined = group.merge(phase_lookup, on="x_key", how="inner")
+            if joined.empty:
+                continue
+            unwrap_groups = sorted(
+                int(value) for value in joined["unwrap_group"].dropna().unique()
+            )
+            if len(unwrap_groups) > 8:
+                raise ValueError(
+                    "Chapman phase branch sensitivity refuses to enumerate more than "
+                    "8 unwrap groups"
+                )
+            current_residual = joined["residual"].astype(float).to_numpy()
+            current_rmse = float(np.sqrt(np.mean(current_residual**2)))
+            best = {
+                "branch_optimized_phase_rmse_rad": np.inf,
+                "best_global_offset_rad": np.nan,
+                "best_group_shifts": {},
+            }
+            shift_values = range(-int(max_group_shift), int(max_group_shift) + 1)
+            for shifts in itertools.product(shift_values, repeat=len(unwrap_groups)):
+                shift_map = dict(zip(unwrap_groups, shifts))
+                adjusted_phase = (
+                    joined["phase_obs_rad"].astype(float)
+                    + joined["unwrap_group"].map(shift_map).astype(float) * 2.0 * math.pi
+                )
+                residual = adjusted_phase - joined["pred_phase_rad"].astype(float)
+                # Phase offset is already a fitted model parameter, so a fair branch
+                # sensitivity test allows one global offset after changing branches.
+                global_offset = float(residual.mean())
+                centered = residual - global_offset
+                rmse = float(np.sqrt(np.mean(centered**2)))
+                if rmse < best["branch_optimized_phase_rmse_rad"]:
+                    best = {
+                        "branch_optimized_phase_rmse_rad": rmse,
+                        "best_global_offset_rad": global_offset,
+                        "best_group_shifts": {
+                            str(key): int(value) for key, value in shift_map.items()
+                        },
+                    }
+            rows.append(
+                {
+                    "analysis_scope": str(scope),
+                    "prediction_source": source_name,
+                    "model": str(model),
+                    "n_phase": int(len(joined)),
+                    "unwrap_group_count": int(len(unwrap_groups)),
+                    "max_group_shift": int(max_group_shift),
+                    "current_phase_rmse_rad": current_rmse,
+                    "branch_optimized_phase_rmse_rad": float(
+                        best["branch_optimized_phase_rmse_rad"]
+                    ),
+                    "branch_optimized_excess_over_gate_rad": float(
+                        best["branch_optimized_phase_rmse_rad"]
+                        - phase_gate_threshold_rad
+                    ),
+                    "branch_gate_threshold_rad": phase_gate_threshold_rad,
+                    "branch_gate_pass": bool(
+                        best["branch_optimized_phase_rmse_rad"]
+                        <= phase_gate_threshold_rad
+                    ),
+                    "best_global_offset_rad": float(best["best_global_offset_rad"]),
+                    "best_group_shifts_json": json.dumps(
+                        best["best_group_shifts"],
+                        sort_keys=True,
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def make_chapman_raw_phase_blocker_audit_outputs(
     output_dir: Path,
     phase_csv: Path = Path("data/extracted/CHAPMAN_1995_PHASE_GRADED.csv"),
@@ -16912,6 +17054,35 @@ def make_chapman_raw_phase_blocker_audit_outputs(
         output_dir / "chapman_raw_phase_blocker_residual_rollup.csv",
         index=False,
     )
+    branch_sensitivity = _chapman_phase_branch_sensitivity(
+        raw_phase,
+        [
+            ("complex", complex_predictions),
+            ("mixture", mixture_predictions),
+        ],
+    )
+    branch_sensitivity.to_csv(
+        output_dir / "chapman_raw_phase_branch_sensitivity.csv",
+        index=False,
+    )
+    if branch_sensitivity.empty:
+        best_branch = None
+        best_branch_rmse = np.nan
+        best_branch_scope = "not available"
+        best_branch_model = "not available"
+        best_branch_pass = False
+        best_branch_shifts = "{}"
+    else:
+        best_branch = branch_sensitivity.sort_values(
+            "branch_optimized_phase_rmse_rad"
+        ).iloc[0]
+        best_branch_rmse = float(best_branch["branch_optimized_phase_rmse_rad"])
+        best_branch_scope = str(best_branch["analysis_scope"])
+        best_branch_model = (
+            f"{best_branch['prediction_source']}:{best_branch['model']}"
+        )
+        best_branch_pass = bool(best_branch["branch_gate_pass"])
+        best_branch_shifts = str(best_branch["best_group_shifts_json"])
 
     all_row = gate_summary[gate_summary["analysis_scope"] == "all_phase_points"].iloc[0]
     high_row = gate_summary[gate_summary["analysis_scope"] == "high_confidence_raw"].iloc[0]
@@ -16977,12 +17148,15 @@ This audit does not add model freedom. It summarizes why G10 remains blocked aft
 - All-points excess over 0.75 rad gate: {float(all_row['phase_rmse_excess_over_gate_rad']):.4f} rad
 - High-confidence best phase RMSE: {float(high_row['best_available_phase_rmse_rad']):.4f} rad
 - High-confidence excess over 0.75 rad gate: {float(high_row['phase_rmse_excess_over_gate_rad']):.4f} rad
+- Best branch-optimized phase RMSE: {best_branch_rmse:.4f} rad
+- Best branch-optimized scope/model: {best_branch_scope} / {best_branch_model}
+- Branch-optimized phase gate pass: {best_branch_pass}
 - All-points phase gate pass: {all_pass}
 - High-confidence phase gate pass: {high_pass}
 
 ## Interpretation
 
-The visibility-kernel story is not the failing part of G10. The failure is the raw complex phase: neither the all-points fit nor the high-confidence masked fit reaches the 0.75 rad phase gate while preserving the visibility gate. Because the remaining input phase picks are still manual plotted-point extractions, the next valid move is numerical source data or publication-grade redigitization, not a looser model.
+The visibility-kernel story is not the failing part of G10. The failure is the raw complex phase: neither the all-points fit nor the high-confidence masked fit reaches the 0.75 rad phase gate while preserving the visibility gate. A whole-unwrap-group branch search over `±2π` shifts also fails to reach the phase gate, so the blocker is not removed by simple branch relabeling. Because the remaining input phase picks are still manual plotted-point extractions, the next valid move is numerical source data or publication-grade redigitization, not a looser model.
 
 ## Needed Data
 
@@ -17022,6 +17196,11 @@ The visibility-kernel story is not the failing part of G10. The failure is the r
                 "high_confidence_best_phase_rmse_rad": float(
                     high_row["best_available_phase_rmse_rad"]
                 ),
+                "branch_optimized_best_phase_rmse_rad": best_branch_rmse,
+                "branch_optimized_gate_pass": best_branch_pass,
+                "branch_optimized_best_scope": best_branch_scope,
+                "branch_optimized_best_model": best_branch_model,
+                "branch_optimized_best_group_shifts_json": best_branch_shifts,
                 "next_valid_move": "author numerical phase trace or publication-grade redigitization",
             }
         ]

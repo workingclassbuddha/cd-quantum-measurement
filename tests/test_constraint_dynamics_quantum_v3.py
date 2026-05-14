@@ -998,6 +998,16 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    chapman_phase_summary = pd.DataFrame(
+        [
+            {
+                "verdict": "G10 still blocked by raw phase",
+                "branch_optimized_best_phase_rmse_rad": 1.56,
+                "branch_optimized_gate_pass": False,
+                "branch_optimized_best_model": "mixture:complex_mixture_with_smear",
+            }
+        ]
+    )
     fig3_summary = pd.DataFrame(
         [
             {
@@ -1029,6 +1039,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("kappa", kappa_profile),
         ("provenance", provenance_summary),
         ("detector", detector_summary),
+        ("chapman_phase", chapman_phase_summary),
         ("fig3", fig3_summary),
         ("mir_fig4", mir_fig4_summary),
     ]:
@@ -1045,6 +1056,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
         kokorowski_calibration_provenance_summary_csv=paths["provenance"],
         kokorowski_detector_convolution_summary_csv=paths["detector"],
+        chapman_phase_blocker_status_csv=paths["chapman_phase"],
         kokorowski_fig3_decay_summary_csv=paths["fig3"],
         mir_fig4_eraser_phase_summary_csv=paths["mir_fig4"],
     )
@@ -1063,6 +1075,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     )
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
+    assert summary["chapman_raw_phase_verdict"].iloc[0] == "G10 still blocked by raw phase"
+    assert float(summary["chapman_branch_optimized_phase_rmse_rad"].iloc[0]) == 1.56
+    assert bool(summary["chapman_branch_optimized_gate_pass"].iloc[0]) is False
     assert summary["kokorowski_fig3_decay_status"].iloc[0].startswith("fig3")
     assert bool(summary["kokorowski_fig3_branch_swap_null_pass"].iloc[0]) is True
     assert bool(summary["kokorowski_fig3_decay_clears_g11"].iloc[0]) is False
@@ -1071,6 +1086,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "second_independent_distribution_to_visibility_validation" in set(
         checklist["requirement"]
     )
+    g10_row = checklist[
+        checklist["requirement"] == "chapman_raw_phase_repaired"
+    ].iloc[0]
+    assert "branch_optimized_rmse=1.560" in g10_row["note"]
+    assert "branch_gate_pass=False" in g10_row["note"]
     second_row = checklist[
         checklist["requirement"]
         == "second_independent_distribution_to_visibility_validation"
@@ -2585,6 +2605,9 @@ def test_chapman_raw_phase_blocker_audit_outputs_and_cli(tmp_path):
     assert status["verdict"].iloc[0] == "G10 still blocked by raw phase"
     assert not bool(status["g10_repaired"].iloc[0])
     assert (audit_dir / "chapman_raw_phase_blocker_audit.md").exists()
+    assert (audit_dir / "chapman_raw_phase_branch_sensitivity.csv").exists()
+    assert "branch_optimized_best_phase_rmse_rad" in status.columns
+    assert not bool(status["branch_optimized_gate_pass"].iloc[0])
 
     main(
         [

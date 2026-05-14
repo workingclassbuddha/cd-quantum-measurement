@@ -22,12 +22,15 @@ This audit does not add model freedom. It summarizes why G10 remains blocked aft
 - All-points excess over 0.75 rad gate: 0.7253 rad
 - High-confidence best phase RMSE: 1.6207 rad
 - High-confidence excess over 0.75 rad gate: 0.8707 rad
+- Best branch-optimized phase RMSE: 1.4753 rad
+- Best branch-optimized scope/model: all_phase_points / complex:beta_recoil_complex
+- Branch-optimized phase gate pass: False
 - All-points phase gate pass: False
 - High-confidence phase gate pass: False
 
 ## Interpretation
 
-The visibility-kernel story is not the failing part of G10. The failure is the raw complex phase: neither the all-points fit nor the high-confidence masked fit reaches the 0.75 rad phase gate while preserving the visibility gate. Because the remaining input phase picks are still manual plotted-point extractions, the next valid move is numerical source data or publication-grade redigitization, not a looser model.
+The visibility-kernel story is not the failing part of G10. The failure is the raw complex phase: neither the all-points fit nor the high-confidence masked fit reaches the 0.75 rad phase gate while preserving the visibility gate. A whole-unwrap-group branch search over `±2π` shifts also fails to reach the phase gate, so the blocker is not removed by simple branch relabeling. Because the remaining input phase picks are still manual plotted-point extractions, the next valid move is numerical source data or publication-grade redigitization, not a looser model.
 
 ## Needed Data
 
