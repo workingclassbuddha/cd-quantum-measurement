@@ -8011,6 +8011,15 @@ def make_current_goal_completion_audit_outputs(
             ),
         )
     )
+    kokorowski_provenance_scope_warning = bool(
+        _truthy(
+            _first_value(
+                kokorowski_calibration_provenance,
+                "has_scope_warning",
+                False,
+            )
+        )
+    )
     kokorowski_fig3_status = str(
         _first_value(kokorowski_fig3_decay, "status", "not available")
     )
@@ -8124,6 +8133,7 @@ def make_current_goal_completion_audit_outputs(
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
                 f"provenance_status={kokorowski_provenance_status}; "
+                f"provenance_scope_warning={kokorowski_provenance_scope_warning}; "
                 f"provenance_blocker={kokorowski_provenance_blocker}; "
                 f"fig3_status={kokorowski_fig3_status}; "
                 f"fig3_log10_rmse={kokorowski_fig3_log_rmse:.3f}; "
@@ -8178,6 +8188,7 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_full_reported_se_joint_pass": kokorowski_full_se_joint,
                 "kokorowski_max_kappa_se_scale_with_joint_pass_ge_080": kokorowski_max_se_scale,
                 "kokorowski_calibration_provenance_status": kokorowski_provenance_status,
+                "kokorowski_calibration_provenance_scope_warning": kokorowski_provenance_scope_warning,
                 "kokorowski_calibration_provenance_blocker": kokorowski_provenance_blocker,
                 "kokorowski_fig3_decay_status": kokorowski_fig3_status,
                 "kokorowski_fig3_decay_log10_rmse": kokorowski_fig3_log_rmse,
@@ -8223,6 +8234,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski full reported-SE joint pass probability: {kokorowski_full_se_joint if math.isfinite(kokorowski_full_se_joint) else "not available"}
 - Kokorowski max SE scale with joint pass >= 0.80: {kokorowski_max_se_scale if math.isfinite(kokorowski_max_se_scale) else "not available"}
 - Kokorowski calibration provenance status: {kokorowski_provenance_status}
+- Kokorowski calibration provenance scope warning: {kokorowski_provenance_scope_warning}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
 - Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; branch-swap pass: {kokorowski_fig3_branch_swap}; null margin: {kokorowski_fig3_null_margin if math.isfinite(kokorowski_fig3_null_margin) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
 - Mir Fig. 4 eraser phase control: {mir_fig4_status}; supports eraser control: {mir_fig4_supports_eraser_control}; zero-lag correlation: {mir_fig4_zero_lag_corr if math.isfinite(mir_fig4_zero_lag_corr) else "not available"}; best shifted correlation: {mir_fig4_best_shift_corr if math.isfinite(mir_fig4_best_shift_corr) else "not available"}; clears G11: {mir_fig4_clears_g11}
@@ -12025,12 +12037,12 @@ def make_kokorowski_calibration_provenance_outputs(
     source_sha = sha256_file(tex_path)
     claims = [
         {
-            "claim_id": "beam_deflection_values_independent",
+            "claim_id": "earlier_non_gaussian_fit_vs_beam_check",
             "patterns": [r"consistent with, and more", r"deflection and broadening"],
-            "evidence_kind": "source_text_independence_claim",
-            "paraphrase": "The paper says the photon-number distribution parameters used for Fig. 4 are determined from beam deflection or broadening, independently of the contrast fit.",
-            "formula_or_values": "nbar and sigma_n are treated as independent inputs for Fig. 4.",
-            "next_validation_question": "Can author tables or a reproduced beam-deflection calibration tighten the effective kappa uncertainty?",
+            "evidence_kind": "source_text_scope_warning",
+            "paraphrase": "An earlier non-Gaussian section says some photon-number distribution parameters were extracted from best-fit curves and checked against less precise beam deflection/broadening measurements.",
+            "formula_or_values": "fit-derived P(n) values were consistent with independent beam checks in the earlier non-Gaussian regime.",
+            "next_validation_question": "Keep this scope separate from the Fig. 4 many-photon no-refit claim.",
         },
         {
             "claim_id": "kappa_formula_record_width",
@@ -12055,6 +12067,14 @@ def make_kokorowski_calibration_provenance_outputs(
             "paraphrase": "The Fig. 4 caption ties the plotted branches to independently determined photon-number parameters.",
             "formula_or_values": "lower branch nbar=4.8(2), sigma_n=1.8(1); upper branch nbar=8.1(3), sigma_n=3.5(1)",
             "next_validation_question": "Recover numerical calibration data behind the caption values.",
+        },
+        {
+            "claim_id": "beam_deflection_values_independent",
+            "patterns": [r"independently", r"determined.*sigma"],
+            "evidence_kind": "source_text_independence_claim",
+            "paraphrase": "The Fig. 4 many-photon section says nbar and sigma_n were independently determined for each intensity before calculating kappa-prime.",
+            "formula_or_values": "nbar and sigma_n are treated as independent inputs for the Fig. 4 calculated kappa-prime values.",
+            "next_validation_question": "Can author tables or a reproduced beam-deflection calibration tighten the effective kappa uncertainty?",
         },
     ]
     rows = []
@@ -12089,6 +12109,7 @@ def make_kokorowski_calibration_provenance_outputs(
                 ),
                 "source_file": str(tex_path),
                 "source_file_sha256": source_sha,
+                "has_scope_warning": True,
                 "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
             }
         ]
@@ -12147,7 +12168,7 @@ This artifact anchors the public-data Kokorowski G11 lead to source-text claims 
 
 ## Interpretation
 
-The source supports the independence premise for the Fig. 4 no-refit check, but it does not expose the raw beam-deflection/broadening calibration tables. The kappa-uncertainty profile therefore remains the current public-data bottleneck.
+The Fig. 4 section supports the independence premise for the many-photon no-refit check, but an earlier non-Gaussian section uses fit-derived photon-number parameters and should not be conflated with the Fig. 4 claim. The source still does not expose the raw beam-deflection/broadening calibration tables, so the kappa-uncertainty profile remains the current public-data bottleneck.
 
 ## Boundary
 

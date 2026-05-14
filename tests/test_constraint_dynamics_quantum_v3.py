@@ -982,6 +982,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         [
             {
                 "status": "calibration provenance extracted",
+                "has_scope_warning": True,
                 "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
             }
         ]
@@ -1043,6 +1044,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         summary["kokorowski_calibration_provenance_status"].iloc[0]
         == "calibration provenance extracted"
     )
+    assert (
+        bool(summary["kokorowski_calibration_provenance_scope_warning"].iloc[0])
+        is True
+    )
     assert summary["kokorowski_fig3_decay_status"].iloc[0].startswith("fig3")
     assert bool(summary["kokorowski_fig3_branch_swap_null_pass"].iloc[0]) is True
     assert bool(summary["kokorowski_fig3_decay_clears_g11"].iloc[0]) is False
@@ -1056,6 +1061,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "second_independent_distribution_to_visibility_validation"
     ].iloc[0]
     assert "full_reported_se_joint=0.417" in second_row["note"]
+    assert "provenance_scope_warning=True" in second_row["note"]
     assert "fig3_log10_rmse=0.046" in second_row["note"]
     assert "fig3_branch_swap_pass=True" in second_row["note"]
     assert "fig3_null_margin=0.247" in second_row["note"]
@@ -1649,6 +1655,8 @@ def test_kokorowski_calibration_provenance_outputs_and_cli(tmp_path):
     )
     assert not provenance.empty
     assert not summary.empty
+    assert bool(summary["has_scope_warning"].iloc[0]) is True
+    assert "earlier_non_gaussian_fit_vs_beam_check" in set(provenance["claim_id"])
     assert "beam_deflection_values_independent" in set(provenance["claim_id"])
     assert (data_dir / "KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv").exists()
     assert (output_dir / "kokorowski_calibration_provenance_report.md").exists()
