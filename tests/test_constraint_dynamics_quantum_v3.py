@@ -82,6 +82,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_kokorowski_multiphoton_analysis_outputs,
     make_kokorowski_multiphoton_stress_outputs,
     make_kokorowski_kappa_uncertainty_profile_outputs,
+    make_kokorowski_detector_convolution_check_outputs,
     make_kokorowski_calibration_provenance_outputs,
     kokorowski_fig4_pixel_to_data,
     kokorowski_fig3_pixel_to_data,
@@ -987,6 +988,16 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    detector_summary = pd.DataFrame(
+        [
+            {
+                "status": "detector-convolution reconstruction supports reported kappa-prime values",
+                "all_branches_within_two_reported_se": True,
+                "max_abs_predicted_minus_reported_k0": 0.087,
+                "clears_g11": False,
+            }
+        ]
+    )
     fig3_summary = pd.DataFrame(
         [
             {
@@ -1017,6 +1028,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("author", author_summary),
         ("kappa", kappa_profile),
         ("provenance", provenance_summary),
+        ("detector", detector_summary),
         ("fig3", fig3_summary),
         ("mir_fig4", mir_fig4_summary),
     ]:
@@ -1032,6 +1044,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         author_validation_summary_csv=paths["author"],
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
         kokorowski_calibration_provenance_summary_csv=paths["provenance"],
+        kokorowski_detector_convolution_summary_csv=paths["detector"],
         kokorowski_fig3_decay_summary_csv=paths["fig3"],
         mir_fig4_eraser_phase_summary_csv=paths["mir_fig4"],
     )
@@ -1048,6 +1061,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         bool(summary["kokorowski_calibration_provenance_scope_warning"].iloc[0])
         is True
     )
+    assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
+    assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
     assert summary["kokorowski_fig3_decay_status"].iloc[0].startswith("fig3")
     assert bool(summary["kokorowski_fig3_branch_swap_null_pass"].iloc[0]) is True
     assert bool(summary["kokorowski_fig3_decay_clears_g11"].iloc[0]) is False
@@ -1062,6 +1077,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "provenance_scope_warning=True" in second_row["note"]
+    assert "detector_all_within_two_se=True" in second_row["note"]
+    assert "detector_clears_g11=False" in second_row["note"]
     assert "fig3_log10_rmse=0.046" in second_row["note"]
     assert "fig3_branch_swap_pass=True" in second_row["note"]
     assert "fig3_null_margin=0.247" in second_row["note"]
@@ -1626,6 +1643,43 @@ def test_kokorowski_kappa_uncertainty_profile_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "kokorowski_kappa_uncertainty_summary.csv").exists()
+
+
+def test_kokorowski_detector_convolution_check_outputs_and_cli(tmp_path):
+    input_csv = Path("data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv")
+    assert input_csv.exists()
+
+    output_dir = tmp_path / "kokorowski_detector"
+    summary, check, samples = make_kokorowski_detector_convolution_check_outputs(
+        input_csv,
+        output_dir,
+        n_bootstrap=40,
+        seed=17,
+    )
+    assert not summary.empty
+    assert not check.empty
+    assert not samples.empty
+    assert bool(summary["all_branches_within_two_reported_se"].iloc[0]) is True
+    assert float(summary["max_abs_predicted_minus_reported_k0"].iloc[0]) < 0.11
+    assert bool(summary["clears_g11"].iloc[0]) is False
+    assert {"raw_kappa_k0", "predicted_kappa_prime_k0"}.issubset(check.columns)
+    assert (output_dir / "kokorowski_detector_convolution_report.md").exists()
+
+    cli_output_dir = tmp_path / "kokorowski_detector_cli"
+    main(
+        [
+            "check-kokorowski-detector-convolution",
+            "--input",
+            str(input_csv),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "40",
+            "--seed",
+            "17",
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_detector_convolution_summary.csv").exists()
 
 
 def test_kokorowski_calibration_provenance_outputs_and_cli(tmp_path):

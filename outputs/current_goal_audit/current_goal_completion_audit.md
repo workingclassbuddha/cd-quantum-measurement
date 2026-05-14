@@ -20,13 +20,14 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski calibration provenance status: calibration provenance extracted
 - Kokorowski calibration provenance scope warning: True
 - Kokorowski calibration provenance blocker: raw beam-deflection/broadening calibration data are still not in the public source package
+- Kokorowski detector-convolution check: detector-convolution reconstruction supports reported kappa-prime values; all within two reported SE: True; max delta: 0.0883545445616271; clears G11: False
 - Kokorowski Fig. 3 public-vector check: fig3 public-vector consistency check passes as supporting evidence; log10 RMSE: 0.0458239682635031; branch-swap pass: True; null margin: 0.247164038377803; clears G11: False
 - Mir Fig. 4 eraser phase control: fig4 eraser phase-control check passes as supporting evidence; supports eraser control: True; zero-lag correlation: -0.3414869769663372; best shifted correlation: 0.8462180984453633; clears G11: False
 - Kokorowski stress pass: False
 
 ## Failed Or Open Requirements
 
-- **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; full_reported_se_joint=0.417; max_se_scale_for_joint_gate=0.250; provenance_status=calibration provenance extracted; provenance_scope_warning=True; provenance_blocker=raw beam-deflection/broadening calibration data are still not in the public source package; fig3_status=fig3 public-vector consistency check passes as supporting evidence; fig3_log10_rmse=0.046; fig3_branch_swap_pass=True; fig3_null_margin=0.247; fig3_clears_g11=False; mir_fig4_status=fig4 eraser phase-control check passes as supporting evidence; mir_fig4_supports_eraser_control=True; mir_fig4_zero_lag_corr=-0.341; mir_fig4_best_shift_corr=0.846; mir_fig4_clears_g11=False; stress_pass=False
+- **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; full_reported_se_joint=0.417; max_se_scale_for_joint_gate=0.250; provenance_status=calibration provenance extracted; provenance_scope_warning=True; provenance_blocker=raw beam-deflection/broadening calibration data are still not in the public source package; detector_convolution_status=detector-convolution reconstruction supports reported kappa-prime values; detector_all_within_two_se=True; detector_max_delta=0.088; detector_clears_g11=False; fig3_status=fig3 public-vector consistency check passes as supporting evidence; fig3_log10_rmse=0.046; fig3_branch_swap_pass=True; fig3_null_margin=0.247; fig3_clears_g11=False; mir_fig4_status=fig4 eraser phase-control check passes as supporting evidence; mir_fig4_supports_eraser_control=True; mir_fig4_zero_lag_corr=-0.341; mir_fig4_best_shift_corr=0.846; mir_fig4_clears_g11=False; stress_pass=False
 - **chapman_raw_phase_repaired**: G10 remains a blocker unless the scorecard says raw phase repaired.
 - **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready=0.
 

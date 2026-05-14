@@ -76,6 +76,9 @@ HORNBERGER_DOI = "https://doi.org/10.1103/PhysRevLett.90.160401"
 KOKOROWSKI_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/quant-ph/0009044"
 KOKOROWSKI_PAPER_URL = "https://arxiv.org/abs/quant-ph/0009044"
 KOKOROWSKI_DOI = "https://doi.org/10.1103/PhysRevLett.86.2191"
+KOKOROWSKI_SIGMA_K_OVER_K0 = 2.0 / 5.0
+KOKOROWSKI_DETECTOR_KAPPA_D_K0 = 3.3
+KOKOROWSKI_DETECTOR_KAPPA_D_SE_K0 = 0.1
 HORNBERGER_DIGITIZATION_DATE = "2026-05-11"
 HORNBERGER_EXTRACTION_METHOD = "manual_eps_render_scout_v1"
 
@@ -7936,6 +7939,9 @@ def make_current_goal_completion_audit_outputs(
     kokorowski_calibration_provenance_summary_csv: Path = Path(
         "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv"
     ),
+    kokorowski_detector_convolution_summary_csv: Path = Path(
+        "outputs/kokorowski_detector_convolution/kokorowski_detector_convolution_summary.csv"
+    ),
     kokorowski_fig3_decay_summary_csv: Path = Path(
         "outputs/kokorowski_fig3_decay_check/kokorowski_fig3_decay_summary.csv"
     ),
@@ -7955,6 +7961,9 @@ def make_current_goal_completion_audit_outputs(
     )
     kokorowski_calibration_provenance = _read_optional_metric_csv(
         kokorowski_calibration_provenance_summary_csv
+    )
+    kokorowski_detector_convolution = _read_optional_metric_csv(
+        kokorowski_detector_convolution_summary_csv
     )
     kokorowski_fig3_decay = _read_optional_metric_csv(kokorowski_fig3_decay_summary_csv)
     mir_fig4_eraser_phase = _read_optional_metric_csv(mir_fig4_eraser_phase_summary_csv)
@@ -8019,6 +8028,28 @@ def make_current_goal_completion_audit_outputs(
                 False,
             )
         )
+    )
+    kokorowski_detector_status = str(
+        _first_value(kokorowski_detector_convolution, "status", "not available")
+    )
+    kokorowski_detector_all_within_two_se = bool(
+        _truthy(
+            _first_value(
+                kokorowski_detector_convolution,
+                "all_branches_within_two_reported_se",
+                False,
+            )
+        )
+    )
+    kokorowski_detector_max_delta = float(
+        _first_value(
+            kokorowski_detector_convolution,
+            "max_abs_predicted_minus_reported_k0",
+            np.nan,
+        )
+    )
+    kokorowski_detector_clears_g11 = bool(
+        _truthy(_first_value(kokorowski_detector_convolution, "clears_g11", False))
     )
     kokorowski_fig3_status = str(
         _first_value(kokorowski_fig3_decay, "status", "not available")
@@ -8122,6 +8153,7 @@ def make_current_goal_completion_audit_outputs(
                 f"{g11_summary_csv}; {kokorowski_stress_summary_csv}; "
                 f"{kokorowski_kappa_profile_summary_csv}; "
                 f"{kokorowski_calibration_provenance_summary_csv}; "
+                f"{kokorowski_detector_convolution_summary_csv}; "
                 f"{kokorowski_fig3_decay_summary_csv}; "
                 f"{mir_fig4_eraser_phase_summary_csv}"
             ),
@@ -8135,6 +8167,10 @@ def make_current_goal_completion_audit_outputs(
                 f"provenance_status={kokorowski_provenance_status}; "
                 f"provenance_scope_warning={kokorowski_provenance_scope_warning}; "
                 f"provenance_blocker={kokorowski_provenance_blocker}; "
+                f"detector_convolution_status={kokorowski_detector_status}; "
+                f"detector_all_within_two_se={kokorowski_detector_all_within_two_se}; "
+                f"detector_max_delta={kokorowski_detector_max_delta:.3f}; "
+                f"detector_clears_g11={kokorowski_detector_clears_g11}; "
                 f"fig3_status={kokorowski_fig3_status}; "
                 f"fig3_log10_rmse={kokorowski_fig3_log_rmse:.3f}; "
                 f"fig3_branch_swap_pass={kokorowski_fig3_branch_swap}; "
@@ -8190,6 +8226,10 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_calibration_provenance_status": kokorowski_provenance_status,
                 "kokorowski_calibration_provenance_scope_warning": kokorowski_provenance_scope_warning,
                 "kokorowski_calibration_provenance_blocker": kokorowski_provenance_blocker,
+                "kokorowski_detector_convolution_status": kokorowski_detector_status,
+                "kokorowski_detector_all_within_two_reported_se": kokorowski_detector_all_within_two_se,
+                "kokorowski_detector_max_abs_predicted_minus_reported_k0": kokorowski_detector_max_delta,
+                "kokorowski_detector_convolution_clears_g11": kokorowski_detector_clears_g11,
                 "kokorowski_fig3_decay_status": kokorowski_fig3_status,
                 "kokorowski_fig3_decay_log10_rmse": kokorowski_fig3_log_rmse,
                 "kokorowski_fig3_branch_swap_null_pass": kokorowski_fig3_branch_swap,
@@ -8236,6 +8276,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski calibration provenance status: {kokorowski_provenance_status}
 - Kokorowski calibration provenance scope warning: {kokorowski_provenance_scope_warning}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
+- Kokorowski detector-convolution check: {kokorowski_detector_status}; all within two reported SE: {kokorowski_detector_all_within_two_se}; max delta: {kokorowski_detector_max_delta if math.isfinite(kokorowski_detector_max_delta) else "not available"}; clears G11: {kokorowski_detector_clears_g11}
 - Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; branch-swap pass: {kokorowski_fig3_branch_swap}; null margin: {kokorowski_fig3_null_margin if math.isfinite(kokorowski_fig3_null_margin) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
 - Mir Fig. 4 eraser phase control: {mir_fig4_status}; supports eraser control: {mir_fig4_supports_eraser_control}; zero-lag correlation: {mir_fig4_zero_lag_corr if math.isfinite(mir_fig4_zero_lag_corr) else "not available"}; best shifted correlation: {mir_fig4_best_shift_corr if math.isfinite(mir_fig4_best_shift_corr) else "not available"}; clears G11: {mir_fig4_clears_g11}
 - Kokorowski stress pass: {kokorowski_stress_pass}
@@ -11224,6 +11265,245 @@ def kokorowski_visibility_from_kappa(d_over_lambda, kappa_prime_k0):
     kappa = float(kappa_prime_k0)
     visibility = np.exp(-0.5 * (kappa * 2.0 * math.pi * d) ** 2)
     return np.clip(visibility, 0.0, 1.0)
+
+
+def kokorowski_raw_kappa_from_caption(nbar, sigma_n):
+    nbar = np.asarray(nbar, dtype=float)
+    sigma_n = np.asarray(sigma_n, dtype=float)
+    raw = nbar * KOKOROWSKI_SIGMA_K_OVER_K0**2 + sigma_n**2
+    return np.sqrt(np.maximum(raw, 0.0))
+
+
+def kokorowski_detector_convolved_kappa(raw_kappa, detector_kappa):
+    raw = np.asarray(raw_kappa, dtype=float)
+    detector = np.asarray(detector_kappa, dtype=float)
+    inv = 1.0 / np.maximum(raw, EPS) ** 2 + 1.0 / np.maximum(detector, EPS) ** 2
+    return np.sqrt(1.0 / np.maximum(inv, EPS))
+
+
+def make_kokorowski_detector_convolution_check_outputs(
+    input_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int = 1000,
+    seed: int = 28046,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    df = pd.read_csv(input_csv)
+    required = {
+        "branch",
+        "nbar_independent",
+        "nbar_se",
+        "sigma_n_independent",
+        "sigma_n_se",
+        "kappa_prime_calculated_k0",
+        "kappa_prime_calculated_se_k0",
+    }
+    missing = sorted(required - set(df.columns))
+    if missing:
+        raise ValueError(
+            "Kokorowski detector-convolution input missing columns: "
+            + ", ".join(missing)
+        )
+    if n_bootstrap < 20:
+        raise ValueError(
+            "Kokorowski detector-convolution check needs at least 20 bootstrap samples"
+        )
+
+    branch_inputs = (
+        df[list(required)]
+        .drop_duplicates(subset=["branch"])
+        .sort_values("branch")
+        .reset_index(drop=True)
+    )
+    rows = []
+    sample_rows = []
+    rng = np.random.default_rng(seed)
+    for _, row in branch_inputs.iterrows():
+        branch = str(row["branch"])
+        nbar = float(row["nbar_independent"])
+        sigma_n = float(row["sigma_n_independent"])
+        reported = float(row["kappa_prime_calculated_k0"])
+        reported_se = float(row["kappa_prime_calculated_se_k0"])
+        raw_kappa = float(kokorowski_raw_kappa_from_caption(nbar, sigma_n))
+        predicted = float(
+            kokorowski_detector_convolved_kappa(
+                raw_kappa,
+                KOKOROWSKI_DETECTOR_KAPPA_D_K0,
+            )
+        )
+        inferred_detector = math.nan
+        if raw_kappa > reported:
+            inv_detector = 1.0 / reported**2 - 1.0 / raw_kappa**2
+            if inv_detector > 0.0:
+                inferred_detector = math.sqrt(1.0 / inv_detector)
+
+        samples = []
+        for sample_id in range(int(n_bootstrap)):
+            n_sample = max(
+                0.0,
+                float(rng.normal(nbar, float(row["nbar_se"]))),
+            )
+            sigma_sample = max(
+                0.0,
+                float(rng.normal(sigma_n, float(row["sigma_n_se"]))),
+            )
+            detector_sample = max(
+                0.05,
+                float(
+                    rng.normal(
+                        KOKOROWSKI_DETECTOR_KAPPA_D_K0,
+                        KOKOROWSKI_DETECTOR_KAPPA_D_SE_K0,
+                    )
+                ),
+            )
+            raw_sample = float(
+                kokorowski_raw_kappa_from_caption(n_sample, sigma_sample)
+            )
+            pred_sample = float(
+                kokorowski_detector_convolved_kappa(raw_sample, detector_sample)
+            )
+            samples.append(pred_sample)
+            sample_rows.append(
+                {
+                    "branch": branch,
+                    "sample_id": sample_id,
+                    "nbar_sample": n_sample,
+                    "sigma_n_sample": sigma_sample,
+                    "detector_kappa_d_sample_k0": detector_sample,
+                    "raw_kappa_sample_k0": raw_sample,
+                    "predicted_kappa_prime_sample_k0": pred_sample,
+                }
+            )
+        samples_arr = np.asarray(samples, dtype=float)
+        diff = predicted - reported
+        within_reported_se = bool(abs(diff) <= reported_se)
+        within_two_reported_se = bool(abs(diff) <= 2.0 * reported_se)
+        p_reported_in_public_uncertainty = float(
+            (
+                np.abs(samples_arr - reported)
+                <= np.maximum(reported_se, EPS)
+            ).mean()
+        )
+        rows.append(
+            {
+                "branch": branch,
+                "nbar_independent": nbar,
+                "nbar_se": float(row["nbar_se"]),
+                "sigma_n_independent": sigma_n,
+                "sigma_n_se": float(row["sigma_n_se"]),
+                "sigma_k_over_k0": KOKOROWSKI_SIGMA_K_OVER_K0,
+                "raw_kappa_k0": raw_kappa,
+                "detector_kappa_d_k0": KOKOROWSKI_DETECTOR_KAPPA_D_K0,
+                "detector_kappa_d_se_k0": KOKOROWSKI_DETECTOR_KAPPA_D_SE_K0,
+                "predicted_kappa_prime_k0": predicted,
+                "reported_calculated_kappa_prime_k0": reported,
+                "reported_calculated_kappa_prime_se_k0": reported_se,
+                "predicted_minus_reported_k0": diff,
+                "abs_predicted_minus_reported_k0": abs(diff),
+                "within_reported_se": within_reported_se,
+                "within_two_reported_se": within_two_reported_se,
+                "mc_predicted_kappa_prime_median_k0": float(np.median(samples_arr)),
+                "mc_predicted_kappa_prime_p025_k0": float(
+                    np.quantile(samples_arr, 0.025)
+                ),
+                "mc_predicted_kappa_prime_p975_k0": float(
+                    np.quantile(samples_arr, 0.975)
+                ),
+                "mc_predicted_kappa_prime_sd_k0": float(samples_arr.std(ddof=1)),
+                "p_reported_within_public_uncertainty": p_reported_in_public_uncertainty,
+                "inferred_detector_kappa_d_from_reported_k0": inferred_detector,
+            }
+        )
+
+    check = pd.DataFrame(rows)
+    samples = pd.DataFrame(sample_rows)
+    all_within_two_se = bool(check["within_two_reported_se"].all())
+    inferred = check["inferred_detector_kappa_d_from_reported_k0"].to_numpy(dtype=float)
+    inferred = inferred[np.isfinite(inferred)]
+    inferred_detector_spread = (
+        float(np.max(inferred) - np.min(inferred)) if len(inferred) > 1 else math.nan
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "status": (
+                    "detector-convolution reconstruction supports reported kappa-prime values"
+                    if all_within_two_se
+                    else "detector-convolution reconstruction leaves kappa-prime mismatch"
+                ),
+                "input_csv": str(input_csv),
+                "n_bootstrap": int(n_bootstrap),
+                "seed": int(seed),
+                "branch_count": int(len(check)),
+                "all_branches_within_two_reported_se": all_within_two_se,
+                "max_abs_predicted_minus_reported_k0": float(
+                    check["abs_predicted_minus_reported_k0"].max()
+                ),
+                "min_p_reported_within_public_uncertainty": float(
+                    check["p_reported_within_public_uncertainty"].min()
+                ),
+                "inferred_detector_kappa_d_spread_k0": inferred_detector_spread,
+                "clears_g11": False,
+                "blocker": "This reconstructs the published calculated kappa-prime values from public formulae, but it still does not expose raw beam-deflection/broadening calibration tables.",
+            }
+        ]
+    )
+    check.to_csv(
+        output_dir / "kokorowski_detector_convolution_check.csv",
+        index=False,
+    )
+    samples.to_csv(
+        output_dir / "kokorowski_detector_convolution_samples.csv",
+        index=False,
+    )
+    summary.to_csv(
+        output_dir / "kokorowski_detector_convolution_summary.csv",
+        index=False,
+    )
+    branch_lines = "\n".join(
+        "- **{branch}**: raw kappa {raw:.3f} k0; detector-convolved {pred:.3f} k0; reported {reported:.3f}({se:.3f}) k0; within 2 reported SE: {within}".format(
+            branch=row["branch"],
+            raw=float(row["raw_kappa_k0"]),
+            pred=float(row["predicted_kappa_prime_k0"]),
+            reported=float(row["reported_calculated_kappa_prime_k0"]),
+            se=float(row["reported_calculated_kappa_prime_se_k0"]),
+            within=bool(row["within_two_reported_se"]),
+        )
+        for _, row in check.iterrows()
+    )
+    report = f"""# Kokorowski Detector-Convolution Kappa Check
+
+Status: {summary['status'].iloc[0]}
+
+This check reconstructs the public formula path from Fig. 4 caption parameters to the reported calculated `kappa_prime` values. It uses the source formula `kappa^2 = nbar*sigma_k^2 + sigma_n^2*k0^2`, the source value `sigma_k = 2/5 k0`, and the detector acceptance relation `1/kappa_prime^2 = 1/kappa^2 + 1/kappa_d^2` with `kappa_d = 3.3(1) k0`.
+
+- Input CSV: `{input_csv}`
+- Bootstrap samples per branch: {int(n_bootstrap)}
+- Seed: {int(seed)}
+- All branches within two reported SE: {all_within_two_se}
+- Max absolute predicted-minus-reported kappa-prime: {float(check['abs_predicted_minus_reported_k0'].max()):.4f} k0
+- Minimum Monte Carlo fraction within reported kappa-prime SE: {float(check['p_reported_within_public_uncertainty'].min()):.3f}
+- Clears G11: False
+
+## Branch Reconstruction
+
+{branch_lines}
+
+## Interpretation
+
+This public-source reconstruction strengthens the Kokorowski provenance chain: the caption parameters, recoil-width formula, and detector convolution reproduce the reported calculated kappa-prime values closely. It does not close G11 because it still depends on published summarized beam-calibration values rather than raw beam-deflection/broadening tables.
+
+## Boundary
+
+- No new fit to Fig. 4 visibility was introduced.
+- This does not narrow the reported kappa-prime uncertainty enough to pass the stress gate.
+- This does not validate the Lambda/Gamma/Theta product law.
+"""
+    (output_dir / "kokorowski_detector_convolution_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, check, samples
 
 
 def fit_kokorowski_refit_kappa(d_over_lambda, visibility):
@@ -17304,6 +17584,20 @@ def run_profile_kokorowski_kappa_uncertainty(
     )
 
 
+def run_check_kokorowski_detector_convolution(
+    input_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int,
+    seed: int,
+):
+    make_kokorowski_detector_convolution_check_outputs(
+        input_csv,
+        output_dir,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+    )
+
+
 def run_extract_kokorowski_calibration_provenance(
     source_dir: Path | None,
     output_dir: Path,
@@ -17952,6 +18246,20 @@ def build_parser():
     )
     kokorowski_kappa_profile.add_argument("--n-bootstrap", type=int, default=600)
     kokorowski_kappa_profile.add_argument("--seed", type=int, default=28045)
+    kokorowski_detector = sub.add_parser(
+        "check-kokorowski-detector-convolution",
+        help="reconstruct Kokorowski calculated kappa-prime values from caption parameters and detector convolution",
+    )
+    kokorowski_detector.add_argument(
+        "--input",
+        default="data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv",
+    )
+    kokorowski_detector.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_detector_convolution",
+    )
+    kokorowski_detector.add_argument("--n-bootstrap", type=int, default=1000)
+    kokorowski_detector.add_argument("--seed", type=int, default=28046)
     kokorowski_provenance = sub.add_parser(
         "extract-kokorowski-calibration-provenance",
         help="extract TeX line-anchor provenance for Kokorowski independent kappa calibration claims",
@@ -18274,6 +18582,13 @@ def main(argv=None):
             )
         elif command == "profile-kokorowski-kappa-uncertainty":
             run_profile_kokorowski_kappa_uncertainty(
+                Path(args.input),
+                Path(args.output_dir),
+                int(args.n_bootstrap),
+                int(args.seed),
+            )
+        elif command == "check-kokorowski-detector-convolution":
+            run_check_kokorowski_detector_convolution(
                 Path(args.input),
                 Path(args.output_dir),
                 int(args.n_bootstrap),
