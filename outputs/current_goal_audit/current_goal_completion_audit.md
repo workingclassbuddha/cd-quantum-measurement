@@ -14,6 +14,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Public G11 support without author contact: 0
 - Author-data G11-ready rows: 0
 - Empirical product-law-ready datasets: 0
+- Partial product-law proxy candidates: 14
+- Proxy-rich product-law candidates: 2
 - Kokorowski joint stress probability: 0.727
 - Kokorowski full reported-SE joint pass probability: 0.4166666666666667
 - Kokorowski max SE scale with joint pass >= 0.80: 0.25
@@ -30,7 +32,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 
 - **second_independent_distribution_to_visibility_validation**: eligible_second=1; public_support=0; author_ready=0; kokorowski_joint=0.727; full_reported_se_joint=0.417; max_se_scale_for_joint_gate=0.250; provenance_status=calibration provenance extracted; provenance_scope_warning=True; provenance_blocker=raw beam-deflection/broadening calibration data are still not in the public source package; detector_convolution_status=detector-convolution reconstruction supports reported kappa-prime values; detector_all_within_two_se=True; detector_max_delta=0.088; detector_clears_g11=False; fig3_status=fig3 public-vector consistency check passes as supporting evidence; fig3_log10_rmse=0.046; fig3_branch_swap_pass=True; fig3_null_margin=0.247; fig3_clears_g11=False; mir_fig4_status=fig4 eraser phase-control check passes as supporting evidence; mir_fig4_supports_eraser_control=True; mir_fig4_zero_lag_corr=-0.341; mir_fig4_best_shift_corr=0.846; mir_fig4_clears_g11=False; stress_pass=False
 - **chapman_raw_phase_repaired**: G10 remains a blocker unless the scorecard says raw phase repaired; phase_verdict=G10 still blocked by raw phase; branch_optimized_rmse=1.475; branch_gate_pass=False; branch_model=complex:beta_recoil_complex.
-- **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready=0.
+- **product_law_independently_validated**: G12 remains a blocker unless independent Lambda/Gamma/Theta factors validate the product law; empirical_ready=0; partial_proxy_candidates=14; proxy_rich_candidates=2.
 
 ## Rule
 

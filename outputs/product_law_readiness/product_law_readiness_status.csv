@@ -1,2 +1,2 @@
-verdict,empirical_product_law_ready_datasets,datasets_with_complete_product_rows,synthetic_benchmark_rows,balanced_synthetic_product_delta_aicc,balanced_synthetic_max_abs_factor_correlation,g12_validated,next_valid_move
-G12 blocked: no empirical independent-factor product-law dataset,0,0,63,0.0,6.644793704683637e-16,False,"collect or design a dataset with independent Lambda, Gamma, and Theta variation"
+verdict,empirical_product_law_ready_datasets,datasets_with_complete_product_rows,partial_apparatus_proxy_candidates,proxy_rich_apparatus_candidates,synthetic_benchmark_rows,balanced_synthetic_product_delta_aicc,balanced_synthetic_max_abs_factor_correlation,g12_validated,next_valid_move
+G12 blocked: no empirical independent-factor product-law dataset,0,0,14,2,63,0.0,6.644793704683637e-16,False,"collect or design a dataset with independent Lambda, Gamma, and Theta variation"

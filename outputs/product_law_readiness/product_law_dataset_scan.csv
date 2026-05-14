@@ -1,17 +1,20 @@
-dataset_path,rows,has_visibility_obs,has_all_product_factors,complete_product_rows,lambda_range,gamma_range,theta_range,independent_factor_ranges,max_abs_factor_correlation,product_law_ready,blocker
-data/extracted/CHAPMAN_1995_PHASE_DIGITIZED.csv,32,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/CHAPMAN_1995_PHASE_GRADED.csv,40,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/CHAPMAN_1995_SCATTER.csv,36,True,True,0,,,,0,,False,Lambda/Gamma/Theta columns are empty or unpaired to visibility
-data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv,36,True,True,0,,,,0,,False,Lambda/Gamma/Theta columns are empty or unpaired to visibility
-data/extracted/CORMANN_2016_VISIBILITY_PHASE_SCOUT.csv,211,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/EIBENBERGER_2014_RECOIL_ABSORPTION_SCOUT.csv,12,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/HACKERMUELLER_2004_THERMAL_DIGITIZED.csv,31,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/HOCHRAINER_2017_MOMENTUM_CORRELATION_SCOUT.csv,2,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/HORNBERGER_2003_COLLISIONAL_SCOUT.csv,28,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv,4,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv,23,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/KOKOROWSKI_2001_MULTIPHOTON_SCOUT.csv,3,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/MIR_2007_WEAK_VALUE_SCOUT.csv,4,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/XIAO_2019_MOMENTUM_VISIBILITY_DIGITIZED.csv,6,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/XIAO_2019_PROBABILITY_DIGITIZED.csv,365,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
-data/extracted/XIAO_2019_PROBABILITY_VECTOR_DIGITIZED.csv,511,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns
+dataset_path,rows,has_visibility_obs,has_all_product_factors,complete_product_rows,lambda_range,gamma_range,theta_range,independent_factor_ranges,max_abs_factor_correlation,product_law_ready,blocker,visibility_proxy_columns,lambda_proxy_columns,gamma_proxy_columns,theta_proxy_columns,apparatus_proxy_axis_count
+data/extracted/CHAPMAN_1995_PHASE_DIGITIZED.csv,32,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_type,,phase_rad;phase_display_rad;phase_se;phase_units;phase_type,,1
+data/extracted/CHAPMAN_1995_PHASE_GRADED.csv,40,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_type;low_contrast_ambiguous,,phase_rad;phase_display_rad;phase_unwrapped_rad;phase_se;phase_units;phase_type;phase_quality,,1
+data/extracted/CHAPMAN_1995_SCATTER.csv,36,True,True,0,,,,0,,False,Lambda/Gamma/Theta columns are empty or unpaired to visibility,visibility_obs;visibility_se;visibility_type;marker_visibility,Lambda;path_separation,Gamma;coherence_time;detector_response_time,Theta;record_entropy_bits;record_survival_probability,3
+data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv,36,True,True,0,,,,0,,False,Lambda/Gamma/Theta columns are empty or unpaired to visibility,visibility_obs;visibility_se;visibility_type;marker_visibility,Lambda;path_separation,Gamma;coherence_time;detector_response_time,Theta;record_entropy_bits;record_survival_probability;record_accessibility,3
+data/extracted/CORMANN_2016_VISIBILITY_PHASE_SCOUT.csv,211,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,,,,theta_pi,1
+data/extracted/EIBENBERGER_2014_RECOIL_ABSORPTION_SCOUT.csv,12,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_ratio;visibility_se,distance_from_G1_m,,,1
+data/extracted/HACKERMUELLER_2004_THERMAL_DIGITIZED.csv,31,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,normalized_visibility;visibility_se;unheated_visibility_V0;absolute_visibility_estimate,,,laser_power_W;mean_temperature_K;thermal_load_T4;thermal_load_delta_T4;temperature_uncertainty_K,1
+data/extracted/HOCHRAINER_2017_MOMENTUM_CORRELATION_SCOUT.csv,2,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_curve_available;record_variable_inferred_from_visibility,,,record_distribution_available;record_variable_inferred_from_visibility,1
+data/extracted/HORNBERGER_2003_COLLISIONAL_SCOUT.csv,28,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_percent;visibility_se_percent,,decoherence_pressure_1e_minus_6_mbar;decoherence_pressure_se;theory_decoherence_pressure_1e_minus_6_mbar,pressure_1e_minus_6_mbar;gas;decoherence_pressure_1e_minus_6_mbar;decoherence_pressure_se;theory_decoherence_pressure_1e_minus_6_mbar,2
+data/extracted/KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv,5,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,,,,,0
+data/extracted/KOKOROWSKI_2001_FIG3_DECAY_DIGITIZED.csv,28,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility;visibility_se_log10,d_over_lambda,,nbar,2
+data/extracted/KOKOROWSKI_2001_FIG3_DECAY_THEORY_CURVES.csv,276,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility,d_over_lambda,,nbar,2
+data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv,23,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility;visibility_se,d_over_lambda;sigma_n_independent;sigma_n_se;kappa_prime_calculated_k0;kappa_prime_calculated_se_k0;kappa_prime_fit_reported_k0;kappa_prime_fit_reported_se_k0,,nbar_independent;nbar_se,2
+data/extracted/KOKOROWSKI_2001_MULTIPHOTON_SCOUT.csv,3,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_curve_available;record_variable_independent_of_visibility_fit,,,record_distribution_available;record_variable_independent_of_visibility_fit,1
+data/extracted/MIR_2007_FIG4_ERASER_PHASE_POINTS.csv,200,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,,,,,0
+data/extracted/MIR_2007_WEAK_VALUE_SCOUT.csv,4,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_sweep_available,momentum_distribution_available,phase_or_eraser_available,,2
+data/extracted/XIAO_2019_MOMENTUM_VISIBILITY_DIGITIZED.csv,6,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,visibility_V;visibility_loss;visibility_se;estimated_extraction_uncertainty_visibility,momentum_abs_hbar_over_d;momentum_se;estimated_extraction_uncertainty_momentum,,,1
+data/extracted/XIAO_2019_PROBABILITY_DIGITIZED.csv,365,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,,mean_abs_momentum_hbar_over_d,,,1
+data/extracted/XIAO_2019_PROBABILITY_VECTOR_DIGITIZED.csv,511,False,False,0,,,,0,,False,missing Lambda/Gamma/Theta columns,,mean_abs_momentum_hbar_over_d,,,1

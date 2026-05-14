@@ -971,6 +971,16 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     author_summary = pd.DataFrame(
         [{"g11_ready_rows": 0}]
     )
+    product_summary = pd.DataFrame(
+        [
+            {
+                "empirical_product_law_ready_datasets": 0,
+                "partial_apparatus_proxy_candidates": 14,
+                "proxy_rich_apparatus_candidates": 2,
+                "g12_validated": False,
+            }
+        ]
+    )
     kappa_profile = pd.DataFrame(
         [
             {
@@ -1036,6 +1046,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("g11", g11_summary),
         ("public", public_summary),
         ("author", author_summary),
+        ("product", product_summary),
         ("kappa", kappa_profile),
         ("provenance", provenance_summary),
         ("detector", detector_summary),
@@ -1053,6 +1064,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         paths["g11"],
         paths["public"],
         author_validation_summary_csv=paths["author"],
+        product_law_status_csv=paths["product"],
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
         kokorowski_calibration_provenance_summary_csv=paths["provenance"],
         kokorowski_detector_convolution_summary_csv=paths["detector"],
@@ -1073,6 +1085,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         bool(summary["kokorowski_calibration_provenance_scope_warning"].iloc[0])
         is True
     )
+    assert int(summary["partial_product_law_proxy_candidates"].iloc[0]) == 14
+    assert int(summary["proxy_rich_product_law_candidates"].iloc[0]) == 2
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
     assert summary["chapman_raw_phase_verdict"].iloc[0] == "G10 still blocked by raw phase"
@@ -1091,6 +1105,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert "branch_optimized_rmse=1.560" in g10_row["note"]
     assert "branch_gate_pass=False" in g10_row["note"]
+    g12_row = checklist[
+        checklist["requirement"] == "product_law_independently_validated"
+    ].iloc[0]
+    assert "partial_proxy_candidates=14" in g12_row["note"]
+    assert "proxy_rich_candidates=2" in g12_row["note"]
     second_row = checklist[
         checklist["requirement"]
         == "second_independent_distribution_to_visibility_validation"
@@ -1193,10 +1212,13 @@ def test_product_law_readiness_audit_outputs_and_cli(tmp_path):
         "G12 blocked: no empirical independent-factor product-law dataset"
     )
     assert int(status["empirical_product_law_ready_datasets"].iloc[0]) == 0
+    assert int(status["partial_apparatus_proxy_candidates"].iloc[0]) >= 1
+    assert "apparatus_proxy_axis_count" in scan.columns
     assert not scan.empty
     assert not bench.empty
     assert not needed.empty
     assert (output_dir / "product_law_readiness_audit.md").exists()
+    assert (output_dir / "product_law_proxy_candidate_scan.csv").exists()
 
     cli_output_dir = tmp_path / "product_law_cli"
     main(
