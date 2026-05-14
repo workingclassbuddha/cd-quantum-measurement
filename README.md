@@ -218,6 +218,7 @@ python src/constraint_dynamics_quantum_v3.py validate-author-data-manifest --man
 python src/constraint_dynamics_quantum_v3.py audit-current-goal-status --output-dir outputs/current_goal_audit
 python src/constraint_dynamics_quantum_v3.py scout-eibenberger-recoil-absorption --source-dir outputs/tmp/second_no_refit_sources/eibenberger --output-dir outputs/eibenberger_recoil_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_weak_value_scout --data-dir data/extracted
+python src/constraint_dynamics_quantum_v3.py check-mir-fig4-eraser-phase --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_fig4_eraser_phase --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hornberger-collisional --source-dir outputs/tmp/third_hunt_sources/hornberger --output-dir outputs/hornberger_collisional_scout --data-dir data/extracted
 ```
@@ -371,7 +372,7 @@ The manifest validator checks received rows against those schemas. The committed
 
 The current-goal audit writes `outputs/current_goal_audit/current_goal_completion_audit.md`; it currently reports `objective_achieved = False` with G10, G11, and G12 still open.
 
-The Mir weak-value scout is the closest historical near miss. The arXiv source includes Fig. 3, an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 quantum-eraser conditional patterns. The scout verdict is `measured momentum-transfer distribution found, visibility sweep missing`: useful as a weak-value/momentum-transfer control, but it does not clear the missing second no-refit distribution-to-visibility gate.
+The Mir weak-value scout is the closest historical near miss. The arXiv source includes Fig. 3, an unconditional weak-valued momentum-transfer distribution `P_wv(q)`, and Fig. 4 quantum-eraser conditional patterns. The scout verdict is `measured momentum-transfer distribution found, visibility sweep missing`: useful as a weak-value/momentum-transfer control, but it does not clear the missing second no-refit distribution-to-visibility gate. The `check-mir-fig4-eraser-phase` command now extracts the Fig. 4a/4b PostScript diamond intensity markers and records a public-vector eraser phase-control check; it is supporting near-miss evidence only, because Fig. 4 is not a controlled visibility-loss sweep.
 
 The Hochrainer induced-coherence scout is a strong inverse-problem near miss. The paper explicitly links visibility profiles to the conditional transverse momentum probability density, and Fig. 3 reports momentum-correlation width versus pump waist. The scout verdict is `visibility-derived momentum-correlation near miss`: relevant to record bandwidth, but not independent enough because the record width is computed from visibility FWHM.
 

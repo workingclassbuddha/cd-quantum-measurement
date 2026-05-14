@@ -73,6 +73,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_public_data_availability_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
+    make_mir_fig4_eraser_phase_control_outputs,
     make_mir_weak_value_scout_outputs,
     make_hochrainer_momentum_correlation_scout_outputs,
     make_kokorowski_multiphoton_scout_outputs,
@@ -98,6 +99,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     eibenberger_default_metadata,
     eibenberger_digitized_dataframe,
     eibenberger_recoil_reduction,
+    mir_fig4_eraser_phase_control_dataframe,
     mir_weak_value_metadata,
     mir_weak_value_scout_dataframe,
     hochrainer_momentum_correlation_metadata,
@@ -995,6 +997,17 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    mir_fig4_summary = pd.DataFrame(
+        [
+            {
+                "status": "fig4 eraser phase-control check passes as supporting evidence",
+                "supports_eraser_phase_control": True,
+                "zero_lag_intensity_correlation": -0.341,
+                "best_positive_shift_correlation": 0.846,
+                "clears_g11": False,
+            }
+        ]
+    )
     paths = {}
     for name, frame in [
         ("scorecard", scorecard),
@@ -1004,6 +1017,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("kappa", kappa_profile),
         ("provenance", provenance_summary),
         ("fig3", fig3_summary),
+        ("mir_fig4", mir_fig4_summary),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -1018,6 +1032,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
         kokorowski_calibration_provenance_summary_csv=paths["provenance"],
         kokorowski_fig3_decay_summary_csv=paths["fig3"],
+        mir_fig4_eraser_phase_summary_csv=paths["mir_fig4"],
     )
     assert not checklist.empty
     assert not bool(summary["objective_achieved"].iloc[0])
@@ -1031,6 +1046,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["kokorowski_fig3_decay_status"].iloc[0].startswith("fig3")
     assert bool(summary["kokorowski_fig3_branch_swap_null_pass"].iloc[0]) is True
     assert bool(summary["kokorowski_fig3_decay_clears_g11"].iloc[0]) is False
+    assert bool(summary["mir_fig4_supports_eraser_phase_control"].iloc[0]) is True
+    assert bool(summary["mir_fig4_clears_g11"].iloc[0]) is False
     assert "second_independent_distribution_to_visibility_validation" in set(
         checklist["requirement"]
     )
@@ -1043,6 +1060,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "fig3_branch_swap_pass=True" in second_row["note"]
     assert "fig3_null_margin=0.247" in second_row["note"]
     assert "fig3_clears_g11=False" in second_row["note"]
+    assert "mir_fig4_supports_eraser_control=True" in second_row["note"]
+    assert "mir_fig4_clears_g11=False" in second_row["note"]
     assert "raw beam-deflection/broadening calibration data" in second_row["note"]
     assert (output_dir / "current_goal_completion_audit.md").exists()
 
@@ -1761,6 +1780,78 @@ def test_mir_weak_value_scout_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "mir_weak_value_scout_report.md").exists()
+
+
+def _write_mir_fig4_synthetic_source(source_dir: Path):
+    source_dir.mkdir(parents=True, exist_ok=True)
+    (source_dir / "www-rev.tex").write_text("synthetic Mir source", encoding="utf-8")
+    (source_dir / "Figure3.eps").write_text("% synthetic", encoding="utf-8")
+    x0 = 468.416
+    span = 468.416 - 181.433
+
+    def diamond(cx, cy):
+        return "\n".join(
+            [
+                "n",
+                f"{cx:.6f} {cy - 3:.6f} m",
+                f"{cx - 3:.6f} {cy:.6f} l",
+                f"{cx:.6f} {cy + 3:.6f} l",
+                f"{cx + 3:.6f} {cy:.6f} l",
+                f"{cx:.6f} {cy - 3:.6f} l",
+                "eofill",
+            ]
+        )
+
+    for filename, sign in [("Figure4a.ps", 1.0), ("Figure4b.ps", -1.0)]:
+        chunks = ["%!PS-Adobe-3.0"]
+        for index in range(100):
+            intensity = 25.0 + sign * 15.0 * math.sin(2.0 * math.pi * index / 30.0)
+            cx = x0 - intensity / 50.0 * span
+            cy = 254.7 + 3.18 * index
+            chunks.append(diamond(cx, cy))
+        (source_dir / filename).write_text("\n".join(chunks), encoding="utf-8")
+
+
+def test_mir_fig4_eraser_phase_control_outputs_and_cli(tmp_path):
+    source_dir = tmp_path / "source"
+    data_dir = tmp_path / "data"
+    output_dir = tmp_path / "mir_fig4"
+    cli_output_dir = tmp_path / "mir_fig4_cli"
+    _write_mir_fig4_synthetic_source(source_dir)
+
+    points_df = mir_fig4_eraser_phase_control_dataframe(source_dir)
+    assert len(points_df) == 200
+    assert set(points_df["panel"]) == {"plus_45", "minus_45"}
+
+    points, summary, shift_corr = make_mir_fig4_eraser_phase_control_outputs(
+        source_dir,
+        output_dir,
+        data_dir,
+    )
+    assert len(points) == 200
+    assert int(summary["plus_45_marker_count"].iloc[0]) == 100
+    assert int(summary["minus_45_marker_count"].iloc[0]) == 100
+    assert bool(summary["same_ps_y_grid"].iloc[0])
+    assert bool(summary["supports_eraser_phase_control"].iloc[0])
+    assert not bool(summary["clears_g11"].iloc[0])
+    assert summary["zero_lag_intensity_correlation"].iloc[0] < -0.95
+    assert summary["best_positive_shift_correlation"].iloc[0] > 0.95
+    assert not shift_corr.empty
+    assert (output_dir / "mir_fig4_eraser_phase_report.md").exists()
+    assert (data_dir / "MIR_2007_FIG4_ERASER_PHASE_POINTS.csv").exists()
+
+    main(
+        [
+            "check-mir-fig4-eraser-phase",
+            "--source-dir",
+            str(source_dir),
+            "--output-dir",
+            str(cli_output_dir),
+            "--data-dir",
+            str(data_dir),
+        ]
+    )
+    assert (cli_output_dir / "mir_fig4_eraser_phase_report.md").exists()
 
 
 def test_hochrainer_momentum_correlation_scout_outputs_and_cli(tmp_path):

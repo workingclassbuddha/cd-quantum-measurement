@@ -55,6 +55,11 @@ MIR_PAPER_URL = "https://arxiv.org/abs/0706.3966"
 MIR_DOI = "https://doi.org/10.1088/1367-2630/9/8/287"
 MIR_DIGITIZATION_DATE = "2026-05-11"
 MIR_SCOUT_EXTRACTION_METHOD = "source_figure_availability_scout_v1"
+MIR_ERASER_EXTRACTION_METHOD = "postscript_diamond_marker_digitization_v1"
+MIR_FIG4_INTENSITY_AXIS = {
+    "intensity_zero_ps_x": 468.416,
+    "intensity_fifty_ps_x": 181.433,
+}
 HOCHRAINER_ARXIV_SOURCE_URL = "https://arxiv.org/e-print/1610.05529"
 HOCHRAINER_PAPER_URL = "https://arxiv.org/abs/1610.05529"
 HOCHRAINER_DOI = "https://doi.org/10.1073/pnas.1615874114"
@@ -7934,6 +7939,9 @@ def make_current_goal_completion_audit_outputs(
     kokorowski_fig3_decay_summary_csv: Path = Path(
         "outputs/kokorowski_fig3_decay_check/kokorowski_fig3_decay_summary.csv"
     ),
+    mir_fig4_eraser_phase_summary_csv: Path = Path(
+        "outputs/mir_fig4_eraser_phase/mir_fig4_eraser_phase_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7949,6 +7957,7 @@ def make_current_goal_completion_audit_outputs(
         kokorowski_calibration_provenance_summary_csv
     )
     kokorowski_fig3_decay = _read_optional_metric_csv(kokorowski_fig3_decay_summary_csv)
+    mir_fig4_eraser_phase = _read_optional_metric_csv(mir_fig4_eraser_phase_summary_csv)
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
 
@@ -8031,6 +8040,35 @@ def make_current_goal_completion_audit_outputs(
             np.nan,
         )
     )
+    mir_fig4_status = str(
+        _first_value(mir_fig4_eraser_phase, "status", "not available")
+    )
+    mir_fig4_supports_eraser_control = bool(
+        _truthy(
+            _first_value(
+                mir_fig4_eraser_phase,
+                "supports_eraser_phase_control",
+                False,
+            )
+        )
+    )
+    mir_fig4_zero_lag_corr = float(
+        _first_value(
+            mir_fig4_eraser_phase,
+            "zero_lag_intensity_correlation",
+            np.nan,
+        )
+    )
+    mir_fig4_best_shift_corr = float(
+        _first_value(
+            mir_fig4_eraser_phase,
+            "best_positive_shift_correlation",
+            np.nan,
+        )
+    )
+    mir_fig4_clears_g11 = bool(
+        _truthy(_first_value(mir_fig4_eraser_phase, "clears_g11", False))
+    )
     kokorowski_stress_pass = bool(
         math.isfinite(kokorowski_joint)
         and kokorowski_joint >= 0.80
@@ -8075,7 +8113,8 @@ def make_current_goal_completion_audit_outputs(
                 f"{g11_summary_csv}; {kokorowski_stress_summary_csv}; "
                 f"{kokorowski_kappa_profile_summary_csv}; "
                 f"{kokorowski_calibration_provenance_summary_csv}; "
-                f"{kokorowski_fig3_decay_summary_csv}"
+                f"{kokorowski_fig3_decay_summary_csv}; "
+                f"{mir_fig4_eraser_phase_summary_csv}"
             ),
             "status": "fail",
             "passed": second_validation_found,
@@ -8091,6 +8130,11 @@ def make_current_goal_completion_audit_outputs(
                 f"fig3_branch_swap_pass={kokorowski_fig3_branch_swap}; "
                 f"fig3_null_margin={kokorowski_fig3_null_margin:.3f}; "
                 f"fig3_clears_g11={kokorowski_fig3_clears_g11}; "
+                f"mir_fig4_status={mir_fig4_status}; "
+                f"mir_fig4_supports_eraser_control={mir_fig4_supports_eraser_control}; "
+                f"mir_fig4_zero_lag_corr={mir_fig4_zero_lag_corr:.3f}; "
+                f"mir_fig4_best_shift_corr={mir_fig4_best_shift_corr:.3f}; "
+                f"mir_fig4_clears_g11={mir_fig4_clears_g11}; "
                 f"stress_pass={kokorowski_stress_pass}"
             ),
         },
@@ -8140,6 +8184,11 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_fig3_branch_swap_null_pass": kokorowski_fig3_branch_swap,
                 "kokorowski_fig3_min_wrong_minus_matched_log10_rmse": kokorowski_fig3_null_margin,
                 "kokorowski_fig3_decay_clears_g11": kokorowski_fig3_clears_g11,
+                "mir_fig4_eraser_phase_status": mir_fig4_status,
+                "mir_fig4_supports_eraser_phase_control": mir_fig4_supports_eraser_control,
+                "mir_fig4_zero_lag_intensity_correlation": mir_fig4_zero_lag_corr,
+                "mir_fig4_best_positive_shift_correlation": mir_fig4_best_shift_corr,
+                "mir_fig4_clears_g11": mir_fig4_clears_g11,
                 "kokorowski_stress_pass": kokorowski_stress_pass,
                 "verdict": (
                     "objective complete"
@@ -8176,6 +8225,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski calibration provenance status: {kokorowski_provenance_status}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
 - Kokorowski Fig. 3 public-vector check: {kokorowski_fig3_status}; log10 RMSE: {kokorowski_fig3_log_rmse if math.isfinite(kokorowski_fig3_log_rmse) else "not available"}; branch-swap pass: {kokorowski_fig3_branch_swap}; null margin: {kokorowski_fig3_null_margin if math.isfinite(kokorowski_fig3_null_margin) else "not available"}; clears G11: {kokorowski_fig3_clears_g11}
+- Mir Fig. 4 eraser phase control: {mir_fig4_status}; supports eraser control: {mir_fig4_supports_eraser_control}; zero-lag correlation: {mir_fig4_zero_lag_corr if math.isfinite(mir_fig4_zero_lag_corr) else "not available"}; best shifted correlation: {mir_fig4_best_shift_corr if math.isfinite(mir_fig4_best_shift_corr) else "not available"}; clears G11: {mir_fig4_clears_g11}
 - Kokorowski stress pass: {kokorowski_stress_pass}
 
 ## Failed Or Open Requirements
@@ -9879,6 +9929,259 @@ Mir is a useful weak-value momentum-transfer control and may help interpret Xiao
         encoding="utf-8",
     )
     return scout, summary, metadata
+
+
+def _parse_mir_fig4_diamond_markers(source_file: Path):
+    text = source_file.read_text(encoding="latin-1", errors="ignore")
+    diamond = re.compile(
+        r"n\s*"
+        r"([0-9.]+) ([0-9.]+) m\s*"
+        r"([0-9.]+) ([0-9.]+) l\s*"
+        r"([0-9.]+) ([0-9.]+) l\s*"
+        r"([0-9.]+) ([0-9.]+) l\s*"
+        r"([0-9.]+) ([0-9.]+) l\s*"
+        r"eofill"
+    )
+    rows = []
+    for match in diamond.finditer(text):
+        values = [float(value) for value in match.groups()]
+        xs = values[0::2]
+        ys = values[1::2]
+        width = max(xs) - min(xs)
+        height = max(ys) - min(ys)
+        center_x = sum(xs[:4]) / 4.0
+        center_y = sum(ys[:4]) / 4.0
+        if (
+            width <= 8.0
+            and height <= 8.0
+            and 176.0 <= center_x <= 465.0
+            and 230.0 <= center_y <= 576.0
+        ):
+            rows.append(
+                {
+                    "source_file": source_file.name,
+                    "ps_x": center_x,
+                    "ps_y": center_y,
+                    "marker_width_ps": width,
+                    "marker_height_ps": height,
+                }
+            )
+    rows = sorted(rows, key=lambda row: row["ps_y"])
+    intensity_span = (
+        MIR_FIG4_INTENSITY_AXIS["intensity_zero_ps_x"]
+        - MIR_FIG4_INTENSITY_AXIS["intensity_fifty_ps_x"]
+    )
+    for index, row in enumerate(rows):
+        row["point_index"] = index
+        row["intensity_arb_units"] = (
+            (
+                MIR_FIG4_INTENSITY_AXIS["intensity_zero_ps_x"]
+                - row["ps_x"]
+            )
+            / intensity_span
+            * 50.0
+        )
+    return rows
+
+
+def mir_fig4_eraser_phase_control_dataframe(source_dir: Path | None = None):
+    source = resolve_mir_source_dir(source_dir)
+    if source is None:
+        return pd.DataFrame()
+    panel_files = {
+        "plus_45": "Figure4a.ps",
+        "minus_45": "Figure4b.ps",
+    }
+    rows = []
+    for panel, filename in panel_files.items():
+        path = source / filename
+        if not path.exists():
+            continue
+        for row in _parse_mir_fig4_diamond_markers(path):
+            row = dict(row)
+            row["study_id"] = "MIR_2007_FIG4_ERASER_PHASE_CONTROL"
+            row["panel"] = panel
+            row["source_sha256"] = sha256_file(path)
+            row["source_url"] = MIR_PAPER_URL
+            row["doi"] = MIR_DOI
+            row["extraction_method"] = MIR_ERASER_EXTRACTION_METHOD
+            rows.append(row)
+    if not rows:
+        return pd.DataFrame()
+    columns = [
+        "study_id",
+        "panel",
+        "source_file",
+        "source_sha256",
+        "point_index",
+        "ps_x",
+        "ps_y",
+        "intensity_arb_units",
+        "marker_width_ps",
+        "marker_height_ps",
+        "source_url",
+        "doi",
+        "extraction_method",
+    ]
+    return pd.DataFrame(rows)[columns]
+
+
+def _mir_shifted_correlations(plus: np.ndarray, minus: np.ndarray):
+    plus_z = (plus - plus.mean()) / max(float(plus.std()), EPS)
+    minus_z = (minus - minus.mean()) / max(float(minus.std()), EPS)
+    rows = []
+    max_shift = min(50, len(plus_z) - 1)
+    min_overlap = max(20, int(0.70 * len(plus_z)))
+    for shift in range(-max_shift, max_shift + 1):
+        if shift < 0:
+            a = plus_z[-shift:]
+            b = minus_z[: len(minus_z) + shift]
+        elif shift > 0:
+            a = plus_z[:-shift]
+            b = minus_z[shift:]
+        else:
+            a = plus_z
+            b = minus_z
+        if len(a) < min_overlap:
+            continue
+        rows.append(
+            {
+                "shift_samples": shift,
+                "overlap_points": int(len(a)),
+                "correlation": float(np.corrcoef(a, b)[0, 1]),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def make_mir_fig4_eraser_phase_control_outputs(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir.mkdir(parents=True, exist_ok=True)
+    source = resolve_mir_source_dir(source_dir)
+    points = mir_fig4_eraser_phase_control_dataframe(source_dir)
+    status = "source unavailable"
+    zero_lag_correlation = math.nan
+    best_positive_shift = math.nan
+    best_positive_correlation = math.nan
+    most_negative_shift = math.nan
+    most_negative_correlation = math.nan
+    same_grid = False
+    supports_phase_control = False
+    shift_corr = pd.DataFrame(
+        columns=["shift_samples", "overlap_points", "correlation"]
+    )
+    if not points.empty and set(points["panel"]) == {"plus_45", "minus_45"}:
+        plus = points.loc[points["panel"] == "plus_45"].sort_values("point_index")
+        minus = points.loc[points["panel"] == "minus_45"].sort_values("point_index")
+        same_grid = bool(
+            len(plus) == len(minus)
+            and np.max(
+                np.abs(
+                    plus["ps_y"].to_numpy(dtype=float)
+                    - minus["ps_y"].to_numpy(dtype=float)
+                )
+            )
+            < 1e-9
+        )
+        if same_grid:
+            plus_i = plus["intensity_arb_units"].to_numpy(dtype=float)
+            minus_i = minus["intensity_arb_units"].to_numpy(dtype=float)
+            shift_corr = _mir_shifted_correlations(plus_i, minus_i)
+            zero_lag_correlation = float(
+                shift_corr.loc[
+                    shift_corr["shift_samples"] == 0, "correlation"
+                ].iloc[0]
+            )
+            best_positive = shift_corr.loc[shift_corr["correlation"].idxmax()]
+            most_negative = shift_corr.loc[shift_corr["correlation"].idxmin()]
+            best_positive_shift = int(best_positive["shift_samples"])
+            best_positive_correlation = float(best_positive["correlation"])
+            most_negative_shift = int(most_negative["shift_samples"])
+            most_negative_correlation = float(most_negative["correlation"])
+            supports_phase_control = bool(
+                zero_lag_correlation < -0.20
+                and best_positive_correlation > 0.70
+            )
+            status = (
+                "fig4 eraser phase-control check passes as supporting evidence"
+                if supports_phase_control
+                else "fig4 eraser phase-control check inconclusive"
+            )
+        else:
+            status = "fig4 marker grids are not directly comparable"
+    summary = pd.DataFrame(
+        [
+            {
+                "status": status,
+                "source_dir": "" if source is None else str(source),
+                "plus_45_marker_count": int(
+                    (points["panel"] == "plus_45").sum() if not points.empty else 0
+                ),
+                "minus_45_marker_count": int(
+                    (points["panel"] == "minus_45").sum() if not points.empty else 0
+                ),
+                "same_ps_y_grid": same_grid,
+                "zero_lag_intensity_correlation": zero_lag_correlation,
+                "best_positive_shift_samples": best_positive_shift,
+                "best_positive_shift_correlation": best_positive_correlation,
+                "most_negative_shift_samples": most_negative_shift,
+                "most_negative_shift_correlation": most_negative_correlation,
+                "supports_eraser_phase_control": supports_phase_control,
+                "clears_g11": False,
+                "blocker": (
+                    "Figure 4 contains eraser phase/intensity patterns, not a paired controlled visibility-loss sweep."
+                ),
+                "extraction_method": MIR_ERASER_EXTRACTION_METHOD,
+            }
+        ]
+    )
+    points.to_csv(data_dir / "MIR_2007_FIG4_ERASER_PHASE_POINTS.csv", index=False)
+    points.to_json(
+        data_dir / "MIR_2007_FIG4_ERASER_PHASE_POINTS.json",
+        orient="records",
+        indent=2,
+    )
+    summary.to_csv(output_dir / "mir_fig4_eraser_phase_summary.csv", index=False)
+    shift_corr.to_csv(
+        output_dir / "mir_fig4_eraser_phase_shift_correlations.csv",
+        index=False,
+    )
+    report = f"""# Mir 2007 Fig. 4 Eraser Phase-Control Check
+
+Status: {status}
+
+This check extracts the black diamond intensity markers from the public PostScript Figure 4a/4b files. It asks only whether the two eraser settings encode a reproducible phase-control pattern on the same printed sampling grid.
+
+- Source URL: {MIR_PAPER_URL}
+- DOI: {MIR_DOI}
+- Source directory: `{'' if source is None else str(source)}`
+- Extraction method: `{MIR_ERASER_EXTRACTION_METHOD}`
+- +45 marker count: {summary['plus_45_marker_count'].iloc[0]}
+- -45 marker count: {summary['minus_45_marker_count'].iloc[0]}
+- Same PostScript y-grid: {same_grid}
+- Zero-lag intensity correlation: {zero_lag_correlation}
+- Best positive shifted correlation: {best_positive_correlation} at shift {best_positive_shift}
+- Most negative shifted correlation: {most_negative_correlation} at shift {most_negative_shift}
+
+## Gate Decision
+
+- Supports eraser phase control: {supports_phase_control}
+- Clears G11 / second no-refit distribution-to-visibility gate: False
+- Blocker: Figure 4 contains eraser phase/intensity patterns, not a paired controlled visibility-loss sweep.
+
+## Interpretation
+
+Mir Fig. 4 is now represented as a provenance-rich public-vector control instead of a prose-only near miss. The extracted markers support the paper's eraser-phase story, but they do not supply the missing independent measured-distribution-to-visibility validation.
+"""
+    (output_dir / "mir_fig4_eraser_phase_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return points, summary, shift_corr
 
 
 def resolve_hochrainer_source_dir(source_dir: Path | None):
@@ -16908,6 +17211,14 @@ def run_scout_mir_weak_value(
     make_mir_weak_value_scout_outputs(source_dir, output_dir, data_dir)
 
 
+def run_check_mir_fig4_eraser_phase(
+    source_dir: Path | None,
+    output_dir: Path,
+    data_dir: Path,
+):
+    make_mir_fig4_eraser_phase_control_outputs(source_dir, output_dir, data_dir)
+
+
 def run_scout_hochrainer_momentum_correlation(
     source_dir: Path | None,
     output_dir: Path,
@@ -17530,6 +17841,16 @@ def build_parser():
         default="outputs/mir_weak_value_scout",
     )
     mir.add_argument("--data-dir", default="data/extracted")
+    mir_fig4 = sub.add_parser(
+        "check-mir-fig4-eraser-phase",
+        help="extract Mir 2007 Fig. 4 eraser intensity markers as a phase-control near-miss check",
+    )
+    mir_fig4.add_argument("--source-dir", default=None)
+    mir_fig4.add_argument(
+        "--output-dir",
+        default="outputs/mir_fig4_eraser_phase",
+    )
+    mir_fig4.add_argument("--data-dir", default="data/extracted")
     hochrainer = sub.add_parser(
         "scout-hochrainer-momentum-correlation",
         help="scout Hochrainer 2017 induced-coherence momentum-correlation visibility as an inverse-problem near miss",
@@ -17879,6 +18200,13 @@ def main(argv=None):
         elif command == "scout-mir-weak-value":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_mir_weak_value(
+                source_dir,
+                Path(args.output_dir),
+                Path(args.data_dir),
+            )
+        elif command == "check-mir-fig4-eraser-phase":
+            source_dir = None if args.source_dir is None else Path(args.source_dir)
+            run_check_mir_fig4_eraser_phase(
                 source_dir,
                 Path(args.output_dir),
                 Path(args.data_dir),
