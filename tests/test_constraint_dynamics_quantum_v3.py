@@ -71,6 +71,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_current_goal_completion_audit_outputs,
     make_product_law_readiness_audit_outputs,
     make_public_data_availability_outputs,
+    make_public_g11_exhaustion_audit_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_fig4_eraser_phase_control_outputs,
@@ -975,6 +976,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     public_summary = pd.DataFrame(
         [{"supports_g11_without_author_contact": 0}]
     )
+    public_g11_exhaustion = pd.DataFrame(
+        [{"current_public_g11_path_exhausted": True}]
+    )
     author_summary = pd.DataFrame(
         [{"g11_ready_rows": 0}]
     )
@@ -1053,6 +1057,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("scorecard", scorecard),
         ("g11", g11_summary),
         ("public", public_summary),
+        ("public_g11_exhaustion", public_g11_exhaustion),
         ("author", author_summary),
         ("product", product_summary),
         ("kappa", kappa_profile),
@@ -1071,6 +1076,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         paths["scorecard"],
         paths["g11"],
         paths["public"],
+        public_g11_exhaustion_summary_csv=paths["public_g11_exhaustion"],
         author_validation_summary_csv=paths["author"],
         product_law_status_csv=paths["product"],
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
@@ -1104,6 +1110,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         summary["g11_top_blocker_class"].iloc[0]
         == "stress_or_calibration_uncertainty_limited"
     )
+    assert bool(summary["current_public_g11_path_exhausted"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
     assert summary["chapman_raw_phase_verdict"].iloc[0] == "G10 still blocked by raw phase"
@@ -1133,6 +1140,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert "stress_closed_second=0" in second_row["note"]
     assert "top_blocker=stress_or_calibration_uncertainty_limited" in second_row["note"]
+    assert "current_public_path_exhausted=True" in second_row["note"]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "provenance_scope_warning=True" in second_row["note"]
     assert "public_raw_tables_found=False" in second_row["note"]
@@ -1822,6 +1830,51 @@ def test_public_data_availability_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "public_data_availability_report.md").exists()
+
+
+def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "public_g11"
+    g11 = pd.DataFrame(
+        [
+            {
+                "eligible_second_no_refit_targets": 1,
+                "stress_closed_second_no_refit_targets": 0,
+            }
+        ]
+    )
+    public = pd.DataFrame([{"supports_g11_without_author_contact": 0}])
+    calibration = pd.DataFrame(
+        [{"public_source_raw_calibration_tables_found": False}]
+    )
+    g11_path = tmp_path / "g11.csv"
+    public_path = tmp_path / "public.csv"
+    calibration_path = tmp_path / "calibration.csv"
+    g11.to_csv(g11_path, index=False)
+    public.to_csv(public_path, index=False)
+    calibration.to_csv(calibration_path, index=False)
+
+    summary, near_misses = make_public_g11_exhaustion_audit_outputs(
+        output_dir,
+        g11_path,
+        public_path,
+        calibration_path,
+    )
+    assert not summary.empty
+    assert not near_misses.empty
+    assert bool(summary["current_public_g11_path_exhausted"].iloc[0]) is True
+    assert int(summary["cleaner_public_candidates_than_kokorowski"].iloc[0]) == 0
+    assert (output_dir / "public_g11_exhaustion_report.md").exists()
+    assert (output_dir / "public_g11_candidate_exhaustion.csv").exists()
+
+    cli_output_dir = tmp_path / "public_g11_cli"
+    main(
+        [
+            "audit-public-g11-exhaustion",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "public_g11_exhaustion_summary.csv").exists()
 
 
 def test_eibenberger_recoil_reduction_is_bounded():

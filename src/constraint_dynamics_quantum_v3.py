@@ -7925,6 +7925,9 @@ def make_current_goal_completion_audit_outputs(
     public_data_summary_csv: Path = Path(
         "outputs/public_data_availability/public_data_availability_summary.csv"
     ),
+    public_g11_exhaustion_summary_csv: Path = Path(
+        "outputs/public_g11_exhaustion/public_g11_exhaustion_summary.csv"
+    ),
     kokorowski_stress_summary_csv: Path = Path(
         "outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv"
     ),
@@ -7959,6 +7962,7 @@ def make_current_goal_completion_audit_outputs(
     scorecard = _read_optional_metric_csv(breakthrough_scorecard_csv)
     g11_summary = _read_optional_metric_csv(g11_summary_csv)
     public_summary = _read_optional_metric_csv(public_data_summary_csv)
+    public_g11_exhaustion = _read_optional_metric_csv(public_g11_exhaustion_summary_csv)
     kokorowski_stress = _read_optional_metric_csv(kokorowski_stress_summary_csv)
     kokorowski_kappa_profile = _read_optional_metric_csv(
         kokorowski_kappa_profile_summary_csv
@@ -7986,6 +7990,15 @@ def make_current_goal_completion_audit_outputs(
         _first_value(g11_summary, "recommended_next_evidence", "not available")
     )
     public_support = int(_first_value(public_summary, "supports_g11_without_author_contact", 0))
+    current_public_g11_path_exhausted = bool(
+        _truthy(
+            _first_value(
+                public_g11_exhaustion,
+                "current_public_g11_path_exhausted",
+                False,
+            )
+        )
+    )
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
     empirical_product_ready = int(
         _first_value(product_law_status, "empirical_product_law_ready_datasets", 0)
@@ -8219,6 +8232,7 @@ def make_current_goal_completion_audit_outputs(
                 f"stress_closed_second={stress_closed_second}; "
                 f"top_blocker={g11_top_blocker}; "
                 f"recommended_next={g11_recommended_next}; "
+                f"current_public_path_exhausted={current_public_g11_path_exhausted}; "
                 f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
@@ -8290,6 +8304,7 @@ def make_current_goal_completion_audit_outputs(
                 "eligible_second_no_refit_targets": eligible_second,
                 "stress_closed_second_no_refit_targets": stress_closed_second,
                 "g11_top_blocker_class": g11_top_blocker,
+                "current_public_g11_path_exhausted": current_public_g11_path_exhausted,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
@@ -8348,6 +8363,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Eligible second no-refit targets: {eligible_second}
 - Stress-closed second no-refit targets: {stress_closed_second}
 - G11 top blocker class: {g11_top_blocker}
+- Current public G11 path exhausted: {current_public_g11_path_exhausted}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
@@ -10085,6 +10101,165 @@ The public record supplies a serious route toward G11, not a completed closure. 
         encoding="utf-8",
     )
     return availability, summary
+
+
+def make_public_g11_exhaustion_audit_outputs(
+    output_dir: Path,
+    g11_gap_summary_csv: Path = Path(
+        "outputs/breakthrough_gap_audit/g11_gap_audit_summary.csv"
+    ),
+    public_data_summary_csv: Path = Path(
+        "outputs/public_data_availability/public_data_availability_summary.csv"
+    ),
+    kokorowski_calibration_summary_csv: Path = Path(
+        "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv"
+    ),
+):
+    """Summarize whether the current public G11 path has been exhausted."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    register = no_refit_target_candidate_register()
+    g11_summary = _read_optional_metric_csv(g11_gap_summary_csv)
+    public_summary = _read_optional_metric_csv(public_data_summary_csv)
+    kokorowski_calibration = _read_optional_metric_csv(kokorowski_calibration_summary_csv)
+
+    eligible_second = int(_first_value(g11_summary, "eligible_second_no_refit_targets", 0))
+    stress_closed_second = int(
+        _first_value(g11_summary, "stress_closed_second_no_refit_targets", 0)
+    )
+    public_support = int(
+        _first_value(public_summary, "supports_g11_without_author_contact", 0)
+    )
+    raw_tables_found = bool(
+        _truthy(
+            _first_value(
+                kokorowski_calibration,
+                "public_source_raw_calibration_tables_found",
+                False,
+            )
+        )
+    )
+    kokorowski = register[
+        register["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    ].iloc[0]
+    kok_score = float(kokorowski["no_refit_gate_score"])
+    non_xiao = register[register["candidate_id"] != "XIAO_2019_INTERNAL_LEAD"].copy()
+    cleaner_candidates = non_xiao[
+        (non_xiao["record_distribution_independent_of_visibility_fit"].map(_truthy))
+        & (non_xiao["visibility_curve_available"].map(_truthy))
+        & (non_xiao["no_refit_gate_score"].astype(float) > kok_score)
+    ]
+    public_near_misses = non_xiao[
+        (non_xiao["record_distribution_independent_of_visibility_fit"].map(_truthy))
+        | (non_xiao["visibility_curve_available"].map(_truthy))
+    ].copy()
+    public_near_misses["exhaustion_reason"] = public_near_misses.apply(
+        lambda row: (
+            "stress/calibration uncertainty blocks closure"
+            if row["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+            else "paired visibility curve missing"
+            if _truthy(row["record_distribution_independent_of_visibility_fit"])
+            and not _truthy(row["visibility_curve_available"])
+            else "record variable is visibility-derived or not an independent distribution"
+            if _truthy(row["visibility_curve_available"])
+            and not _truthy(row["record_distribution_independent_of_visibility_fit"])
+            else "not a G11 distribution-to-visibility target"
+        ),
+        axis=1,
+    )
+    public_near_misses = public_near_misses[
+        [
+            "candidate_id",
+            "study",
+            "no_refit_gate_score",
+            "record_distribution_independent_of_visibility_fit",
+            "visibility_curve_available",
+            "implementation_status",
+            "blocker",
+            "exhaustion_reason",
+        ]
+    ].sort_values(["no_refit_gate_score", "candidate_id"], ascending=[False, True])
+    public_near_misses.to_csv(
+        output_dir / "public_g11_candidate_exhaustion.csv",
+        index=False,
+    )
+
+    public_path_exhausted = bool(
+        eligible_second > 0
+        and stress_closed_second == 0
+        and public_support == 0
+        and not raw_tables_found
+        and cleaner_candidates.empty
+    )
+    verdict = (
+        "current public G11 path exhausted without closure"
+        if public_path_exhausted
+        else "public G11 path still has untested closure candidates"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "current_public_g11_path_exhausted": public_path_exhausted,
+                "eligible_second_no_refit_targets": eligible_second,
+                "stress_closed_second_no_refit_targets": stress_closed_second,
+                "public_supports_g11_without_author_contact": public_support,
+                "public_raw_calibration_tables_found": raw_tables_found,
+                "cleaner_public_candidates_than_kokorowski": int(len(cleaner_candidates)),
+                "near_miss_candidate_count": int(len(public_near_misses)),
+                "recommended_next": (
+                    "non-public Kokorowski calibration data or a newly identified cleaner public dataset"
+                    if public_path_exhausted
+                    else "finish testing remaining public candidates"
+                ),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "public_g11_exhaustion_summary.csv", index=False)
+    near_miss_lines = "\n".join(
+        "- **{study}** (`{candidate}`): {reason}; blocker: {blocker}".format(
+            study=row["study"],
+            candidate=row["candidate_id"],
+            reason=row["exhaustion_reason"],
+            blocker=row["blocker"],
+        )
+        for _, row in public_near_misses.head(10).iterrows()
+    )
+    report = f"""# Public G11 Exhaustion Audit
+
+Verdict: {verdict}
+
+This audit asks a narrow operational question: after the current public-data scouts, is there still a public second-experiment candidate that is cleaner than Kokorowski and could close G11 without new numerical calibration data?
+
+## Summary
+
+- Eligible public second no-refit candidates: {eligible_second}
+- Stress-closed public second no-refit candidates: {stress_closed_second}
+- Public G11 support without author/non-public data: {public_support}
+- Kokorowski raw calibration tables found in public source: {raw_tables_found}
+- Cleaner public candidates than Kokorowski: {int(len(cleaner_candidates))}
+- Current public G11 path exhausted: {public_path_exhausted}
+
+## Near Misses
+
+{near_miss_lines}
+
+## Interpretation
+
+Kokorowski remains the only eligible public second-experiment no-refit candidate in the current register. The public source and vector digitization make it a serious route, but the stress gate remains below closure and the public source inventory does not contain raw beam-deflection/broadening calibration tables. Other public candidates either lack a paired visibility-loss curve or derive the record variable from visibility itself.
+
+## Boundary
+
+- This does not close G11.
+- This does not claim no such dataset exists anywhere.
+- This only records exhaustion of the currently implemented public-data path.
+- This keeps breakthrough language blocked until a stress-closed second validation exists.
+"""
+    (output_dir / "public_g11_exhaustion_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, public_near_misses
 
 
 def resolve_mir_source_dir(source_dir: Path | None):
@@ -18023,6 +18198,10 @@ def run_audit_public_data_availability(output_dir: Path):
     make_public_data_availability_outputs(output_dir)
 
 
+def run_audit_public_g11_exhaustion(output_dir: Path):
+    make_public_g11_exhaustion_audit_outputs(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -18663,6 +18842,14 @@ def build_parser():
         "--output-dir",
         default="outputs/public_data_availability",
     )
+    public_g11 = sub.add_parser(
+        "audit-public-g11-exhaustion",
+        help="audit whether the current public G11 path is exhausted without closure",
+    )
+    public_g11.add_argument(
+        "--output-dir",
+        default="outputs/public_g11_exhaustion",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -19046,6 +19233,8 @@ def main(argv=None):
             run_audit_breakthrough_gaps(Path(args.output_dir))
         elif command == "audit-public-data-availability":
             run_audit_public_data_availability(Path(args.output_dir))
+        elif command == "audit-public-g11-exhaustion":
+            run_audit_public_g11_exhaustion(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(
