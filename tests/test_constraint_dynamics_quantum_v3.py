@@ -1056,6 +1056,14 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    g11_scorecard_preflight = pd.DataFrame(
+        [
+            {
+                "can_update_g11_scorecard": False,
+                "failed_preflight_checks": 4,
+            }
+        ]
+    )
     paths = {}
     for name, frame in [
         ("scorecard", scorecard),
@@ -1070,6 +1078,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("chapman_phase", chapman_phase_summary),
         ("fig3", fig3_summary),
         ("mir_fig4", mir_fig4_summary),
+        ("g11_scorecard_preflight", g11_scorecard_preflight),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -1089,6 +1098,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         chapman_phase_blocker_status_csv=paths["chapman_phase"],
         kokorowski_fig3_decay_summary_csv=paths["fig3"],
         mir_fig4_eraser_phase_summary_csv=paths["mir_fig4"],
+        g11_scorecard_preflight_summary_csv=paths["g11_scorecard_preflight"],
     )
     assert not checklist.empty
     assert not bool(summary["objective_achieved"].iloc[0])
@@ -1115,6 +1125,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "stress_or_calibration_uncertainty_limited"
     )
     assert bool(summary["current_public_g11_path_exhausted"].iloc[0]) is True
+    assert bool(summary["can_update_g11_scorecard"].iloc[0]) is False
+    assert int(summary["g11_scorecard_preflight_failed_checks"].iloc[0]) == 4
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
     assert summary["chapman_raw_phase_verdict"].iloc[0] == "G10 still blocked by raw phase"

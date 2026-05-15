@@ -17,6 +17,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Current breakthrough path exhausted without closure: True
 - G11 closure contract gates: 7
 - G11 closure-ready targets: 0
+- Can update G11 scorecard: False
+- G11 scorecard preflight failed checks: 4
 - Public G11 support without author contact: 0
 - Author-data G11-ready rows: 0
 - Empirical product-law-ready datasets: 0

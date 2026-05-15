@@ -7961,6 +7961,9 @@ def make_current_goal_completion_audit_outputs(
     g11_closure_readiness_summary_csv: Path = Path(
         "outputs/g11_closure_readiness/g11_closure_readiness_summary.csv"
     ),
+    g11_scorecard_preflight_summary_csv: Path = Path(
+        "outputs/g11_scorecard_preflight/g11_scorecard_update_preflight_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7985,6 +7988,9 @@ def make_current_goal_completion_audit_outputs(
         breakthrough_path_exhaustion_summary_csv
     )
     g11_closure_readiness = _read_optional_metric_csv(g11_closure_readiness_summary_csv)
+    g11_scorecard_preflight = _read_optional_metric_csv(
+        g11_scorecard_preflight_summary_csv
+    )
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
     chapman_phase_blocker = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
@@ -8220,6 +8226,18 @@ def make_current_goal_completion_audit_outputs(
     g11_closure_ready_targets = int(
         _first_value(g11_closure_readiness, "closure_ready_targets", 0)
     )
+    can_update_g11_scorecard = bool(
+        _truthy(
+            _first_value(
+                g11_scorecard_preflight,
+                "can_update_g11_scorecard",
+                False,
+            )
+        )
+    )
+    g11_scorecard_preflight_failed_checks = int(
+        _first_value(g11_scorecard_preflight, "failed_preflight_checks", 0)
+    )
 
     second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
@@ -8333,6 +8351,8 @@ def make_current_goal_completion_audit_outputs(
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "g11_closure_contract_gates": g11_closure_contract_gates,
                 "g11_closure_ready_targets": g11_closure_ready_targets,
+                "can_update_g11_scorecard": can_update_g11_scorecard,
+                "g11_scorecard_preflight_failed_checks": g11_scorecard_preflight_failed_checks,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
@@ -8395,6 +8415,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - G11 closure contract gates: {g11_closure_contract_gates}
 - G11 closure-ready targets: {g11_closure_ready_targets}
+- Can update G11 scorecard: {can_update_g11_scorecard}
+- G11 scorecard preflight failed checks: {g11_scorecard_preflight_failed_checks}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
