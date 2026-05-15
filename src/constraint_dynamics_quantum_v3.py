@@ -8025,6 +8025,9 @@ def make_current_goal_completion_audit_outputs(
     proxy_rich_product_candidates = int(
         _first_value(product_law_status, "proxy_rich_apparatus_candidates", 0)
     )
+    named_proxy_rich_blockers = int(
+        _first_value(product_law_status, "named_proxy_rich_blockers", 0)
+    )
     g12_validated_by_audit = bool(
         _truthy(_first_value(product_law_status, "g12_validated", False))
     )
@@ -8323,7 +8326,8 @@ def make_current_goal_completion_audit_outputs(
                 "factors validate the product law; "
                 f"empirical_ready={empirical_product_ready}; "
                 f"partial_proxy_candidates={partial_product_proxy_candidates}; "
-                f"proxy_rich_candidates={proxy_rich_product_candidates}."
+                f"proxy_rich_candidates={proxy_rich_product_candidates}; "
+                f"named_proxy_rich_blockers={named_proxy_rich_blockers}."
             ),
         },
         {
@@ -8358,6 +8362,7 @@ def make_current_goal_completion_audit_outputs(
                 "empirical_product_law_ready_datasets": empirical_product_ready,
                 "partial_product_law_proxy_candidates": partial_product_proxy_candidates,
                 "proxy_rich_product_law_candidates": proxy_rich_product_candidates,
+                "named_proxy_rich_product_law_blockers": named_proxy_rich_blockers,
                 "kokorowski_bootstrap_p_joint_stress_gate": kokorowski_joint,
                 "kokorowski_full_reported_se_joint_pass": kokorowski_full_se_joint,
                 "kokorowski_max_kappa_se_scale_with_joint_pass_ge_080": kokorowski_max_se_scale,
@@ -8645,6 +8650,63 @@ def make_product_law_readiness_audit_outputs(
             ascending=[False, False, False, False],
         ).reset_index(drop=True)
     proxy_scan.to_csv(output_dir / "product_law_proxy_candidate_scan.csv", index=False)
+    candidate_blocker_rows = []
+    for rank, (_idx, row) in enumerate(proxy_scan.head(12).iterrows(), start=1):
+        has_visibility_proxy = bool(_truthy(row.get("has_visibility_proxy", False)))
+        proxy_axis_count = int(row.get("apparatus_proxy_axis_count", 0))
+        missing_axes = []
+        if not str(row.get("lambda_proxy_columns", "")).strip():
+            missing_axes.append("Lambda")
+        if not str(row.get("gamma_proxy_columns", "")).strip():
+            missing_axes.append("Gamma")
+        if not str(row.get("theta_proxy_columns", "")).strip():
+            missing_axes.append("Theta")
+        if bool(_truthy(row.get("g12_ready", False))):
+            closure_gap = "none"
+            next_valid_evidence = "run held-out product-law validation"
+        elif not has_visibility_proxy:
+            closure_gap = "no visibility observable or proxy in the scanned CSV"
+            next_valid_evidence = "pair the apparatus controls with measured visibility rows"
+        elif proxy_axis_count >= 3:
+            closure_gap = (
+                "proxy-rich candidate lacks formal independently measured "
+                "Lambda/Gamma/Theta rows and held-out product-law comparison"
+            )
+            next_valid_evidence = (
+                "provenance map from proxy controls to Lambda/Gamma/Theta plus "
+                "low-confounding held-out validation"
+            )
+        elif proxy_axis_count > 0:
+            closure_gap = (
+                "partial apparatus-control candidate is missing "
+                f"{'/'.join(missing_axes) if missing_axes else 'at least one'} axis"
+            )
+            next_valid_evidence = (
+                "add independent controls for the missing product-law axes before "
+                "testing held-out predictions"
+            )
+        else:
+            closure_gap = "visibility-like data lack apparatus-control axes"
+            next_valid_evidence = "add independently measured apparatus-control factors"
+        candidate_blocker_rows.append(
+            {
+                "rank": rank,
+                "dataset_path": row.get("dataset_path", ""),
+                "candidate_status": row.get("candidate_status", ""),
+                "has_visibility_proxy": has_visibility_proxy,
+                "apparatus_proxy_axis_count": proxy_axis_count,
+                "missing_product_axes": ";".join(missing_axes),
+                "g12_ready": bool(_truthy(row.get("g12_ready", False))),
+                "blocker": row.get("blocker", ""),
+                "closure_gap": closure_gap,
+                "next_valid_evidence": next_valid_evidence,
+            }
+        )
+    candidate_blockers = pd.DataFrame(candidate_blocker_rows)
+    candidate_blockers.to_csv(
+        output_dir / "product_law_candidate_blockers.csv",
+        index=False,
+    )
 
     design = _read_optional_metric_csv(identifiability_design_summary_csv)
     models = _read_optional_metric_csv(identifiability_model_comparison_csv)
@@ -8707,6 +8769,13 @@ def make_product_law_readiness_audit_outputs(
             & (proxy_scan["apparatus_proxy_axis_count"].astype(int) >= 3)
         ).sum()
     ) if not proxy_scan.empty else 0
+    named_proxy_rich_blockers = int(
+        (
+            candidate_blockers["has_visibility_proxy"].map(_truthy)
+            & (candidate_blockers["apparatus_proxy_axis_count"].astype(int) >= 3)
+            & ~candidate_blockers["g12_ready"].map(_truthy)
+        ).sum()
+    ) if not candidate_blockers.empty else 0
     synthetic_rows = int(len(benchmark)) if benchmark is not None else 0
     balanced_benchmark = benchmark_summary[
         benchmark_summary["design"].astype(str) == "balanced_factorial"
@@ -8734,6 +8803,7 @@ def make_product_law_readiness_audit_outputs(
                 "datasets_with_complete_product_rows": complete_factor_datasets,
                 "partial_apparatus_proxy_candidates": partial_proxy_candidates,
                 "proxy_rich_apparatus_candidates": proxy_rich_candidates,
+                "named_proxy_rich_blockers": named_proxy_rich_blockers,
                 "synthetic_benchmark_rows": synthetic_rows,
                 "balanced_synthetic_product_delta_aicc": balanced_product_delta,
                 "balanced_synthetic_max_abs_factor_correlation": balanced_max_corr,
@@ -8794,6 +8864,17 @@ def make_product_law_readiness_audit_outputs(
             f"blocker={row['blocker']}"
             for _, row in proxy_scan.head(6).iterrows()
         )
+    if candidate_blockers.empty:
+        blocker_detail_lines = "- none"
+    else:
+        blocker_detail_lines = "\n".join(
+            "- "
+            f"{Path(str(row['dataset_path'])).name}: "
+            f"missing_axes={row['missing_product_axes'] or 'none'}; "
+            f"closure_gap={row['closure_gap']}; "
+            f"next={row['next_valid_evidence']}"
+            for _, row in candidate_blockers.head(6).iterrows()
+        )
     report = f"""# Product-Law Readiness Audit
 
 Verdict: {verdict}
@@ -8813,6 +8894,7 @@ It deliberately separates empirical readiness from the synthetic identifiability
 - Empirical product-law-ready datasets: {empirical_ready}
 - Partial apparatus-proxy candidates: {partial_proxy_candidates}
 - Proxy-rich apparatus candidates: {proxy_rich_candidates}
+- Named proxy-rich blockers: {named_proxy_rich_blockers}
 
 Top blockers:
 
@@ -8821,6 +8903,10 @@ Top blockers:
 Top proxy candidates:
 
 {proxy_lines}
+
+Candidate blocker details:
+
+{blocker_detail_lines}
 
 ## Synthetic Benchmark
 

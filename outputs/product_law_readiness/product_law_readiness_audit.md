@@ -17,6 +17,7 @@ It deliberately separates empirical readiness from the synthetic identifiability
 - Empirical product-law-ready datasets: 0
 - Partial apparatus-proxy candidates: 14
 - Proxy-rich apparatus candidates: 2
+- Named proxy-rich blockers: 2
 
 Top blockers:
 
@@ -31,6 +32,15 @@ Top proxy candidates:
 - HORNBERGER_2003_COLLISIONAL_SCOUT.csv: single/partial apparatus-control proxy; proxy_axes=2; blocker=missing Lambda/Gamma/Theta columns
 - KOKOROWSKI_2001_FIG3_DECAY_DIGITIZED.csv: single/partial apparatus-control proxy; proxy_axes=2; blocker=missing Lambda/Gamma/Theta columns
 - KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv: single/partial apparatus-control proxy; proxy_axes=2; blocker=missing Lambda/Gamma/Theta columns
+
+Candidate blocker details:
+
+- CHAPMAN_1995_SCATTER.csv: missing_axes=none; closure_gap=proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison; next=provenance map from proxy controls to Lambda/Gamma/Theta plus low-confounding held-out validation
+- CHAPMAN_1995_SCATTER_DIGITIZED.csv: missing_axes=none; closure_gap=proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison; next=provenance map from proxy controls to Lambda/Gamma/Theta plus low-confounding held-out validation
+- KOKOROWSKI_2001_FIG3_DECAY_THEORY_CURVES.csv: missing_axes=Gamma; closure_gap=partial apparatus-control candidate is missing Gamma axis; next=add independent controls for the missing product-law axes before testing held-out predictions
+- HORNBERGER_2003_COLLISIONAL_SCOUT.csv: missing_axes=Lambda; closure_gap=partial apparatus-control candidate is missing Lambda axis; next=add independent controls for the missing product-law axes before testing held-out predictions
+- KOKOROWSKI_2001_FIG3_DECAY_DIGITIZED.csv: missing_axes=Gamma; closure_gap=partial apparatus-control candidate is missing Gamma axis; next=add independent controls for the missing product-law axes before testing held-out predictions
+- KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv: missing_axes=Gamma; closure_gap=partial apparatus-control candidate is missing Gamma axis; next=add independent controls for the missing product-law axes before testing held-out predictions
 
 ## Synthetic Benchmark
 

@@ -992,6 +992,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "empirical_product_law_ready_datasets": 0,
                 "partial_apparatus_proxy_candidates": 14,
                 "proxy_rich_apparatus_candidates": 2,
+                "named_proxy_rich_blockers": 2,
                 "g12_validated": False,
             }
         ]
@@ -1119,6 +1120,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     )
     assert int(summary["partial_product_law_proxy_candidates"].iloc[0]) == 14
     assert int(summary["proxy_rich_product_law_candidates"].iloc[0]) == 2
+    assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
     assert int(summary["stress_closed_second_no_refit_targets"].iloc[0]) == 0
     assert (
         summary["g11_top_blocker_class"].iloc[0]
@@ -1150,6 +1152,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert "partial_proxy_candidates=14" in g12_row["note"]
     assert "proxy_rich_candidates=2" in g12_row["note"]
+    assert "named_proxy_rich_blockers=2" in g12_row["note"]
     second_row = checklist[
         checklist["requirement"]
         == "second_independent_distribution_to_visibility_validation"
@@ -1257,12 +1260,16 @@ def test_product_law_readiness_audit_outputs_and_cli(tmp_path):
     )
     assert int(status["empirical_product_law_ready_datasets"].iloc[0]) == 0
     assert int(status["partial_apparatus_proxy_candidates"].iloc[0]) >= 1
+    assert "named_proxy_rich_blockers" in status.columns
     assert "apparatus_proxy_axis_count" in scan.columns
     assert not scan.empty
     assert not bench.empty
     assert not needed.empty
     assert (output_dir / "product_law_readiness_audit.md").exists()
     assert (output_dir / "product_law_proxy_candidate_scan.csv").exists()
+    blockers = pd.read_csv(output_dir / "product_law_candidate_blockers.csv")
+    assert "closure_gap" in blockers.columns
+    assert "next_valid_evidence" in blockers.columns
 
     cli_output_dir = tmp_path / "product_law_cli"
     main(
@@ -1281,6 +1288,7 @@ def test_product_law_readiness_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "product_law_readiness_status.csv").exists()
+    assert (cli_output_dir / "product_law_candidate_blockers.csv").exists()
 
 
 def test_no_refit_target_scout_outputs_and_cli(tmp_path):
