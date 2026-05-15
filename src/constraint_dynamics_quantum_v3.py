@@ -10552,6 +10552,12 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     public_g11_exhausted = bool(
         _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
     )
+    g11_closure_evidence_queue_count = int(
+        _first_value(public_g11, "closure_evidence_queue_count", 0)
+    )
+    g11_closure_evidence_classes = str(
+        _first_value(public_g11, "closure_evidence_classes", "not available")
+    )
     g11_closed = bool(
         int(_first_value(public_g11, "stress_closed_second_no_refit_targets", 0)) > 0
         or int(_first_value(current_goal, "author_g11_ready_rows", 0)) > 0
@@ -10688,7 +10694,8 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         "public Kokorowski route is exhausted without closure; "
                         f"failed gates={kokorowski_failed_gate_ids}; "
                         f"joint stress={kokorowski_joint_stress:.3f}; "
-                        f"raw calibration tables found={kokorowski_raw_tables_found}"
+                        f"raw calibration tables found={kokorowski_raw_tables_found}; "
+                        f"evidence classes={g11_closure_evidence_classes}"
                     )
                     if public_g11_exhausted
                     else "public G11 route still needs testing"
@@ -10762,6 +10769,8 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "objective_achieved": objective_achieved,
                 "public_g11_path_exhausted": public_g11_exhausted,
                 "g11_closed": g11_closed,
+                "g11_closure_evidence_queue_count": g11_closure_evidence_queue_count,
+                "g11_closure_evidence_classes": g11_closure_evidence_classes,
                 "chapman_g10_repaired": chapman_g10_repaired,
                 "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
                 "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
@@ -10808,6 +10817,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - Current breakthrough path exhausted without closure: {current_path_exhausted_without_closure}
 - Public G11 path exhausted: {public_g11_exhausted}
 - G11 closed: {g11_closed}
+- G11 closure evidence queue rows: {g11_closure_evidence_queue_count}
+- G11 closure evidence classes: {g11_closure_evidence_classes}
 - Chapman G10 repaired: {chapman_g10_repaired}
 - Chapman branch gate pass: {chapman_branch_gate_pass}
 - Chapman wrap ambiguous rows: {chapman_wrap_ambiguous}

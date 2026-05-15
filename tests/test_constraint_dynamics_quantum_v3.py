@@ -2297,6 +2297,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
             {
                 "current_public_g11_path_exhausted": True,
                 "stress_closed_second_no_refit_targets": 0,
+                "closure_evidence_queue_count": 14,
+                "closure_evidence_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
             }
         ]
     )
@@ -2419,12 +2421,21 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert bool(summary["objective_achieved"].iloc[0]) is False
     assert int(summary["kokorowski_failed_tracked_g11_gates"].iloc[0]) == 3
     assert summary["kokorowski_failed_g11_gate_ids"].iloc[0] == "G11C;G11F;G11G"
+    assert int(summary["g11_closure_evidence_queue_count"].iloc[0]) == 14
+    assert (
+        summary["g11_closure_evidence_classes"].iloc[0]
+        == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+    )
     assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
     g11_row = required_inputs[
         required_inputs["blocker"]
         == "G11 second independent distribution-to-visibility validation"
     ].iloc[0]
     assert "failed gates=G11C;G11F;G11G" in g11_row["current_state"]
+    assert (
+        "evidence classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+        in g11_row["current_state"]
+    )
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
     ].iloc[0]

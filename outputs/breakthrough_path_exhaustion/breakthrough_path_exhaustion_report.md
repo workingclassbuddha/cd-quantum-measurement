@@ -10,6 +10,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - Current breakthrough path exhausted without closure: True
 - Public G11 path exhausted: True
 - G11 closed: False
+- G11 closure evidence queue rows: 14
+- G11 closure evidence classes: independent_record_distribution;paired_visibility_curve;raw_calibration_tables
 - Chapman G10 repaired: False
 - Chapman branch gate pass: False
 - Chapman wrap ambiguous rows: 5
@@ -28,7 +30,7 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 
 ## Required New Inputs
 
-- **G11 second independent distribution-to-visibility validation**: public Kokorowski route is exhausted without closure; failed gates=G11C;G11F;G11G; joint stress=0.727; raw calibration tables found=False. Next valid input: raw Kokorowski beam-deflection/broadening calibration tables or a newly identified cleaner public dataset. Boundary: do not count near-miss visibility-derived datasets as G11 closure.
+- **G11 second independent distribution-to-visibility validation**: public Kokorowski route is exhausted without closure; failed gates=G11C;G11F;G11G; joint stress=0.727; raw calibration tables found=False; evidence classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables. Next valid input: raw Kokorowski beam-deflection/broadening calibration tables or a newly identified cleaner public dataset. Boundary: do not count near-miss visibility-derived datasets as G11 closure.
 - **G10 Chapman raw-phase repair**: branch-optimized raw phase gate pass=False; best RMSE=1.475; wrap ambiguous rows=5; low-contrast ambiguous rows=8; needed artifacts=fig2_raw_phase_trace.csv;fig2_phase_wrap_notes.md;paired_raw_visibility_table.csv. Next valid input: author numerical phase trace or publication-grade redigitization. Boundary: do not rescue G10 with branch wrapping alone.
 - **G12 independent product-law validation**: empirical ready datasets=0; proxy-rich candidates=2; named proxy-rich blockers=2; top proxy-rich blockers=data/extracted/CHAPMAN_1995_SCATTER.csv;data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv; closure gaps=proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison. Next valid input: provenance map from proxy controls to Lambda/Gamma/Theta plus low-confounding held-out validation. Boundary: do not treat synthetic or proxy-rich rows as empirical product-law validation.
 
