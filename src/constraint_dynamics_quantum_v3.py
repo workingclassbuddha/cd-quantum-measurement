@@ -7976,6 +7976,15 @@ def make_current_goal_completion_audit_outputs(
     chapman_phase_blocker = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
 
     eligible_second = int(_first_value(g11_summary, "eligible_second_no_refit_targets", 0))
+    stress_closed_second = int(
+        _first_value(g11_summary, "stress_closed_second_no_refit_targets", 0)
+    )
+    g11_top_blocker = str(
+        _first_value(g11_summary, "top_blocker_class", "not available")
+    )
+    g11_recommended_next = str(
+        _first_value(g11_summary, "recommended_next_evidence", "not available")
+    )
     public_support = int(_first_value(public_summary, "supports_g11_without_author_contact", 0))
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
     empirical_product_ready = int(
@@ -8198,6 +8207,9 @@ def make_current_goal_completion_audit_outputs(
             "passed": second_validation_found,
             "note": (
                 f"eligible_second={eligible_second}; public_support={public_support}; "
+                f"stress_closed_second={stress_closed_second}; "
+                f"top_blocker={g11_top_blocker}; "
+                f"recommended_next={g11_recommended_next}; "
                 f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
@@ -8266,6 +8278,8 @@ def make_current_goal_completion_audit_outputs(
                 "second_validation_found": second_validation_found,
                 "second_candidate_found": second_candidate_found,
                 "eligible_second_no_refit_targets": eligible_second,
+                "stress_closed_second_no_refit_targets": stress_closed_second,
+                "g11_top_blocker_class": g11_top_blocker,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
@@ -8321,6 +8335,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Objective achieved: {achieved}
 - Failed requirements: {int((~checklist['passed']).sum())}
 - Eligible second no-refit targets: {eligible_second}
+- Stress-closed second no-refit targets: {stress_closed_second}
+- G11 top blocker class: {g11_top_blocker}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
@@ -9649,7 +9665,18 @@ Tighten Kokorowski independent-kappa provenance or find a cleaner second no-refi
     return register, summary
 
 
-def make_breakthrough_gap_audit_outputs(output_dir: Path):
+def make_breakthrough_gap_audit_outputs(
+    output_dir: Path,
+    kokorowski_stress_summary_csv: Path = Path(
+        "outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv"
+    ),
+    kokorowski_kappa_profile_summary_csv: Path = Path(
+        "outputs/kokorowski_kappa_uncertainty_profile/kokorowski_kappa_uncertainty_summary.csv"
+    ),
+    kokorowski_calibration_provenance_summary_csv: Path = Path(
+        "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv"
+    ),
+):
     """Write a strict G11 gap audit from the no-refit candidate register.
 
     The audit is intentionally a bookkeeping layer, not a new model. It spells
@@ -9660,9 +9687,61 @@ def make_breakthrough_gap_audit_outputs(output_dir: Path):
     output_dir.mkdir(parents=True, exist_ok=True)
     (output_dir / "figures").mkdir(parents=True, exist_ok=True)
     register = no_refit_target_candidate_register()
+    kokorowski_stress = _read_optional_metric_csv(kokorowski_stress_summary_csv)
+    kokorowski_kappa_profile = _read_optional_metric_csv(
+        kokorowski_kappa_profile_summary_csv
+    )
+    kokorowski_calibration = _read_optional_metric_csv(
+        kokorowski_calibration_provenance_summary_csv
+    )
+    kokorowski_joint = float(
+        _first_value(kokorowski_stress, "bootstrap_p_joint_stress_gate", np.nan)
+    )
+    kokorowski_shuffle_p = float(
+        _first_value(kokorowski_stress, "shuffle_null_p_rmse_lte_observed", np.nan)
+    )
+    kokorowski_branch_swap_p = float(
+        _first_value(kokorowski_stress, "branch_swap_null_p_rmse_lte_observed", np.nan)
+    )
+    kokorowski_stress_pass = bool(
+        math.isfinite(kokorowski_joint)
+        and kokorowski_joint >= 0.80
+        and math.isfinite(kokorowski_shuffle_p)
+        and kokorowski_shuffle_p <= 0.05
+        and math.isfinite(kokorowski_branch_swap_p)
+        and kokorowski_branch_swap_p <= 0.05
+    )
+    kokorowski_full_se_joint = float(
+        _first_value(
+            kokorowski_kappa_profile,
+            "full_reported_se_joint_pass",
+            np.nan,
+        )
+    )
+    kokorowski_max_se_scale = float(
+        _first_value(
+            kokorowski_kappa_profile,
+            "max_kappa_se_scale_with_joint_pass_ge_080",
+            np.nan,
+        )
+    )
+    kokorowski_calibration_gap = str(
+        _first_value(
+            kokorowski_calibration,
+            "primary_gap",
+            _first_value(
+                kokorowski_calibration,
+                "remaining_blocker",
+                "not available",
+            ),
+        )
+    )
     rows = []
     for _, row in register.iterrows():
         is_xiao = row["candidate_id"] == "XIAO_2019_INTERNAL_LEAD"
+        is_kokorowski = (
+            row["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        )
         record_independent = bool(row["record_distribution_independent_of_visibility_fit"])
         visibility_available = bool(row["visibility_curve_available"])
         phase_available = bool(row["phase_available"])
@@ -9679,9 +9758,17 @@ def make_breakthrough_gap_audit_outputs(output_dir: Path):
             and visibility_available
             and source_data_available
         )
-        if clears_g11:
+        closure_ready = False
+        if clears_g11 and is_kokorowski and not kokorowski_stress_pass:
+            blocker_class = "stress_or_calibration_uncertainty_limited"
+            next_evidence = (
+                "tighten independent-kappa calibration provenance/uncertainty or "
+                "find a cleaner second no-refit dataset"
+            )
+        elif clears_g11:
             blocker_class = "none"
-            next_evidence = "promote to full no-refit distribution-to-visibility implementation"
+            closure_ready = True
+            next_evidence = "run stress/provenance gate before treating candidate as closure"
         elif is_xiao:
             blocker_class = "internal_lead_not_second_experiment"
             next_evidence = "keep as lead benchmark; use it to validate extraction and stress-test standards"
@@ -9710,6 +9797,7 @@ def make_breakthrough_gap_audit_outputs(output_dir: Path):
                 "candidate_id": row["candidate_id"],
                 "study": row["study"],
                 "clears_g11": clears_g11,
+                "closure_ready": closure_ready,
                 "record_distribution_independent_of_visibility_fit": record_independent,
                 "visibility_curve_available": visibility_available,
                 "source_data_available": source_data_available,
@@ -9722,6 +9810,21 @@ def make_breakthrough_gap_audit_outputs(output_dir: Path):
                 "next_command": row["next_command"],
                 "no_refit_gate_score": float(row["no_refit_gate_score"]),
                 "g11_evidence_score": float(evidence_score),
+                "kokorowski_stress_pass": (
+                    kokorowski_stress_pass if is_kokorowski else np.nan
+                ),
+                "kokorowski_joint_stress_probability": (
+                    kokorowski_joint if is_kokorowski else np.nan
+                ),
+                "kokorowski_full_reported_se_joint_pass": (
+                    kokorowski_full_se_joint if is_kokorowski else np.nan
+                ),
+                "kokorowski_max_se_scale_with_joint_pass_ge_080": (
+                    kokorowski_max_se_scale if is_kokorowski else np.nan
+                ),
+                "kokorowski_calibration_gap": (
+                    kokorowski_calibration_gap if is_kokorowski else ""
+                ),
                 "primary_url": row["primary_url"],
                 "doi": row["doi"],
             }
@@ -9750,9 +9853,14 @@ def make_breakthrough_gap_audit_outputs(output_dir: Path):
     )
 
     eligible = audit[audit["clears_g11"]]
+    closure_ready = audit[audit["closure_ready"].map(_truthy)]
     second_count = int(len(eligible))
+    closure_ready_count = int(len(closure_ready))
     top = audit.iloc[0]
-    if second_count:
+    if closure_ready_count:
+        verdict = "second independent no-refit validation stress-closed"
+        next_move = str(closure_ready.iloc[0]["next_evidence_needed"])
+    elif second_count:
         verdict = "second independent no-refit candidate found"
         next_move = str(eligible.iloc[0]["next_evidence_needed"])
     else:
@@ -9785,6 +9893,7 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 - Candidates audited: {len(audit)}
 - Eligible second no-refit targets: {second_count}
+- Stress-closed second no-refit targets: {closure_ready_count}
 - Top current candidate: {top['candidate_id']}
 - Top blocker class: {top['blocker_class']}
 - Next move: {next_move}
@@ -9799,7 +9908,7 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 ## Strict Interpretation
 
-G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. The audited Chapman-adjacent, Xiao-adjacent, decoherence, duality, weak-measurement, and entanglement-memory controls do not yet give a second held-out distribution-to-visibility prediction.
+Kokorowski is now an eligible public second no-refit candidate, so the old scouting gap is no longer the bottleneck. G11 still does not close because the candidate has not passed the stress/provenance gate: the public vector prediction is strong, but independent-kappa uncertainty and missing raw beam-calibration tables remain limiting evidence.
 
 ## Non-Claims
 
@@ -9816,9 +9925,14 @@ G11 remains the central missing breakthrough gate unless `eligible_second_no_ref
                 "verdict": verdict,
                 "candidate_count": int(len(audit)),
                 "eligible_second_no_refit_targets": second_count,
+                "stress_closed_second_no_refit_targets": closure_ready_count,
                 "top_candidate": str(top["candidate_id"]),
                 "top_blocker_class": str(top["blocker_class"]),
                 "recommended_next_evidence": next_move,
+                "kokorowski_joint_stress_probability": kokorowski_joint,
+                "kokorowski_full_reported_se_joint_pass": kokorowski_full_se_joint,
+                "kokorowski_max_se_scale_with_joint_pass_ge_080": kokorowski_max_se_scale,
+                "kokorowski_calibration_gap": kokorowski_calibration_gap,
             }
         ]
     )

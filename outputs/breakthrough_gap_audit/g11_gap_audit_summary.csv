@@ -1,2 +1,2 @@
-verdict,candidate_count,eligible_second_no_refit_targets,top_candidate,top_blocker_class,recommended_next_evidence
-second independent no-refit candidate found,15,1,KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,none,promote to full no-refit distribution-to-visibility implementation
+verdict,candidate_count,eligible_second_no_refit_targets,stress_closed_second_no_refit_targets,top_candidate,top_blocker_class,recommended_next_evidence,kokorowski_joint_stress_probability,kokorowski_full_reported_se_joint_pass,kokorowski_max_se_scale_with_joint_pass_ge_080,kokorowski_calibration_gap
+second independent no-refit candidate found,15,1,0,KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,stress_or_calibration_uncertainty_limited,tighten independent-kappa calibration provenance/uncertainty or find a cleaner second no-refit dataset,0.727,0.4166666666666667,0.25,raw beam-deflection/broadening calibration data are still not in the public source package

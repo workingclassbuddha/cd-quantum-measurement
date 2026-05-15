@@ -2,4 +2,4 @@ blocker_class,candidate_count
 record_variable_not_independent,9
 paired_visibility_curve_missing,4
 internal_lead_not_second_experiment,1
-none,1
+stress_or_calibration_uncertainty_limited,1

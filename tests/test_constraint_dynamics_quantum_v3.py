@@ -963,7 +963,14 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ]
     )
     g11_summary = pd.DataFrame(
-        [{"eligible_second_no_refit_targets": 0}]
+        [
+            {
+                "eligible_second_no_refit_targets": 1,
+                "stress_closed_second_no_refit_targets": 0,
+                "top_blocker_class": "stress_or_calibration_uncertainty_limited",
+                "recommended_next_evidence": "tighten independent-kappa calibration",
+            }
+        ]
     )
     public_summary = pd.DataFrame(
         [{"supports_g11_without_author_contact": 0}]
@@ -1087,6 +1094,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     )
     assert int(summary["partial_product_law_proxy_candidates"].iloc[0]) == 14
     assert int(summary["proxy_rich_product_law_candidates"].iloc[0]) == 2
+    assert int(summary["stress_closed_second_no_refit_targets"].iloc[0]) == 0
+    assert (
+        summary["g11_top_blocker_class"].iloc[0]
+        == "stress_or_calibration_uncertainty_limited"
+    )
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
     assert summary["chapman_raw_phase_verdict"].iloc[0] == "G10 still blocked by raw phase"
@@ -1114,6 +1126,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         checklist["requirement"]
         == "second_independent_distribution_to_visibility_validation"
     ].iloc[0]
+    assert "stress_closed_second=0" in second_row["note"]
+    assert "top_blocker=stress_or_calibration_uncertainty_limited" in second_row["note"]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "provenance_scope_warning=True" in second_row["note"]
     assert "detector_all_within_two_se=True" in second_row["note"]

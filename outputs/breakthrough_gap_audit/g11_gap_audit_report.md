@@ -8,13 +8,14 @@ This audit checks the missing gate directly: can a second experiment, independen
 
 - Candidates audited: 15
 - Eligible second no-refit targets: 1
+- Stress-closed second no-refit targets: 0
 - Top current candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
-- Top blocker class: none
-- Next move: promote to full no-refit distribution-to-visibility implementation
+- Top blocker class: stress_or_calibration_uncertainty_limited
+- Next move: tighten independent-kappa calibration provenance/uncertainty or find a cleaner second no-refit dataset
 
 ## Candidate Readout
 
-- **Kokorowski et al. 2001** (`KOKOROWSKI_2001_MULTIPHOTON_SCATTERING`): none. Next: promote to full no-refit distribution-to-visibility implementation
+- **Kokorowski et al. 2001** (`KOKOROWSKI_2001_MULTIPHOTON_SCATTERING`): stress_or_calibration_uncertainty_limited. Next: tighten independent-kappa calibration provenance/uncertainty or find a cleaner second no-refit dataset
 - **Xiao et al. 2019** (`XIAO_2019_INTERNAL_LEAD`): internal_lead_not_second_experiment. Next: keep as lead benchmark; use it to validate extraction and stress-test standards
 - **Cormann et al. 2016** (`CORMANN_2016_MODULAR_VALUE`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
 - **Eibenberger et al. 2014** (`EIBENBERGER_2014_RECOIL_ABSORPTION`): record_variable_not_independent. Next: obtain author/supplemental record distribution or calibration not inferred from visibility
@@ -28,11 +29,11 @@ This audit checks the missing gate directly: can a second experiment, independen
 - `record_variable_not_independent`: 9
 - `paired_visibility_curve_missing`: 4
 - `internal_lead_not_second_experiment`: 1
-- `none`: 1
+- `stress_or_calibration_uncertainty_limited`: 1
 
 ## Strict Interpretation
 
-G11 remains the central missing breakthrough gate unless `eligible_second_no_refit_targets` becomes nonzero. The audited Chapman-adjacent, Xiao-adjacent, decoherence, duality, weak-measurement, and entanglement-memory controls do not yet give a second held-out distribution-to-visibility prediction.
+Kokorowski is now an eligible public second no-refit candidate, so the old scouting gap is no longer the bottleneck. G11 still does not close because the candidate has not passed the stress/provenance gate: the public vector prediction is strong, but independent-kappa uncertainty and missing raw beam-calibration tables remain limiting evidence.
 
 ## Non-Claims
 
