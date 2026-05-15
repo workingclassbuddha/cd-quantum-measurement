@@ -15,6 +15,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 top blocker class: stress_or_calibration_uncertainty_limited
 - Current public G11 path exhausted: True
 - Current breakthrough path exhausted without closure: True
+- G11 closure contract gates: 7
+- G11 closure-ready targets: 0
 - Public G11 support without author contact: 0
 - Author-data G11-ready rows: 0
 - Empirical product-law-ready datasets: 0

@@ -1,0 +1,8 @@
+gate_id,gate,acceptance_rule,failure_mode
+G11A,independent_record_variable,"record distribution, width, or load calibration is measured independently of the visibility curve being predicted",visibility-derived record variables cannot close G11
+G11B,paired_visibility_curve,"each record/load setting has a paired visibility, contrast, or decoherence measurement under the same apparatus setting",unpaired distributions are controls or near misses only
+G11C,uncertainty_budget,record-variable and visibility uncertainties are explicit enough for stress propagation,point estimates alone cannot make a publication-grade validation
+G11D,no_refit_prediction_map,the record variable predicts visibility without fitting the record bandwidth to the target visibility curve,"post-hoc bandwidth fitting is calibration, not held-out prediction"
+G11E,null_controls,"paired-data result beats shuffle, branch-swap, or wrong-pairing null controls",a low RMSE without null separation is not enough
+G11F,stress_threshold,bootstrap or stress profile clears the joint pass threshold used by the G11 audit,fragile closure under reported uncertainty remains blocked
+G11G,provenance_permission,"source, license or permission, extraction method, and reproducible file hashes are recorded",opaque data cannot enter the public repo as validation evidence

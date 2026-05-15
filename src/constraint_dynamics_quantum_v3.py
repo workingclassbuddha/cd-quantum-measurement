@@ -7958,6 +7958,9 @@ def make_current_goal_completion_audit_outputs(
     breakthrough_path_exhaustion_summary_csv: Path = Path(
         "outputs/breakthrough_path_exhaustion/breakthrough_path_exhaustion_summary.csv"
     ),
+    g11_closure_readiness_summary_csv: Path = Path(
+        "outputs/g11_closure_readiness/g11_closure_readiness_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7981,6 +7984,7 @@ def make_current_goal_completion_audit_outputs(
     breakthrough_path_exhaustion = _read_optional_metric_csv(
         breakthrough_path_exhaustion_summary_csv
     )
+    g11_closure_readiness = _read_optional_metric_csv(g11_closure_readiness_summary_csv)
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
     chapman_phase_blocker = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
@@ -8210,6 +8214,12 @@ def make_current_goal_completion_audit_outputs(
             )
         )
     )
+    g11_closure_contract_gates = int(
+        _first_value(g11_closure_readiness, "contract_gate_count", 0)
+    )
+    g11_closure_ready_targets = int(
+        _first_value(g11_closure_readiness, "closure_ready_targets", 0)
+    )
 
     second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
@@ -8321,6 +8331,8 @@ def make_current_goal_completion_audit_outputs(
                 "g11_top_blocker_class": g11_top_blocker,
                 "current_public_g11_path_exhausted": current_public_g11_path_exhausted,
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
+                "g11_closure_contract_gates": g11_closure_contract_gates,
+                "g11_closure_ready_targets": g11_closure_ready_targets,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
@@ -8381,6 +8393,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 top blocker class: {g11_top_blocker}
 - Current public G11 path exhausted: {current_public_g11_path_exhausted}
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
+- G11 closure contract gates: {g11_closure_contract_gates}
+- G11 closure-ready targets: {g11_closure_ready_targets}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
@@ -13892,6 +13906,203 @@ Passing the CSV schema is not enough. A row is G11-ready only when the source al
     return validation, summary
 
 
+def make_g11_closure_readiness_audit_outputs(
+    output_dir: Path,
+    schema_csv: Path = Path("outputs/author_data_intake/author_data_intake_schema.csv"),
+    validation_summary_csv: Path = Path(
+        "outputs/author_data_validation/author_data_manifest_validation_summary.csv"
+    ),
+    public_g11_exhaustion_summary_csv: Path = Path(
+        "outputs/public_g11_exhaustion/public_g11_exhaustion_summary.csv"
+    ),
+    breakthrough_path_exhaustion_summary_csv: Path = Path(
+        "outputs/breakthrough_path_exhaustion/breakthrough_path_exhaustion_summary.csv"
+    ),
+):
+    """Write a strict acceptance contract for any prospective G11 closure dataset."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    schema = pd.read_csv(schema_csv) if schema_csv.exists() else pd.DataFrame()
+    validation_summary = _read_optional_metric_csv(validation_summary_csv)
+    public_g11 = _read_optional_metric_csv(public_g11_exhaustion_summary_csv)
+    path_exhaustion = _read_optional_metric_csv(breakthrough_path_exhaustion_summary_csv)
+
+    public_path_exhausted = bool(
+        _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
+    )
+    breakthrough_path_exhausted = bool(
+        _truthy(
+            _first_value(
+                path_exhaustion,
+                "current_breakthrough_path_exhausted_without_closure",
+                False,
+            )
+        )
+    )
+    g11_ready_rows = int(_first_value(validation_summary, "g11_ready_rows", 0))
+    contract_rows = [
+        {
+            "gate_id": "G11A",
+            "gate": "independent_record_variable",
+            "acceptance_rule": "record distribution, width, or load calibration is measured independently of the visibility curve being predicted",
+            "failure_mode": "visibility-derived record variables cannot close G11",
+        },
+        {
+            "gate_id": "G11B",
+            "gate": "paired_visibility_curve",
+            "acceptance_rule": "each record/load setting has a paired visibility, contrast, or decoherence measurement under the same apparatus setting",
+            "failure_mode": "unpaired distributions are controls or near misses only",
+        },
+        {
+            "gate_id": "G11C",
+            "gate": "uncertainty_budget",
+            "acceptance_rule": "record-variable and visibility uncertainties are explicit enough for stress propagation",
+            "failure_mode": "point estimates alone cannot make a publication-grade validation",
+        },
+        {
+            "gate_id": "G11D",
+            "gate": "no_refit_prediction_map",
+            "acceptance_rule": "the record variable predicts visibility without fitting the record bandwidth to the target visibility curve",
+            "failure_mode": "post-hoc bandwidth fitting is calibration, not held-out prediction",
+        },
+        {
+            "gate_id": "G11E",
+            "gate": "null_controls",
+            "acceptance_rule": "paired-data result beats shuffle, branch-swap, or wrong-pairing null controls",
+            "failure_mode": "a low RMSE without null separation is not enough",
+        },
+        {
+            "gate_id": "G11F",
+            "gate": "stress_threshold",
+            "acceptance_rule": "bootstrap or stress profile clears the joint pass threshold used by the G11 audit",
+            "failure_mode": "fragile closure under reported uncertainty remains blocked",
+        },
+        {
+            "gate_id": "G11G",
+            "gate": "provenance_permission",
+            "acceptance_rule": "source, license or permission, extraction method, and reproducible file hashes are recorded",
+            "failure_mode": "opaque data cannot enter the public repo as validation evidence",
+        },
+    ]
+    contract = pd.DataFrame(contract_rows)
+    contract.to_csv(output_dir / "g11_closure_acceptance_contract.csv", index=False)
+
+    candidate_rows = []
+    if not schema.empty:
+        candidates = schema[schema["can_close_g11"].map(_truthy)].copy()
+        for _, row in candidates.iterrows():
+            missing_gates = [
+                "G11A",
+                "G11B",
+                "G11C",
+                "G11D",
+                "G11E",
+                "G11F",
+                "G11G",
+            ]
+            candidate_rows.append(
+                {
+                    "target_id": row["target_id"],
+                    "dataset_id": row["dataset_id"],
+                    "g11_role": row["g11_role"],
+                    "schema_can_close_g11": True,
+                    "received_g11_ready_data": False,
+                    "closure_ready_now": False,
+                    "minimum_required_files": row["minimum_required_files"],
+                    "validation_rule": row["validation_rule"],
+                    "next_cli_if_received": row["next_cli_if_received"],
+                    "missing_contract_gates": ";".join(missing_gates),
+                }
+            )
+    candidate_readiness = pd.DataFrame(candidate_rows)
+    if not candidate_readiness.empty and g11_ready_rows > 0:
+        candidate_readiness.loc[
+            candidate_readiness.index[:g11_ready_rows],
+            "received_g11_ready_data",
+        ] = True
+    candidate_readiness.to_csv(
+        output_dir / "g11_candidate_closure_readiness.csv",
+        index=False,
+    )
+    closure_ready_targets = int(
+        candidate_readiness["closure_ready_now"].map(_truthy).sum()
+    ) if not candidate_readiness.empty else 0
+    possible_targets = int(len(candidate_readiness))
+    verdict = (
+        "no dataset currently clears the G11 closure contract"
+        if closure_ready_targets == 0
+        else "at least one dataset is ready for G11 closure analysis"
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "contract_gate_count": int(len(contract)),
+                "possible_g11_closure_targets": possible_targets,
+                "author_data_g11_ready_rows": g11_ready_rows,
+                "closure_ready_targets": closure_ready_targets,
+                "current_public_g11_path_exhausted": public_path_exhausted,
+                "current_breakthrough_path_exhausted_without_closure": breakthrough_path_exhausted,
+                "objective_can_be_marked_complete": False,
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "g11_closure_readiness_summary.csv", index=False)
+    gate_lines = "\n".join(
+        "- **{gate_id} {gate}**: {rule}".format(
+            gate_id=row["gate_id"],
+            gate=row["gate"],
+            rule=row["acceptance_rule"],
+        )
+        for _, row in contract.iterrows()
+    )
+    candidate_lines = "\n".join(
+        "- **{target_id}** (`{dataset_id}`): {rule}; next CLI: `{next_cli}`".format(
+            target_id=row["target_id"],
+            dataset_id=row["dataset_id"],
+            rule=row["validation_rule"],
+            next_cli=row["next_cli_if_received"],
+        )
+        for _, row in candidate_readiness.iterrows()
+    ) or "- None."
+    report = f"""# G11 Closure Readiness Audit
+
+Verdict: {verdict}
+
+This audit turns the missing second independent measured-distribution-to-visibility validation into a hard acceptance contract. It is designed to prevent a near miss, control dataset, or visibility-derived proxy from being counted as a closure.
+
+## Summary
+
+- Contract gates: {int(len(contract))}
+- Possible G11 closure targets in intake schema: {possible_targets}
+- Author-data G11-ready rows already received: {g11_ready_rows}
+- Closure-ready targets now: {closure_ready_targets}
+- Current public G11 path exhausted: {public_path_exhausted}
+- Current breakthrough path exhausted without closure: {breakthrough_path_exhausted}
+- Objective can be marked complete: False
+
+## Contract Gates
+
+{gate_lines}
+
+## Prospective Closure Targets
+
+{candidate_lines}
+
+## Boundary
+
+- This does not send outreach.
+- This does not close G11.
+- This does not mark the active goal complete.
+- A future dataset must pass the schema, this closure contract, and a dedicated no-refit stress analysis before it can update the breakthrough scorecard.
+"""
+    (output_dir / "g11_closure_readiness_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return contract, candidate_readiness, summary
+
+
 def eibenberger_default_metadata():
     """Return seeded Fig. 2b points and constants for Eibenberger 2014."""
 
@@ -18395,6 +18606,10 @@ def run_audit_breakthrough_path_exhaustion(output_dir: Path):
     make_breakthrough_path_exhaustion_audit_outputs(output_dir)
 
 
+def run_audit_g11_closure_readiness(output_dir: Path):
+    make_g11_closure_readiness_audit_outputs(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -19051,6 +19266,14 @@ def build_parser():
         "--output-dir",
         default="outputs/breakthrough_path_exhaustion",
     )
+    g11_closure_readiness = sub.add_parser(
+        "audit-g11-closure-readiness",
+        help="write the strict acceptance contract for a future G11 closure dataset",
+    )
+    g11_closure_readiness.add_argument(
+        "--output-dir",
+        default="outputs/g11_closure_readiness",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -19438,6 +19661,8 @@ def main(argv=None):
             run_audit_public_g11_exhaustion(Path(args.output_dir))
         elif command == "audit-breakthrough-path-exhaustion":
             run_audit_breakthrough_path_exhaustion(Path(args.output_dir))
+        elif command == "audit-g11-closure-readiness":
+            run_audit_g11_closure_readiness(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(

@@ -73,6 +73,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_public_data_availability_outputs,
     make_public_g11_exhaustion_audit_outputs,
     make_breakthrough_path_exhaustion_audit_outputs,
+    make_g11_closure_readiness_audit_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_fig4_eraser_phase_control_outputs,
@@ -1449,6 +1450,57 @@ def test_validate_author_data_manifest_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "author_data_manifest_validation.csv").exists()
+
+
+def test_g11_closure_readiness_audit_outputs_and_cli(tmp_path):
+    intake_dir = tmp_path / "author_intake"
+    schema, _ = make_author_data_intake_outputs(intake_dir)
+    validation_summary = pd.DataFrame([{"g11_ready_rows": 0}])
+    public_g11 = pd.DataFrame([{"current_public_g11_path_exhausted": True}])
+    path_exhaustion = pd.DataFrame(
+        [{"current_breakthrough_path_exhausted_without_closure": True}]
+    )
+    validation_path = tmp_path / "validation_summary.csv"
+    public_path = tmp_path / "public_g11.csv"
+    path_exhaustion_path = tmp_path / "path_exhaustion.csv"
+    validation_summary.to_csv(validation_path, index=False)
+    public_g11.to_csv(public_path, index=False)
+    path_exhaustion.to_csv(path_exhaustion_path, index=False)
+
+    output_dir = tmp_path / "g11_readiness"
+    contract, readiness, summary = make_g11_closure_readiness_audit_outputs(
+        output_dir,
+        intake_dir / "author_data_intake_schema.csv",
+        validation_path,
+        public_path,
+        path_exhaustion_path,
+    )
+    assert len(contract) == 7
+    assert not readiness.empty
+    assert int(summary["closure_ready_targets"].iloc[0]) == 0
+    assert bool(summary["objective_can_be_marked_complete"].iloc[0]) is False
+    assert set(contract["gate_id"]) == {
+        "G11A",
+        "G11B",
+        "G11C",
+        "G11D",
+        "G11E",
+        "G11F",
+        "G11G",
+    }
+    assert (output_dir / "g11_closure_readiness_report.md").exists()
+    assert (output_dir / "g11_closure_acceptance_contract.csv").exists()
+    assert (output_dir / "g11_candidate_closure_readiness.csv").exists()
+
+    cli_output_dir = tmp_path / "g11_readiness_cli"
+    main(
+        [
+            "audit-g11-closure-readiness",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "g11_closure_readiness_summary.csv").exists()
 
 
 def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):
