@@ -10484,6 +10484,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     chapman_phase_needed_data_csv: Path = Path(
         "outputs/chapman_raw_phase_blocker/chapman_raw_phase_needed_data.csv"
     ),
+    product_law_candidate_blockers_csv: Path = Path(
+        "outputs/product_law_readiness/product_law_candidate_blockers.csv"
+    ),
 ):
     """Write a terminal audit for the currently implemented breakthrough path."""
 
@@ -10494,6 +10497,7 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     current_goal = _read_optional_metric_csv(current_goal_summary_csv)
     kokorowski_g11_gaps = _read_optional_metric_csv(kokorowski_g11_gap_summary_csv)
     chapman_needed_data = _read_optional_metric_csv(chapman_phase_needed_data_csv)
+    product_law_blockers = _read_optional_metric_csv(product_law_candidate_blockers_csv)
 
     public_g11_exhausted = bool(
         _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
@@ -10549,6 +10553,45 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     )
     named_proxy_rich_blockers = int(
         _first_value(product, "named_proxy_rich_blockers", 0)
+    )
+    g12_proxy_rich_blockers = pd.DataFrame()
+    if product_law_blockers is not None and not product_law_blockers.empty:
+        g12_proxy_rich_blockers = product_law_blockers.copy()
+        if "rank" in g12_proxy_rich_blockers.columns:
+            g12_proxy_rich_blockers = g12_proxy_rich_blockers.sort_values("rank")
+        if "candidate_status" in g12_proxy_rich_blockers.columns:
+            g12_proxy_rich_blockers = g12_proxy_rich_blockers[
+                g12_proxy_rich_blockers["candidate_status"]
+                .astype(str)
+                .str.contains("proxy-rich", case=False, na=False)
+            ]
+    g12_proxy_rich_datasets = [
+        str(value).strip()
+        for value in g12_proxy_rich_blockers.get(
+            "dataset_path", pd.Series(dtype=object)
+        )
+        if str(value).strip()
+    ]
+    g12_proxy_rich_datasets_text = ";".join(g12_proxy_rich_datasets)
+    g12_proxy_rich_closure_gaps = [
+        str(value).strip()
+        for value in g12_proxy_rich_blockers.get(
+            "closure_gap", pd.Series(dtype=object)
+        )
+        if str(value).strip()
+    ]
+    g12_proxy_rich_closure_gaps_text = ";".join(
+        dict.fromkeys(g12_proxy_rich_closure_gaps)
+    )
+    g12_proxy_rich_next_evidence = [
+        str(value).strip()
+        for value in g12_proxy_rich_blockers.get(
+            "next_valid_evidence", pd.Series(dtype=object)
+        )
+        if str(value).strip()
+    ]
+    g12_proxy_rich_next_evidence_text = ";".join(
+        dict.fromkeys(g12_proxy_rich_next_evidence)
     )
     g12_validated = bool(_truthy(_first_value(product, "g12_validated", False)))
     kokorowski_failed_gates = int(
@@ -10634,10 +10677,24 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                     f"empirical ready datasets={empirical_product_ready}; "
                     f"proxy-rich candidates={proxy_rich_product_candidates}; "
                     f"named proxy-rich blockers={named_proxy_rich_blockers}"
+                )
+                + (
+                    f"; top proxy-rich blockers={g12_proxy_rich_datasets_text}"
+                    if g12_proxy_rich_datasets_text
+                    else ""
+                )
+                + (
+                    f"; closure gaps={g12_proxy_rich_closure_gaps_text}"
+                    if g12_proxy_rich_closure_gaps_text
+                    else ""
                 ),
                 "next_valid_input": (
-                    "empirical dataset with independently varied Lambda, Gamma, "
-                    "and Theta factors"
+                    g12_proxy_rich_next_evidence_text
+                    if g12_proxy_rich_next_evidence_text
+                    else (
+                        "empirical dataset with independently varied Lambda, Gamma, "
+                        "and Theta factors"
+                    )
                 ),
                 "overclaim_boundary": "do not treat synthetic or proxy-rich rows as empirical product-law validation",
             },
@@ -10668,6 +10725,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "empirical_product_law_ready_datasets": empirical_product_ready,
                 "proxy_rich_product_law_candidates": proxy_rich_product_candidates,
                 "named_proxy_rich_product_law_blockers": named_proxy_rich_blockers,
+                "g12_proxy_rich_blocker_datasets": g12_proxy_rich_datasets_text,
+                "g12_proxy_rich_blocker_closure_gaps": g12_proxy_rich_closure_gaps_text,
+                "g12_proxy_rich_blocker_next_valid_evidence": g12_proxy_rich_next_evidence_text,
                 "kokorowski_failed_tracked_g11_gates": kokorowski_failed_gates,
                 "kokorowski_failed_g11_gate_ids": kokorowski_failed_gate_ids,
                 "kokorowski_joint_stress_pass_probability": kokorowski_joint_stress,
@@ -10707,6 +10767,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - Empirical product-law-ready datasets: {empirical_product_ready}
 - Proxy-rich product-law candidates: {proxy_rich_product_candidates}
 - Named proxy-rich product-law blockers: {named_proxy_rich_blockers}
+- G12 proxy-rich blocker datasets: {g12_proxy_rich_datasets_text if g12_proxy_rich_datasets_text else "not available"}
+- G12 proxy-rich blocker closure gaps: {g12_proxy_rich_closure_gaps_text if g12_proxy_rich_closure_gaps_text else "not available"}
 - Kokorowski failed tracked G11 gates: {kokorowski_failed_gates}
 - Kokorowski failed G11 gate ids: {kokorowski_failed_gate_ids}
 - Kokorowski joint stress pass probability: {kokorowski_joint_stress if math.isfinite(kokorowski_joint_stress) else "not available"}

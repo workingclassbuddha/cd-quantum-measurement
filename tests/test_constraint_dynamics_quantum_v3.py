@@ -2314,6 +2314,34 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    product_blockers = pd.DataFrame(
+        [
+            {
+                "rank": 1,
+                "dataset_path": "data/extracted/CHAPMAN_1995_SCATTER.csv",
+                "candidate_status": "proxy-rich but formal factors missing or confounded",
+                "apparatus_proxy_axis_count": 3,
+                "closure_gap": "proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison",
+                "next_valid_evidence": "provenance map from proxy controls to Lambda/Gamma/Theta plus low-confounding held-out validation",
+            },
+            {
+                "rank": 2,
+                "dataset_path": "data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv",
+                "candidate_status": "proxy-rich but formal factors missing or confounded",
+                "apparatus_proxy_axis_count": 3,
+                "closure_gap": "proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison",
+                "next_valid_evidence": "provenance map from proxy controls to Lambda/Gamma/Theta plus low-confounding held-out validation",
+            },
+            {
+                "rank": 3,
+                "dataset_path": "data/extracted/KOKOROWSKI_2001_FIG3_DECAY_THEORY_CURVES.csv",
+                "candidate_status": "single/partial apparatus-control proxy",
+                "apparatus_proxy_axis_count": 2,
+                "closure_gap": "partial apparatus-control candidate is missing Gamma axis",
+                "next_valid_evidence": "add independent controls for the missing product-law axes before testing held-out predictions",
+            },
+        ]
+    )
     kokorowski_gaps = pd.DataFrame(
         [
             {
@@ -2337,12 +2365,14 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     chapman_path = tmp_path / "chapman.csv"
     chapman_needed_data_path = tmp_path / "chapman_needed_data.csv"
     product_path = tmp_path / "product.csv"
+    product_blockers_path = tmp_path / "product_blockers.csv"
     kokorowski_gaps_path = tmp_path / "kokorowski_gaps.csv"
     current_goal_path = tmp_path / "current_goal.csv"
     public_g11.to_csv(public_path, index=False)
     chapman.to_csv(chapman_path, index=False)
     chapman_needed_data.to_csv(chapman_needed_data_path, index=False)
     product.to_csv(product_path, index=False)
+    product_blockers.to_csv(product_blockers_path, index=False)
     kokorowski_gaps.to_csv(kokorowski_gaps_path, index=False)
     current_goal.to_csv(current_goal_path, index=False)
 
@@ -2354,6 +2384,7 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         current_goal_path,
         kokorowski_gaps_path,
         chapman_needed_data_path,
+        product_blockers_path,
     )
     assert not summary.empty
     assert len(required_inputs) == 3
@@ -2380,6 +2411,22 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         == "fig2_raw_phase_trace.csv;paired_raw_visibility_table.csv"
     )
     assert int(summary["chapman_required_raw_phase_artifact_count"].iloc[0]) == 2
+    g12_row = required_inputs[
+        required_inputs["blocker"] == "G12 independent product-law validation"
+    ].iloc[0]
+    assert (
+        "top proxy-rich blockers=data/extracted/CHAPMAN_1995_SCATTER.csv;"
+        "data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv"
+    ) in g12_row["current_state"]
+    assert (
+        summary["g12_proxy_rich_blocker_datasets"].iloc[0]
+        == "data/extracted/CHAPMAN_1995_SCATTER.csv;"
+        "data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv"
+    )
+    assert (
+        summary["g12_proxy_rich_blocker_closure_gaps"].iloc[0]
+        == "proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison"
+    )
     assert (output_dir / "breakthrough_path_exhaustion_report.md").exists()
     assert (output_dir / "breakthrough_path_required_new_inputs.csv").exists()
 
