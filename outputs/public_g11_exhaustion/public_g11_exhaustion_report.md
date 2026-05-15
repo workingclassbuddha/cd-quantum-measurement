@@ -14,6 +14,7 @@ This audit asks a narrow operational question: after the current public-data sco
 - Current public G11 path exhausted: True
 - Closure evidence queue rows: 14
 - Closure evidence classes: independent_record_distribution;paired_visibility_curve;raw_calibration_tables
+- Closure evidence intake rows: 14
 
 ## Near Misses
 

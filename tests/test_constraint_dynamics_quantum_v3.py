@@ -2296,6 +2296,28 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert mir_row["evidence_class"] == "paired_visibility_curve"
     assert "paired visibility" in mir_row["next_valid_evidence"]
+    intake = pd.read_csv(output_dir / "public_g11_closure_evidence_intake_requirements.csv")
+    assert {
+        "candidate_id",
+        "evidence_class",
+        "minimum_artifacts",
+        "minimum_columns",
+        "closure_test",
+        "can_close_g11_if_satisfied",
+    }.issubset(intake.columns)
+    kokorowski_intake = intake[
+        intake["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    ].iloc[0]
+    assert "beam_deflection_broadening_calibration.csv" in kokorowski_intake[
+        "minimum_artifacts"
+    ]
+    assert "independence_basis" in kokorowski_intake["minimum_columns"]
+    mir_intake = intake[
+        intake["candidate_id"] == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+    ].iloc[0]
+    assert "visibility_or_contrast_sweep.csv" in mir_intake["minimum_artifacts"]
+    assert "visibility_or_contrast" in mir_intake["minimum_columns"]
+    assert bool(mir_intake["can_close_g11_if_satisfied"]) is True
     assert (output_dir / "public_g11_exhaustion_report.md").exists()
     assert (output_dir / "public_g11_candidate_exhaustion.csv").exists()
 

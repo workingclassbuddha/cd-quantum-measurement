@@ -10444,6 +10444,48 @@ def make_public_g11_exhaustion_audit_outputs(
         output_dir / "public_g11_closure_evidence_queue.csv",
         index=False,
     )
+    intake_specs = {
+        "raw_calibration_tables": {
+            "minimum_artifacts": "beam_deflection_broadening_calibration.csv;kappa_uncertainty_notes.md;paired_contrast_values.csv",
+            "minimum_columns": "branch_or_intensity,calibration_observable,value,value_se,units,independence_basis,source_note",
+            "closure_test": "rerun kappa-uncertainty profile and joint stress gate without refitting visibility",
+        },
+        "paired_visibility_curve": {
+            "minimum_artifacts": "record_distribution.csv;visibility_or_contrast_sweep.csv;setting_pairing_notes.md",
+            "minimum_columns": "which_way_strength_or_setting,record_coordinate,record_value,record_value_se,visibility_or_contrast,visibility_or_contrast_se,independence_basis,source_note",
+            "closure_test": "fit record distribution once and predict paired visibility or contrast without refit",
+        },
+        "independent_record_distribution": {
+            "minimum_artifacts": "independent_record_distribution.csv;paired_visibility_or_contrast.csv;independence_provenance.md",
+            "minimum_columns": "setting,record_observable,record_value,record_value_se,visibility_or_contrast,visibility_or_contrast_se,independence_basis,source_note",
+            "closure_test": "show the record variable was measured independently before testing no-refit visibility prediction",
+        },
+        "new_candidate_identity": {
+            "minimum_artifacts": "candidate_source.md;record_distribution.csv;paired_visibility_or_contrast.csv",
+            "minimum_columns": "setting,record_observable,record_value,record_value_se,visibility_or_contrast,visibility_or_contrast_se,source_note",
+            "closure_test": "register the candidate and run the full public G11 closure contract",
+        },
+    }
+    intake_rows = []
+    for _, row in evidence_queue.iterrows():
+        spec = intake_specs[row["evidence_class"]]
+        intake_rows.append(
+            {
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "evidence_class": row["evidence_class"],
+                "minimum_artifacts": spec["minimum_artifacts"],
+                "minimum_columns": spec["minimum_columns"],
+                "closure_test": spec["closure_test"],
+                "can_close_g11_if_satisfied": True,
+                "overclaim_boundary": row["overclaim_boundary"],
+            }
+        )
+    evidence_intake = pd.DataFrame(intake_rows)
+    evidence_intake.to_csv(
+        output_dir / "public_g11_closure_evidence_intake_requirements.csv",
+        index=False,
+    )
     evidence_classes_text = ";".join(
         sorted(evidence_queue["evidence_class"].dropna().astype(str).unique())
     )
@@ -10507,6 +10549,7 @@ This audit asks a narrow operational question: after the current public-data sco
 - Current public G11 path exhausted: {public_path_exhausted}
 - Closure evidence queue rows: {int(len(evidence_queue))}
 - Closure evidence classes: {evidence_classes_text}
+- Closure evidence intake rows: {int(len(evidence_intake))}
 
 ## Near Misses
 
