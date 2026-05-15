@@ -10481,6 +10481,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     kokorowski_g11_gap_summary_csv: Path = Path(
         "outputs/kokorowski_g11_closure_gaps/kokorowski_g11_closure_gap_summary.csv"
     ),
+    chapman_phase_needed_data_csv: Path = Path(
+        "outputs/chapman_raw_phase_blocker/chapman_raw_phase_needed_data.csv"
+    ),
 ):
     """Write a terminal audit for the currently implemented breakthrough path."""
 
@@ -10490,6 +10493,7 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     product = _read_optional_metric_csv(product_law_status_csv)
     current_goal = _read_optional_metric_csv(current_goal_summary_csv)
     kokorowski_g11_gaps = _read_optional_metric_csv(kokorowski_g11_gap_summary_csv)
+    chapman_needed_data = _read_optional_metric_csv(chapman_phase_needed_data_csv)
 
     public_g11_exhausted = bool(
         _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
@@ -10509,6 +10513,34 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     chapman_branch_rmse = float(
         _first_value(chapman, "branch_optimized_best_phase_rmse_rad", np.nan)
     )
+    chapman_wrap_ambiguous = int(_first_value(chapman, "wrap_ambiguous_rows", 0))
+    chapman_low_contrast_ambiguous = int(
+        _first_value(chapman, "low_contrast_ambiguous_rows", 0)
+    )
+    chapman_next_valid_move = str(
+        _first_value(
+            chapman,
+            "next_valid_move",
+            "author numerical phase trace or publication-grade redigitization",
+        )
+    )
+    chapman_g10_needed = pd.DataFrame()
+    if (
+        chapman_needed_data is not None
+        and not chapman_needed_data.empty
+        and "needed_artifact" in chapman_needed_data.columns
+    ):
+        chapman_g10_needed = chapman_needed_data.copy()
+        if "can_change_g10" in chapman_g10_needed.columns:
+            chapman_g10_needed = chapman_g10_needed[
+                chapman_g10_needed["can_change_g10"].map(_truthy)
+            ]
+    chapman_required_artifacts = [
+        str(value).strip()
+        for value in chapman_g10_needed.get("needed_artifact", pd.Series(dtype=object))
+        if str(value).strip()
+    ]
+    chapman_required_artifacts_text = ";".join(chapman_required_artifacts)
     empirical_product_ready = int(
         _first_value(product, "empirical_product_law_ready_datasets", 0)
     )
@@ -10577,12 +10609,23 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             {
                 "blocker": "G10 Chapman raw-phase repair",
                 "current_state": (
-                    f"branch-optimized raw phase gate pass={chapman_branch_gate_pass}; "
-                    f"best RMSE={chapman_branch_rmse:.3f}"
+                    (
+                        f"branch-optimized raw phase gate pass={chapman_branch_gate_pass}; "
+                        f"best RMSE={chapman_branch_rmse:.3f}"
+                    )
                     if math.isfinite(chapman_branch_rmse)
                     else f"branch-optimized raw phase gate pass={chapman_branch_gate_pass}"
+                )
+                + (
+                    f"; wrap ambiguous rows={chapman_wrap_ambiguous}; "
+                    f"low-contrast ambiguous rows={chapman_low_contrast_ambiguous}"
+                )
+                + (
+                    f"; needed artifacts={chapman_required_artifacts_text}"
+                    if chapman_required_artifacts_text
+                    else ""
                 ),
-                "next_valid_input": "author numerical phase trace or publication-grade redigitization",
+                "next_valid_input": chapman_next_valid_move,
                 "overclaim_boundary": "do not rescue G10 with branch wrapping alone",
             },
             {
@@ -10615,6 +10658,12 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "chapman_g10_repaired": chapman_g10_repaired,
                 "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
                 "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
+                "chapman_wrap_ambiguous_rows": chapman_wrap_ambiguous,
+                "chapman_low_contrast_ambiguous_rows": chapman_low_contrast_ambiguous,
+                "chapman_required_raw_phase_artifacts": chapman_required_artifacts_text,
+                "chapman_required_raw_phase_artifact_count": int(
+                    len(chapman_required_artifacts)
+                ),
                 "g12_validated": g12_validated,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
                 "proxy_rich_product_law_candidates": proxy_rich_product_candidates,
@@ -10651,6 +10700,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closed: {g11_closed}
 - Chapman G10 repaired: {chapman_g10_repaired}
 - Chapman branch gate pass: {chapman_branch_gate_pass}
+- Chapman wrap ambiguous rows: {chapman_wrap_ambiguous}
+- Chapman low-contrast ambiguous rows: {chapman_low_contrast_ambiguous}
+- Chapman required raw-phase artifacts: {chapman_required_artifacts_text if chapman_required_artifacts_text else "not available"}
 - G12 validated: {g12_validated}
 - Empirical product-law-ready datasets: {empirical_product_ready}
 - Proxy-rich product-law candidates: {proxy_rich_product_candidates}

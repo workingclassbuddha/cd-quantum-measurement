@@ -2282,7 +2282,26 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "g10_repaired": False,
                 "branch_optimized_gate_pass": False,
                 "branch_optimized_best_phase_rmse_rad": 1.475,
+                "wrap_ambiguous_rows": 5,
+                "low_contrast_ambiguous_rows": 8,
+                "next_valid_move": "author numerical phase trace or publication-grade redigitization",
             }
+        ]
+    )
+    chapman_needed_data = pd.DataFrame(
+        [
+            {
+                "needed_artifact": "fig2_raw_phase_trace.csv",
+                "minimum_columns": "d_over_lambda,phase_rad,phase_se",
+                "why_needed": "replace plotted-point unwrapping",
+                "can_change_g10": True,
+            },
+            {
+                "needed_artifact": "paired_raw_visibility_table.csv",
+                "minimum_columns": "d_over_lambda,visibility,visibility_se",
+                "why_needed": "pair phase repair to raw fringe fits",
+                "can_change_g10": True,
+            },
         ]
     )
     product = pd.DataFrame(
@@ -2316,11 +2335,13 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     )
     public_path = tmp_path / "public_g11.csv"
     chapman_path = tmp_path / "chapman.csv"
+    chapman_needed_data_path = tmp_path / "chapman_needed_data.csv"
     product_path = tmp_path / "product.csv"
     kokorowski_gaps_path = tmp_path / "kokorowski_gaps.csv"
     current_goal_path = tmp_path / "current_goal.csv"
     public_g11.to_csv(public_path, index=False)
     chapman.to_csv(chapman_path, index=False)
+    chapman_needed_data.to_csv(chapman_needed_data_path, index=False)
     product.to_csv(product_path, index=False)
     kokorowski_gaps.to_csv(kokorowski_gaps_path, index=False)
     current_goal.to_csv(current_goal_path, index=False)
@@ -2332,6 +2353,7 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         product_path,
         current_goal_path,
         kokorowski_gaps_path,
+        chapman_needed_data_path,
     )
     assert not summary.empty
     assert len(required_inputs) == 3
@@ -2348,6 +2370,16 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         == "G11 second independent distribution-to-visibility validation"
     ].iloc[0]
     assert "failed gates=G11C;G11F;G11G" in g11_row["current_state"]
+    g10_row = required_inputs[
+        required_inputs["blocker"] == "G10 Chapman raw-phase repair"
+    ].iloc[0]
+    assert "wrap ambiguous rows=5" in g10_row["current_state"]
+    assert "needed artifacts=fig2_raw_phase_trace.csv;paired_raw_visibility_table.csv" in g10_row["current_state"]
+    assert (
+        summary["chapman_required_raw_phase_artifacts"].iloc[0]
+        == "fig2_raw_phase_trace.csv;paired_raw_visibility_table.csv"
+    )
+    assert int(summary["chapman_required_raw_phase_artifact_count"].iloc[0]) == 2
     assert (output_dir / "breakthrough_path_exhaustion_report.md").exists()
     assert (output_dir / "breakthrough_path_required_new_inputs.csv").exists()
 
