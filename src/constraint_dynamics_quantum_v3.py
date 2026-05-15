@@ -12973,6 +12973,188 @@ This does not rescue or reject Kokorowski by itself. It turns the next provenanc
     return summary, profile, samples
 
 
+def _kokorowski_branch_from_author_label(label: str, known_branches: Iterable[str]):
+    text = str(label).strip().lower()
+    known = list(known_branches)
+    for branch in known:
+        if text == str(branch).strip().lower():
+            return branch
+    if "lower" in text:
+        for branch in known:
+            if "lower" in str(branch).lower():
+                return branch
+    if "upper" in text or "high" in text:
+        for branch in known:
+            branch_text = str(branch).lower()
+            if "upper" in branch_text or "high" in branch_text:
+                return branch
+    return None
+
+
+def apply_kokorowski_author_calibration(
+    digitized: pd.DataFrame,
+    calibration: pd.DataFrame,
+):
+    """Apply branch-level author calibration rows to Kokorowski Fig. 4 data."""
+
+    required = {
+        "branch_or_intensity",
+        "calibration_observable",
+        "value",
+        "value_se",
+        "units",
+        "independence_basis",
+        "source_note",
+    }
+    missing = sorted(required - set(calibration.columns))
+    if missing:
+        raise ValueError(
+            f"Kokorowski author calibration missing columns: {', '.join(missing)}"
+        )
+    if "branch" not in digitized.columns:
+        raise ValueError("Kokorowski digitized input must include a branch column")
+
+    patched = digitized.copy()
+    known_branches = sorted(patched["branch"].dropna().unique())
+    usable = calibration[
+        calibration["calibration_observable"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .isin({"kappa_prime", "kappa_prime_calculated", "calculated_kappa_prime"})
+    ].copy()
+    applied_rows = []
+    for _, row in usable.iterrows():
+        branch = _kokorowski_branch_from_author_label(
+            row["branch_or_intensity"],
+            known_branches,
+        )
+        if branch is None:
+            continue
+        value = float(row["value"])
+        value_se = float(row["value_se"])
+        if value <= 0 or value_se < 0:
+            continue
+        idx = patched["branch"] == branch
+        patched.loc[idx, "kappa_prime_calculated_k0"] = value
+        patched.loc[idx, "kappa_prime_calculated_se_k0"] = value_se
+        applied_rows.append(
+            {
+                "branch": branch,
+                "branch_or_intensity": row["branch_or_intensity"],
+                "calibration_observable": row["calibration_observable"],
+                "applied_kappa_prime_k0": value,
+                "applied_kappa_prime_se_k0": value_se,
+                "units": row["units"],
+                "independence_basis": row["independence_basis"],
+                "source_note": row["source_note"],
+            }
+        )
+    if not applied_rows:
+        raise ValueError(
+            "No usable Kokorowski author calibration rows found. Expected branch-level "
+            "kappa_prime rows matching lower/upper intensity branches."
+        )
+    return patched, pd.DataFrame(applied_rows)
+
+
+def make_kokorowski_author_calibration_probe_outputs(
+    input_csv: Path,
+    author_calibration_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int = 600,
+    seed: int = 28046,
+):
+    """Probe whether received Kokorowski calibration data would clear G11 stress."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    digitized = pd.read_csv(input_csv)
+    calibration = pd.read_csv(author_calibration_csv)
+    patched, applied = apply_kokorowski_author_calibration(digitized, calibration)
+    patched_input = output_dir / "kokorowski_author_calibration_applied_input.csv"
+    patched.to_csv(patched_input, index=False)
+    applied.to_csv(output_dir / "kokorowski_author_calibration_applied_rows.csv", index=False)
+    profile_dir = output_dir / "profile"
+    profile_summary, profile, samples = make_kokorowski_kappa_uncertainty_profile_outputs(
+        patched_input,
+        profile_dir,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+    )
+    full_joint = float(profile_summary["full_reported_se_joint_pass"].iloc[0])
+    max_scale = float(
+        profile_summary["max_kappa_se_scale_with_joint_pass_ge_080"].iloc[0]
+    )
+    clears_author_calibration_probe = bool(full_joint >= 0.80)
+    summary = pd.DataFrame(
+        [
+            {
+                "status": (
+                    "author calibration probe clears G11 kappa stress"
+                    if clears_author_calibration_probe
+                    else "author calibration probe still does not clear G11 kappa stress"
+                ),
+                "input_csv": str(input_csv),
+                "author_calibration_csv": str(author_calibration_csv),
+                "patched_input_csv": str(patched_input),
+                "applied_calibration_rows": int(len(applied)),
+                "applied_branch_count": int(applied["branch"].nunique()),
+                "n_bootstrap": int(n_bootstrap),
+                "seed": int(seed),
+                "full_author_se_joint_pass": full_joint,
+                "max_author_se_scale_with_joint_pass_ge_080": max_scale,
+                "clears_author_calibration_probe": clears_author_calibration_probe,
+                "can_update_g11_scorecard": False,
+            }
+        ]
+    )
+    summary.to_csv(
+        output_dir / "kokorowski_author_calibration_probe_summary.csv",
+        index=False,
+    )
+    applied_lines = "\n".join(
+        "- **{branch}**: kappa_prime={value:.4f} k0, SE={se:.4f} k0; basis: {basis}".format(
+            branch=row["branch"],
+            value=float(row["applied_kappa_prime_k0"]),
+            se=float(row["applied_kappa_prime_se_k0"]),
+            basis=row["independence_basis"],
+        )
+        for _, row in applied.iterrows()
+    )
+    report = f"""# Kokorowski Author Calibration Probe
+
+Status: {summary['status'].iloc[0]}
+
+This probe applies received branch-level Kokorowski calibration rows to the Fig. 4 no-refit path and reruns the existing kappa-uncertainty profile. It does not add model freedom or fit kappa to the visibility curve.
+
+## Summary
+
+- Input digitization: `{input_csv}`
+- Author calibration CSV: `{author_calibration_csv}`
+- Applied calibration rows: {int(len(applied))}
+- Applied branches: {int(applied['branch'].nunique())}
+- Full author-SE joint pass probability: {full_joint:.3f}
+- Largest author-SE scale with P(joint gate) >= 0.80: {max_scale if math.isfinite(max_scale) else "none"}
+- Clears author calibration probe: {clears_author_calibration_probe}
+- Can update G11 scorecard directly: False
+
+## Applied Rows
+
+{applied_lines}
+
+## Boundary
+
+- This is an intake probe, not automatic G11 closure.
+- A scorecard update still requires provenance/permission review and the full G11 closure-readiness contract.
+- If this probe clears the stress gate, the next step is to commit the permitted data and add a dedicated scorecard update with null/stress evidence.
+"""
+    (output_dir / "kokorowski_author_calibration_probe_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, applied, profile, samples
+
+
 def _find_tex_line_window(lines, patterns, pad_before=1, pad_after=1):
     matches = []
     for idx, line in enumerate(lines):
@@ -18698,6 +18880,22 @@ def run_profile_kokorowski_kappa_uncertainty(
     )
 
 
+def run_probe_kokorowski_author_calibration(
+    input_csv: Path,
+    author_calibration_csv: Path,
+    output_dir: Path,
+    n_bootstrap: int,
+    seed: int,
+):
+    make_kokorowski_author_calibration_probe_outputs(
+        input_csv,
+        author_calibration_csv,
+        output_dir,
+        n_bootstrap=n_bootstrap,
+        seed=seed,
+    )
+
+
 def run_check_kokorowski_detector_convolution(
     input_csv: Path,
     output_dir: Path,
@@ -19384,6 +19582,25 @@ def build_parser():
     )
     kokorowski_kappa_profile.add_argument("--n-bootstrap", type=int, default=600)
     kokorowski_kappa_profile.add_argument("--seed", type=int, default=28045)
+    kokorowski_author_calibration = sub.add_parser(
+        "probe-kokorowski-author-calibration",
+        help="apply received Kokorowski branch-level calibration data to the kappa stress profile",
+    )
+    kokorowski_author_calibration.add_argument(
+        "--input",
+        default="data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv",
+    )
+    kokorowski_author_calibration.add_argument(
+        "--author-calibration",
+        required=True,
+        help="CSV with branch_or_intensity, calibration_observable, value, value_se, units, independence_basis, source_note",
+    )
+    kokorowski_author_calibration.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_author_calibration_probe",
+    )
+    kokorowski_author_calibration.add_argument("--n-bootstrap", type=int, default=600)
+    kokorowski_author_calibration.add_argument("--seed", type=int, default=28046)
     kokorowski_detector = sub.add_parser(
         "check-kokorowski-detector-convolution",
         help="reconstruct Kokorowski calculated kappa-prime values from caption parameters and detector convolution",
@@ -19727,6 +19944,14 @@ def main(argv=None):
         elif command == "profile-kokorowski-kappa-uncertainty":
             run_profile_kokorowski_kappa_uncertainty(
                 Path(args.input),
+                Path(args.output_dir),
+                int(args.n_bootstrap),
+                int(args.seed),
+            )
+        elif command == "probe-kokorowski-author-calibration":
+            run_probe_kokorowski_author_calibration(
+                Path(args.input),
+                Path(args.author_calibration),
                 Path(args.output_dir),
                 int(args.n_bootstrap),
                 int(args.seed),

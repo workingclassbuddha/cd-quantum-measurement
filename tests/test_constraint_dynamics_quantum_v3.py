@@ -85,6 +85,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_kokorowski_multiphoton_analysis_outputs,
     make_kokorowski_multiphoton_stress_outputs,
     make_kokorowski_kappa_uncertainty_profile_outputs,
+    make_kokorowski_author_calibration_probe_outputs,
     make_kokorowski_detector_convolution_check_outputs,
     make_kokorowski_calibration_provenance_outputs,
     kokorowski_fig4_pixel_to_data,
@@ -1766,6 +1767,74 @@ def test_kokorowski_kappa_uncertainty_profile_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "kokorowski_kappa_uncertainty_summary.csv").exists()
+
+
+def test_kokorowski_author_calibration_probe_outputs_and_cli(tmp_path):
+    input_csv = Path("data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv")
+    assert input_csv.exists()
+    author_calibration = tmp_path / "kokorowski_author_calibration.csv"
+    pd.DataFrame(
+        [
+            {
+                "branch_or_intensity": "lower",
+                "calibration_observable": "kappa_prime",
+                "value": 1.8,
+                "value_se": 0.025,
+                "units": "k0",
+                "independence_basis": "synthetic author-calibration test row",
+                "source_note": "unit test",
+            },
+            {
+                "branch_or_intensity": "upper",
+                "calibration_observable": "kappa_prime",
+                "value": 2.5,
+                "value_se": 0.025,
+                "units": "k0",
+                "independence_basis": "synthetic author-calibration test row",
+                "source_note": "unit test",
+            },
+        ]
+    ).to_csv(author_calibration, index=False)
+
+    output_dir = tmp_path / "kokorowski_author_probe"
+    summary, applied, profile, samples = make_kokorowski_author_calibration_probe_outputs(
+        input_csv,
+        author_calibration,
+        output_dir,
+        n_bootstrap=40,
+        seed=13,
+    )
+    assert not summary.empty
+    assert int(summary["applied_branch_count"].iloc[0]) == 2
+    assert bool(summary["can_update_g11_scorecard"].iloc[0]) is False
+    assert set(applied["branch"]) == {
+        "bullet_lower_intensity",
+        "circle_high_intensity",
+    }
+    assert not profile.empty
+    assert not samples.empty
+    assert (output_dir / "kokorowski_author_calibration_probe_report.md").exists()
+    assert (output_dir / "profile" / "kokorowski_kappa_uncertainty_summary.csv").exists()
+
+    cli_output_dir = tmp_path / "kokorowski_author_probe_cli"
+    main(
+        [
+            "probe-kokorowski-author-calibration",
+            "--input",
+            str(input_csv),
+            "--author-calibration",
+            str(author_calibration),
+            "--output-dir",
+            str(cli_output_dir),
+            "--n-bootstrap",
+            "40",
+            "--seed",
+            "13",
+        ]
+    )
+    assert (
+        cli_output_dir / "kokorowski_author_calibration_probe_summary.csv"
+    ).exists()
 
 
 def test_kokorowski_detector_convolution_check_outputs_and_cli(tmp_path):
