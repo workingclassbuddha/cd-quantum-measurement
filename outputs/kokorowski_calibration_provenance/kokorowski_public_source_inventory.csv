@@ -1,0 +1,8 @@
+source_file,relative_path,suffix,bytes,sha256,text_like,calibration_keyword_count,calibration_keyword_hits,raw_calibration_table_candidate
+outputs/tmp/kokorowski_source/extracted/00README.XXX,00README.XXX,.xxx,17,a87c3da18044228e0d1f0622f7f460aca75786ff7fd40b91b37e94ebfafdaf9c,True,0,,False
+outputs/tmp/kokorowski_source/extracted/decoh.tex,decoh.tex,.tex,23338,4f436a938adf03dfe478a0cc11f780fafb01d4975a5e61f23f617bf6c9566647,True,5,data;deflection;broadening;sigma;kappa,False
+outputs/tmp/kokorowski_source/extracted/figure1.eps,figure1.eps,.eps,239236,690b9e62daac34cf28a7928df5103b3145a5bcc04652fce46cd20d5589946beb,True,2,raw;data,False
+outputs/tmp/kokorowski_source/extracted/figure2.eps,figure2.eps,.eps,106807,0f4e4d971a32bb5ef2158569e533add0e8881ead0e72eae6d8a5da212e284d80,True,1,raw,False
+outputs/tmp/kokorowski_source/extracted/figure3.eps,figure3.eps,.eps,167760,485b2c0acad7e68ef40d3b43eb7ff20601bd1ace42a6736e109e1426008656ba,True,2,raw;data,False
+outputs/tmp/kokorowski_source/extracted/figure4.eps,figure4.eps,.eps,25922,a85b2073c180fbd505206c109711386449cc4c7702c7f5c9ec7f7cf5f7b3161d,True,1,raw,False
+outputs/tmp/kokorowski_source/extracted/resub_note,resub_note,(none),6693,eabee708e2ef681f560c259e62d20ddaab220701ddb8140fc44fe253f91c4176,True,0,,False

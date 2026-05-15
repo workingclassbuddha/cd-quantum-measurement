@@ -9,6 +9,9 @@ This artifact anchors the public-data Kokorowski G11 lead to source-text claims 
 - Output CSV: `data/extracted/KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv`
 - Output JSON: `data/extracted/KOKOROWSKI_2001_CALIBRATION_PROVENANCE.json`
 - Extraction method: `tex_line_anchor_provenance_v1`
+- Source inventory files: 7
+- Calibration-keyword files: 5
+- Raw calibration table candidates found: 0
 
 ## Anchored Claims
 
@@ -18,9 +21,19 @@ This artifact anchors the public-data Kokorowski G11 lead to source-text claims 
 - figure4_caption_independent_parameters: lines 393-397; lower branch nbar=4.8(2), sigma_n=1.8(1); upper branch nbar=8.1(3), sigma_n=3.5(1)
 - beam_deflection_values_independent: lines 376-381; nbar and sigma_n are treated as independent inputs for the Fig. 4 calculated kappa-prime values.
 
+## Public Source Inventory
+
+- 00README.XXX: .xxx, 17 bytes, keyword hits=0, raw-table candidate=False
+- decoh.tex: .tex, 23338 bytes, keyword hits=5, raw-table candidate=False
+- figure1.eps: .eps, 239236 bytes, keyword hits=2, raw-table candidate=False
+- figure2.eps: .eps, 106807 bytes, keyword hits=1, raw-table candidate=False
+- figure3.eps: .eps, 167760 bytes, keyword hits=2, raw-table candidate=False
+- figure4.eps: .eps, 25922 bytes, keyword hits=1, raw-table candidate=False
+- resub_note: (none), 6693 bytes, keyword hits=0, raw-table candidate=False
+
 ## Interpretation
 
-The Fig. 4 section supports the independence premise for the many-photon no-refit check, but an earlier non-Gaussian section uses fit-derived photon-number parameters and should not be conflated with the Fig. 4 claim. The source still does not expose the raw beam-deflection/broadening calibration tables, so the kappa-uncertainty profile remains the current public-data bottleneck.
+The Fig. 4 section supports the independence premise for the many-photon no-refit check, but an earlier non-Gaussian section uses fit-derived photon-number parameters and should not be conflated with the Fig. 4 claim. The public source inventory contains TeX/EPS/readme/note files and no detected raw calibration table candidate, so the kappa-uncertainty profile remains the current public-data bottleneck.
 
 ## Boundary
 

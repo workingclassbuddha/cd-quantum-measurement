@@ -8049,6 +8049,15 @@ def make_current_goal_completion_audit_outputs(
             )
         )
     )
+    kokorowski_public_raw_tables_found = bool(
+        _truthy(
+            _first_value(
+                kokorowski_calibration_provenance,
+                "public_source_raw_calibration_tables_found",
+                False,
+            )
+        )
+    )
     kokorowski_detector_status = str(
         _first_value(kokorowski_detector_convolution, "status", "not available")
     )
@@ -8215,6 +8224,7 @@ def make_current_goal_completion_audit_outputs(
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
                 f"provenance_status={kokorowski_provenance_status}; "
                 f"provenance_scope_warning={kokorowski_provenance_scope_warning}; "
+                f"public_raw_tables_found={kokorowski_public_raw_tables_found}; "
                 f"provenance_blocker={kokorowski_provenance_blocker}; "
                 f"detector_convolution_status={kokorowski_detector_status}; "
                 f"detector_all_within_two_se={kokorowski_detector_all_within_two_se}; "
@@ -8290,6 +8300,7 @@ def make_current_goal_completion_audit_outputs(
                 "kokorowski_max_kappa_se_scale_with_joint_pass_ge_080": kokorowski_max_se_scale,
                 "kokorowski_calibration_provenance_status": kokorowski_provenance_status,
                 "kokorowski_calibration_provenance_scope_warning": kokorowski_provenance_scope_warning,
+                "kokorowski_public_raw_calibration_tables_found": kokorowski_public_raw_tables_found,
                 "kokorowski_calibration_provenance_blocker": kokorowski_provenance_blocker,
                 "kokorowski_detector_convolution_status": kokorowski_detector_status,
                 "kokorowski_detector_all_within_two_reported_se": kokorowski_detector_all_within_two_se,
@@ -8347,6 +8358,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Kokorowski max SE scale with joint pass >= 0.80: {kokorowski_max_se_scale if math.isfinite(kokorowski_max_se_scale) else "not available"}
 - Kokorowski calibration provenance status: {kokorowski_provenance_status}
 - Kokorowski calibration provenance scope warning: {kokorowski_provenance_scope_warning}
+- Kokorowski public raw calibration tables found: {kokorowski_public_raw_tables_found}
 - Kokorowski calibration provenance blocker: {kokorowski_provenance_blocker}
 - Kokorowski detector-convolution check: {kokorowski_detector_status}; all within two reported SE: {kokorowski_detector_all_within_two_se}; max delta: {kokorowski_detector_max_delta if math.isfinite(kokorowski_detector_max_delta) else "not available"}; clears G11: {kokorowski_detector_clears_g11}
 - Chapman raw-phase blocker: {chapman_phase_verdict}; branch-optimized RMSE: {chapman_branch_rmse if math.isfinite(chapman_branch_rmse) else "not available"}; branch gate pass: {chapman_branch_gate_pass}
@@ -12610,6 +12622,64 @@ def make_kokorowski_calibration_provenance_outputs(
     tex_path = Path(source) / "decoh.tex"
     lines = tex_path.read_text(encoding="latin-1", errors="ignore").splitlines()
     source_sha = sha256_file(tex_path)
+    calibration_tokens = [
+        "raw",
+        "table",
+        "data",
+        "calibration",
+        "deflection",
+        "broadening",
+        "sigma",
+        "kappa",
+        "nbar",
+    ]
+    inventory_rows = []
+    for file_path in sorted(Path(source).rglob("*")):
+        if not file_path.is_file():
+            continue
+        suffix = file_path.suffix.lower()
+        text_like = suffix in {".tex", ".eps", ".xxx", ".txt", ".md", ""} or file_path.name in {
+            "resub_note",
+        }
+        text = (
+            file_path.read_text(encoding="latin-1", errors="ignore")
+            if text_like
+            else ""
+        )
+        lower_text = text.lower()
+        hit_tokens = [token for token in calibration_tokens if token in lower_text]
+        tabular_suffix = suffix in {".csv", ".dat", ".tsv", ".txt"}
+        raw_calibration_table_candidate = bool(
+            tabular_suffix
+            and any(token in lower_text or token in file_path.name.lower() for token in [
+                "calibration",
+                "deflection",
+                "broadening",
+                "sigma",
+                "kappa",
+                "nbar",
+            ])
+        )
+        inventory_rows.append(
+            {
+                "source_file": str(file_path),
+                "relative_path": str(file_path.relative_to(source)),
+                "suffix": suffix or "(none)",
+                "bytes": int(file_path.stat().st_size),
+                "sha256": sha256_file(file_path),
+                "text_like": bool(text_like),
+                "calibration_keyword_count": int(len(hit_tokens)),
+                "calibration_keyword_hits": ";".join(hit_tokens),
+                "raw_calibration_table_candidate": raw_calibration_table_candidate,
+            }
+        )
+    inventory = pd.DataFrame(inventory_rows)
+    raw_table_count = int(
+        inventory["raw_calibration_table_candidate"].map(_truthy).sum()
+    ) if not inventory.empty else 0
+    calibration_hit_files = int(
+        (inventory["calibration_keyword_count"].astype(int) > 0).sum()
+    ) if not inventory.empty else 0
     claims = [
         {
             "claim_id": "earlier_non_gaussian_fit_vs_beam_check",
@@ -12685,6 +12755,9 @@ def make_kokorowski_calibration_provenance_outputs(
                 "source_file": str(tex_path),
                 "source_file_sha256": source_sha,
                 "has_scope_warning": True,
+                "source_inventory_file_count": int(len(inventory)),
+                "source_inventory_calibration_hit_files": calibration_hit_files,
+                "public_source_raw_calibration_tables_found": bool(raw_table_count > 0),
                 "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
             }
         ]
@@ -12712,6 +12785,10 @@ def make_kokorowski_calibration_provenance_outputs(
         output_dir / "kokorowski_calibration_provenance.csv",
         index=False,
     )
+    inventory.to_csv(
+        output_dir / "kokorowski_public_source_inventory.csv",
+        index=False,
+    )
     summary.to_csv(
         output_dir / "kokorowski_calibration_provenance_summary.csv",
         index=False,
@@ -12725,6 +12802,16 @@ def make_kokorowski_calibration_provenance_outputs(
         )
         for _, row in provenance.iterrows()
     )
+    inventory_lines = "\n".join(
+        "- {path}: {suffix}, {bytes} bytes, keyword hits={hits}, raw-table candidate={raw_table}".format(
+            path=row["relative_path"],
+            suffix=row["suffix"],
+            bytes=int(row["bytes"]),
+            hits=int(row["calibration_keyword_count"]),
+            raw_table=bool(row["raw_calibration_table_candidate"]),
+        )
+        for _, row in inventory.iterrows()
+    )
     report = f"""# Kokorowski Calibration Provenance
 
 Status: calibration provenance extracted
@@ -12736,14 +12823,21 @@ This artifact anchors the public-data Kokorowski G11 lead to source-text claims 
 - Output CSV: `{csv_path}`
 - Output JSON: `{json_path}`
 - Extraction method: `tex_line_anchor_provenance_v1`
+- Source inventory files: {int(len(inventory))}
+- Calibration-keyword files: {calibration_hit_files}
+- Raw calibration table candidates found: {raw_table_count}
 
 ## Anchored Claims
 
 {claim_lines}
 
+## Public Source Inventory
+
+{inventory_lines}
+
 ## Interpretation
 
-The Fig. 4 section supports the independence premise for the many-photon no-refit check, but an earlier non-Gaussian section uses fit-derived photon-number parameters and should not be conflated with the Fig. 4 claim. The source still does not expose the raw beam-deflection/broadening calibration tables, so the kappa-uncertainty profile remains the current public-data bottleneck.
+The Fig. 4 section supports the independence premise for the many-photon no-refit check, but an earlier non-Gaussian section uses fit-derived photon-number parameters and should not be conflated with the Fig. 4 claim. The public source inventory contains TeX/EPS/readme/note files and no detected raw calibration table candidate, so the kappa-uncertainty profile remains the current public-data bottleneck.
 
 ## Boundary
 

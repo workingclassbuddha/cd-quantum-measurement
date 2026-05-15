@@ -1001,6 +1001,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             {
                 "status": "calibration provenance extracted",
                 "has_scope_warning": True,
+                "public_source_raw_calibration_tables_found": False,
                 "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
             }
         ]
@@ -1092,6 +1093,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         bool(summary["kokorowski_calibration_provenance_scope_warning"].iloc[0])
         is True
     )
+    assert (
+        bool(summary["kokorowski_public_raw_calibration_tables_found"].iloc[0])
+        is False
+    )
     assert int(summary["partial_product_law_proxy_candidates"].iloc[0]) == 14
     assert int(summary["proxy_rich_product_law_candidates"].iloc[0]) == 2
     assert int(summary["stress_closed_second_no_refit_targets"].iloc[0]) == 0
@@ -1130,6 +1135,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "top_blocker=stress_or_calibration_uncertainty_limited" in second_row["note"]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "provenance_scope_warning=True" in second_row["note"]
+    assert "public_raw_tables_found=False" in second_row["note"]
     assert "detector_all_within_two_se=True" in second_row["note"]
     assert "detector_clears_g11=False" in second_row["note"]
     assert "fig3_log10_rmse=0.046" in second_row["note"]
@@ -1766,9 +1772,15 @@ def test_kokorowski_calibration_provenance_outputs_and_cli(tmp_path):
     assert not provenance.empty
     assert not summary.empty
     assert bool(summary["has_scope_warning"].iloc[0]) is True
+    assert int(summary["source_inventory_file_count"].iloc[0]) >= 2
+    assert (
+        bool(summary["public_source_raw_calibration_tables_found"].iloc[0])
+        is False
+    )
     assert "earlier_non_gaussian_fit_vs_beam_check" in set(provenance["claim_id"])
     assert "beam_deflection_values_independent" in set(provenance["claim_id"])
     assert (data_dir / "KOKOROWSKI_2001_CALIBRATION_PROVENANCE.csv").exists()
+    assert (output_dir / "kokorowski_public_source_inventory.csv").exists()
     assert (output_dir / "kokorowski_calibration_provenance_report.md").exists()
 
     cli_output_dir = tmp_path / "kokorowski_provenance_cli"
