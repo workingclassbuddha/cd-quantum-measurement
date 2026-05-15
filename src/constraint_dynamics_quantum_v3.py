@@ -8031,6 +8031,20 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_intake_requirement_count = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_intake_requirement_count",
+            0,
+        )
+    )
+    g11_closure_evidence_intake_classes = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_intake_classes",
+            "not available",
+        )
+    )
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
     empirical_product_ready = int(
         _first_value(product_law_status, "empirical_product_law_ready_datasets", 0)
@@ -8333,6 +8347,8 @@ def make_current_goal_completion_audit_outputs(
                 f"current_public_path_exhausted={current_public_g11_path_exhausted}; "
                 f"closure_evidence_queue={g11_closure_evidence_queue_count}; "
                 f"closure_evidence_classes={g11_closure_evidence_classes}; "
+                f"closure_evidence_intake_requirements={g11_closure_evidence_intake_requirement_count}; "
+                f"closure_evidence_intake_classes={g11_closure_evidence_intake_classes}; "
                 f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
@@ -8416,6 +8432,8 @@ def make_current_goal_completion_audit_outputs(
                 "current_public_g11_path_exhausted": current_public_g11_path_exhausted,
                 "g11_closure_evidence_queue_count": g11_closure_evidence_queue_count,
                 "g11_closure_evidence_classes": g11_closure_evidence_classes,
+                "g11_closure_evidence_intake_requirement_count": g11_closure_evidence_intake_requirement_count,
+                "g11_closure_evidence_intake_classes": g11_closure_evidence_intake_classes,
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "g11_closure_contract_gates": g11_closure_contract_gates,
                 "g11_closure_ready_targets": g11_closure_ready_targets,
@@ -8490,6 +8508,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Current public G11 path exhausted: {current_public_g11_path_exhausted}
 - G11 closure evidence queue rows: {g11_closure_evidence_queue_count}
 - G11 closure evidence classes: {g11_closure_evidence_classes}
+- G11 closure evidence intake requirement rows: {g11_closure_evidence_intake_requirement_count}
+- G11 closure evidence intake classes: {g11_closure_evidence_intake_classes}
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - G11 closure contract gates: {g11_closure_contract_gates}
 - G11 closure-ready targets: {g11_closure_ready_targets}
@@ -10489,6 +10509,9 @@ def make_public_g11_exhaustion_audit_outputs(
     evidence_classes_text = ";".join(
         sorted(evidence_queue["evidence_class"].dropna().astype(str).unique())
     )
+    intake_classes_text = ";".join(
+        sorted(evidence_intake["evidence_class"].dropna().astype(str).unique())
+    )
 
     public_path_exhausted = bool(
         eligible_second > 0
@@ -10515,6 +10538,8 @@ def make_public_g11_exhaustion_audit_outputs(
                 "near_miss_candidate_count": int(len(public_near_misses)),
                 "closure_evidence_queue_count": int(len(evidence_queue)),
                 "closure_evidence_classes": evidence_classes_text,
+                "closure_evidence_intake_requirement_count": int(len(evidence_intake)),
+                "closure_evidence_intake_classes": intake_classes_text,
                 "recommended_next": (
                     "non-public Kokorowski calibration data or a newly identified cleaner public dataset"
                     if public_path_exhausted
@@ -10550,6 +10575,7 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence queue rows: {int(len(evidence_queue))}
 - Closure evidence classes: {evidence_classes_text}
 - Closure evidence intake rows: {int(len(evidence_intake))}
+- Closure evidence intake classes: {intake_classes_text}
 
 ## Near Misses
 
@@ -10616,6 +10642,16 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     )
     g11_closure_evidence_classes = str(
         _first_value(public_g11, "closure_evidence_classes", "not available")
+    )
+    g11_closure_evidence_intake_requirement_count = int(
+        _first_value(public_g11, "closure_evidence_intake_requirement_count", 0)
+    )
+    g11_closure_evidence_intake_classes = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_intake_classes",
+            "not available",
+        )
     )
     g11_closed = bool(
         int(_first_value(public_g11, "stress_closed_second_no_refit_targets", 0)) > 0
@@ -10754,7 +10790,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"failed gates={kokorowski_failed_gate_ids}; "
                         f"joint stress={kokorowski_joint_stress:.3f}; "
                         f"raw calibration tables found={kokorowski_raw_tables_found}; "
-                        f"evidence classes={g11_closure_evidence_classes}"
+                        f"evidence classes={g11_closure_evidence_classes}; "
+                        f"intake requirements={g11_closure_evidence_intake_requirement_count}; "
+                        f"intake classes={g11_closure_evidence_intake_classes}"
                     )
                     if public_g11_exhausted
                     else "public G11 route still needs testing"
@@ -10830,6 +10868,8 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closed": g11_closed,
                 "g11_closure_evidence_queue_count": g11_closure_evidence_queue_count,
                 "g11_closure_evidence_classes": g11_closure_evidence_classes,
+                "g11_closure_evidence_intake_requirement_count": g11_closure_evidence_intake_requirement_count,
+                "g11_closure_evidence_intake_classes": g11_closure_evidence_intake_classes,
                 "chapman_g10_repaired": chapman_g10_repaired,
                 "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
                 "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
@@ -10878,6 +10918,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closed: {g11_closed}
 - G11 closure evidence queue rows: {g11_closure_evidence_queue_count}
 - G11 closure evidence classes: {g11_closure_evidence_classes}
+- G11 closure evidence intake requirement rows: {g11_closure_evidence_intake_requirement_count}
+- G11 closure evidence intake classes: {g11_closure_evidence_intake_classes}
 - Chapman G10 repaired: {chapman_g10_repaired}
 - Chapman branch gate pass: {chapman_branch_gate_pass}
 - Chapman wrap ambiguous rows: {chapman_wrap_ambiguous}

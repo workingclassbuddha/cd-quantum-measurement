@@ -987,6 +987,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "current_public_g11_path_exhausted": True,
                 "closure_evidence_queue_count": 14,
                 "closure_evidence_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
+                "closure_evidence_intake_requirement_count": 14,
+                "closure_evidence_intake_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
             }
         ]
     )
@@ -1164,6 +1166,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         summary["g11_closure_evidence_classes"].iloc[0]
         == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
     )
+    assert int(summary["g11_closure_evidence_intake_requirement_count"].iloc[0]) == 14
+    assert (
+        summary["g11_closure_evidence_intake_classes"].iloc[0]
+        == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+    )
     assert int(summary["public_g11_candidate_count"].iloc[0]) == 14
     assert int(summary["public_g11_candidates_clearing_all_contract_gates"].iloc[0]) == 0
     assert summary["top_public_g11_candidate_id"].iloc[0] == (
@@ -1195,8 +1202,13 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "second_independent_distribution_to_visibility_validation"
     ].iloc[0]
     assert "closure_evidence_queue=14" in g11_row["note"]
+    assert "closure_evidence_intake_requirements=14" in g11_row["note"]
     assert (
         "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+        in g11_row["note"]
+    )
+    assert (
+        "closure_evidence_intake_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
     )
     g10_row = checklist[
@@ -2277,6 +2289,11 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
         summary["closure_evidence_classes"].iloc[0]
         == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
     )
+    assert int(summary["closure_evidence_intake_requirement_count"].iloc[0]) == 14
+    assert (
+        summary["closure_evidence_intake_classes"].iloc[0]
+        == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2341,6 +2358,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "stress_closed_second_no_refit_targets": 0,
                 "closure_evidence_queue_count": 14,
                 "closure_evidence_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
+                "closure_evidence_intake_requirement_count": 14,
+                "closure_evidence_intake_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
             }
         ]
     )
@@ -2468,6 +2487,11 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         summary["g11_closure_evidence_classes"].iloc[0]
         == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
     )
+    assert int(summary["g11_closure_evidence_intake_requirement_count"].iloc[0]) == 14
+    assert (
+        summary["g11_closure_evidence_intake_classes"].iloc[0]
+        == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+    )
     assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
     g11_row = required_inputs[
         required_inputs["blocker"]
@@ -2476,6 +2500,11 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "failed gates=G11C;G11F;G11G" in g11_row["current_state"]
     assert (
         "evidence classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+        in g11_row["current_state"]
+    )
+    assert "intake requirements=14" in g11_row["current_state"]
+    assert (
+        "intake classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["current_state"]
     )
     g10_row = required_inputs[
