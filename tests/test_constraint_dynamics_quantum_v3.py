@@ -2291,6 +2291,17 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "g12_validated": False,
                 "empirical_product_law_ready_datasets": 0,
                 "proxy_rich_apparatus_candidates": 2,
+                "named_proxy_rich_blockers": 2,
+            }
+        ]
+    )
+    kokorowski_gaps = pd.DataFrame(
+        [
+            {
+                "failed_tracked_gates": 3,
+                "failed_gate_ids": "G11C;G11F;G11G",
+                "joint_stress_pass_probability": 0.727,
+                "public_source_raw_calibration_tables_found": False,
             }
         ]
     )
@@ -2306,10 +2317,12 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     public_path = tmp_path / "public_g11.csv"
     chapman_path = tmp_path / "chapman.csv"
     product_path = tmp_path / "product.csv"
+    kokorowski_gaps_path = tmp_path / "kokorowski_gaps.csv"
     current_goal_path = tmp_path / "current_goal.csv"
     public_g11.to_csv(public_path, index=False)
     chapman.to_csv(chapman_path, index=False)
     product.to_csv(product_path, index=False)
+    kokorowski_gaps.to_csv(kokorowski_gaps_path, index=False)
     current_goal.to_csv(current_goal_path, index=False)
 
     summary, required_inputs = make_breakthrough_path_exhaustion_audit_outputs(
@@ -2318,6 +2331,7 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         chapman_path,
         product_path,
         current_goal_path,
+        kokorowski_gaps_path,
     )
     assert not summary.empty
     assert len(required_inputs) == 3
@@ -2326,6 +2340,14 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         is True
     )
     assert bool(summary["objective_achieved"].iloc[0]) is False
+    assert int(summary["kokorowski_failed_tracked_g11_gates"].iloc[0]) == 3
+    assert summary["kokorowski_failed_g11_gate_ids"].iloc[0] == "G11C;G11F;G11G"
+    assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
+    g11_row = required_inputs[
+        required_inputs["blocker"]
+        == "G11 second independent distribution-to-visibility validation"
+    ].iloc[0]
+    assert "failed gates=G11C;G11F;G11G" in g11_row["current_state"]
     assert (output_dir / "breakthrough_path_exhaustion_report.md").exists()
     assert (output_dir / "breakthrough_path_required_new_inputs.csv").exists()
 

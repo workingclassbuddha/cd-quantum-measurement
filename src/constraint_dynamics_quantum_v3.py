@@ -10478,6 +10478,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     current_goal_summary_csv: Path = Path(
         "outputs/current_goal_audit/current_goal_completion_summary.csv"
     ),
+    kokorowski_g11_gap_summary_csv: Path = Path(
+        "outputs/kokorowski_g11_closure_gaps/kokorowski_g11_closure_gap_summary.csv"
+    ),
 ):
     """Write a terminal audit for the currently implemented breakthrough path."""
 
@@ -10486,6 +10489,7 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     chapman = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
     product = _read_optional_metric_csv(product_law_status_csv)
     current_goal = _read_optional_metric_csv(current_goal_summary_csv)
+    kokorowski_g11_gaps = _read_optional_metric_csv(kokorowski_g11_gap_summary_csv)
 
     public_g11_exhausted = bool(
         _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
@@ -10511,7 +10515,28 @@ def make_breakthrough_path_exhaustion_audit_outputs(
     proxy_rich_product_candidates = int(
         _first_value(product, "proxy_rich_apparatus_candidates", 0)
     )
+    named_proxy_rich_blockers = int(
+        _first_value(product, "named_proxy_rich_blockers", 0)
+    )
     g12_validated = bool(_truthy(_first_value(product, "g12_validated", False)))
+    kokorowski_failed_gates = int(
+        _first_value(kokorowski_g11_gaps, "failed_tracked_gates", 0)
+    )
+    kokorowski_failed_gate_ids = str(
+        _first_value(kokorowski_g11_gaps, "failed_gate_ids", "not available")
+    )
+    kokorowski_joint_stress = float(
+        _first_value(kokorowski_g11_gaps, "joint_stress_pass_probability", np.nan)
+    )
+    kokorowski_raw_tables_found = bool(
+        _truthy(
+            _first_value(
+                kokorowski_g11_gaps,
+                "public_source_raw_calibration_tables_found",
+                False,
+            )
+        )
+    )
     objective_achieved = bool(
         _truthy(_first_value(current_goal, "objective_achieved", False))
     )
@@ -10534,7 +10559,12 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             {
                 "blocker": "G11 second independent distribution-to-visibility validation",
                 "current_state": (
-                    "public Kokorowski route is exhausted without closure"
+                    (
+                        "public Kokorowski route is exhausted without closure; "
+                        f"failed gates={kokorowski_failed_gate_ids}; "
+                        f"joint stress={kokorowski_joint_stress:.3f}; "
+                        f"raw calibration tables found={kokorowski_raw_tables_found}"
+                    )
                     if public_g11_exhausted
                     else "public G11 route still needs testing"
                 ),
@@ -10559,7 +10589,8 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "blocker": "G12 independent product-law validation",
                 "current_state": (
                     f"empirical ready datasets={empirical_product_ready}; "
-                    f"proxy-rich candidates={proxy_rich_product_candidates}"
+                    f"proxy-rich candidates={proxy_rich_product_candidates}; "
+                    f"named proxy-rich blockers={named_proxy_rich_blockers}"
                 ),
                 "next_valid_input": (
                     "empirical dataset with independently varied Lambda, Gamma, "
@@ -10587,6 +10618,11 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g12_validated": g12_validated,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
                 "proxy_rich_product_law_candidates": proxy_rich_product_candidates,
+                "named_proxy_rich_product_law_blockers": named_proxy_rich_blockers,
+                "kokorowski_failed_tracked_g11_gates": kokorowski_failed_gates,
+                "kokorowski_failed_g11_gate_ids": kokorowski_failed_gate_ids,
+                "kokorowski_joint_stress_pass_probability": kokorowski_joint_stress,
+                "kokorowski_public_raw_calibration_tables_found": kokorowski_raw_tables_found,
                 "required_new_input_count": int(len(required_inputs)),
             }
         ]
@@ -10618,6 +10654,11 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G12 validated: {g12_validated}
 - Empirical product-law-ready datasets: {empirical_product_ready}
 - Proxy-rich product-law candidates: {proxy_rich_product_candidates}
+- Named proxy-rich product-law blockers: {named_proxy_rich_blockers}
+- Kokorowski failed tracked G11 gates: {kokorowski_failed_gates}
+- Kokorowski failed G11 gate ids: {kokorowski_failed_gate_ids}
+- Kokorowski joint stress pass probability: {kokorowski_joint_stress if math.isfinite(kokorowski_joint_stress) else "not available"}
+- Kokorowski public raw calibration tables found: {kokorowski_raw_tables_found}
 
 ## Required New Inputs
 

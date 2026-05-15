@@ -15,12 +15,17 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G12 validated: False
 - Empirical product-law-ready datasets: 0
 - Proxy-rich product-law candidates: 2
+- Named proxy-rich product-law blockers: 2
+- Kokorowski failed tracked G11 gates: 3
+- Kokorowski failed G11 gate ids: G11C;G11F;G11G
+- Kokorowski joint stress pass probability: 0.727
+- Kokorowski public raw calibration tables found: False
 
 ## Required New Inputs
 
-- **G11 second independent distribution-to-visibility validation**: public Kokorowski route is exhausted without closure. Next valid input: raw Kokorowski beam-deflection/broadening calibration tables or a newly identified cleaner public dataset. Boundary: do not count near-miss visibility-derived datasets as G11 closure.
+- **G11 second independent distribution-to-visibility validation**: public Kokorowski route is exhausted without closure; failed gates=G11C;G11F;G11G; joint stress=0.727; raw calibration tables found=False. Next valid input: raw Kokorowski beam-deflection/broadening calibration tables or a newly identified cleaner public dataset. Boundary: do not count near-miss visibility-derived datasets as G11 closure.
 - **G10 Chapman raw-phase repair**: branch-optimized raw phase gate pass=False; best RMSE=1.475. Next valid input: author numerical phase trace or publication-grade redigitization. Boundary: do not rescue G10 with branch wrapping alone.
-- **G12 independent product-law validation**: empirical ready datasets=0; proxy-rich candidates=2. Next valid input: empirical dataset with independently varied Lambda, Gamma, and Theta factors. Boundary: do not treat synthetic or proxy-rich rows as empirical product-law validation.
+- **G12 independent product-law validation**: empirical ready datasets=0; proxy-rich candidates=2; named proxy-rich blockers=2. Next valid input: empirical dataset with independently varied Lambda, Gamma, and Theta factors. Boundary: do not treat synthetic or proxy-rich rows as empirical product-law validation.
 
 ## Boundary
 
