@@ -982,7 +982,13 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         [{"supports_g11_without_author_contact": 0}]
     )
     public_g11_exhaustion = pd.DataFrame(
-        [{"current_public_g11_path_exhausted": True}]
+        [
+            {
+                "current_public_g11_path_exhausted": True,
+                "closure_evidence_queue_count": 14,
+                "closure_evidence_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
+            }
+        ]
     )
     g11_closure_readiness = pd.DataFrame(
         [
@@ -1153,6 +1159,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "stress_or_calibration_uncertainty_limited"
     )
     assert bool(summary["current_public_g11_path_exhausted"].iloc[0]) is True
+    assert int(summary["g11_closure_evidence_queue_count"].iloc[0]) == 14
+    assert (
+        summary["g11_closure_evidence_classes"].iloc[0]
+        == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+    )
     assert int(summary["public_g11_candidate_count"].iloc[0]) == 14
     assert int(summary["public_g11_candidates_clearing_all_contract_gates"].iloc[0]) == 0
     assert summary["top_public_g11_candidate_id"].iloc[0] == (
@@ -1178,6 +1189,15 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert bool(summary["mir_fig4_clears_g11"].iloc[0]) is False
     assert "second_independent_distribution_to_visibility_validation" in set(
         checklist["requirement"]
+    )
+    g11_row = checklist[
+        checklist["requirement"]
+        == "second_independent_distribution_to_visibility_validation"
+    ].iloc[0]
+    assert "closure_evidence_queue=14" in g11_row["note"]
+    assert (
+        "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+        in g11_row["note"]
     )
     g10_row = checklist[
         checklist["requirement"] == "chapman_raw_phase_repaired"

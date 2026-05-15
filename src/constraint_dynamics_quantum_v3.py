@@ -8021,6 +8021,16 @@ def make_current_goal_completion_audit_outputs(
             )
         )
     )
+    g11_closure_evidence_queue_count = int(
+        _first_value(public_g11_exhaustion, "closure_evidence_queue_count", 0)
+    )
+    g11_closure_evidence_classes = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_classes",
+            "not available",
+        )
+    )
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
     empirical_product_ready = int(
         _first_value(product_law_status, "empirical_product_law_ready_datasets", 0)
@@ -8321,6 +8331,8 @@ def make_current_goal_completion_audit_outputs(
                 f"top_blocker={g11_top_blocker}; "
                 f"recommended_next={g11_recommended_next}; "
                 f"current_public_path_exhausted={current_public_g11_path_exhausted}; "
+                f"closure_evidence_queue={g11_closure_evidence_queue_count}; "
+                f"closure_evidence_classes={g11_closure_evidence_classes}; "
                 f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
@@ -8402,6 +8414,8 @@ def make_current_goal_completion_audit_outputs(
                 "stress_closed_second_no_refit_targets": stress_closed_second,
                 "g11_top_blocker_class": g11_top_blocker,
                 "current_public_g11_path_exhausted": current_public_g11_path_exhausted,
+                "g11_closure_evidence_queue_count": g11_closure_evidence_queue_count,
+                "g11_closure_evidence_classes": g11_closure_evidence_classes,
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "g11_closure_contract_gates": g11_closure_contract_gates,
                 "g11_closure_ready_targets": g11_closure_ready_targets,
@@ -8474,6 +8488,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Stress-closed second no-refit targets: {stress_closed_second}
 - G11 top blocker class: {g11_top_blocker}
 - Current public G11 path exhausted: {current_public_g11_path_exhausted}
+- G11 closure evidence queue rows: {g11_closure_evidence_queue_count}
+- G11 closure evidence classes: {g11_closure_evidence_classes}
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - G11 closure contract gates: {g11_closure_contract_gates}
 - G11 closure-ready targets: {g11_closure_ready_targets}
