@@ -89,6 +89,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_kokorowski_author_calibration_probe_outputs,
     make_kokorowski_detector_convolution_check_outputs,
     make_kokorowski_calibration_provenance_outputs,
+    make_kokorowski_g11_closure_gap_outputs,
     kokorowski_fig4_pixel_to_data,
     kokorowski_fig3_pixel_to_data,
     kokorowski_visibility_from_kappa,
@@ -1077,6 +1078,15 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             }
         ]
     )
+    kokorowski_g11_gaps = pd.DataFrame(
+        [
+            {
+                "failed_tracked_gates": 3,
+                "failed_gate_ids": "G11C;G11F;G11G",
+                "can_update_g11_scorecard": False,
+            }
+        ]
+    )
     paths = {}
     for name, frame in [
         ("scorecard", scorecard),
@@ -1093,6 +1103,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("fig3", fig3_summary),
         ("mir_fig4", mir_fig4_summary),
         ("g11_scorecard_preflight", g11_scorecard_preflight),
+        ("kokorowski_g11_gaps", kokorowski_g11_gaps),
     ]:
         path = tmp_path / f"{name}.csv"
         frame.to_csv(path, index=False)
@@ -1114,6 +1125,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         kokorowski_fig3_decay_summary_csv=paths["fig3"],
         mir_fig4_eraser_phase_summary_csv=paths["mir_fig4"],
         g11_scorecard_preflight_summary_csv=paths["g11_scorecard_preflight"],
+        kokorowski_g11_closure_gap_summary_csv=paths["kokorowski_g11_gaps"],
     )
     assert not checklist.empty
     assert not bool(summary["objective_achieved"].iloc[0])
@@ -1151,6 +1163,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     )
     assert bool(summary["can_update_g11_scorecard"].iloc[0]) is False
     assert int(summary["g11_scorecard_preflight_failed_checks"].iloc[0]) == 4
+    assert int(summary["kokorowski_failed_tracked_g11_gates"].iloc[0]) == 3
+    assert summary["kokorowski_failed_g11_gate_ids"].iloc[0] == "G11C;G11F;G11G"
+    assert bool(summary["kokorowski_gap_can_update_g11_scorecard"].iloc[0]) is False
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
     assert bool(summary["kokorowski_detector_convolution_clears_g11"].iloc[0]) is False
     assert summary["chapman_raw_phase_verdict"].iloc[0] == "G10 still blocked by raw phase"
@@ -1183,6 +1198,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "top_blocker=stress_or_calibration_uncertainty_limited" in second_row["note"]
     assert "current_public_path_exhausted=True" in second_row["note"]
     assert "top_public_failed_gates=G11C;G11F;G11G" in second_row["note"]
+    assert "kokorowski_failed_gate_ids=G11C;G11F;G11G" in second_row["note"]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "provenance_scope_warning=True" in second_row["note"]
     assert "public_raw_tables_found=False" in second_row["note"]
@@ -2077,6 +2093,107 @@ def test_kokorowski_calibration_provenance_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "kokorowski_calibration_provenance_summary.csv").exists()
+
+
+def test_kokorowski_g11_closure_gap_outputs_and_cli(tmp_path):
+    stress = pd.DataFrame(
+        [
+            {
+                "bootstrap_p_joint_stress_gate": 0.727,
+                "bootstrap_p_rmse_lt_005": 0.866,
+                "bootstrap_p_ratio_lte_15": 0.743,
+                "observed_calculated_independent_kappa_rmse": 0.024,
+            }
+        ]
+    )
+    kappa = pd.DataFrame(
+        [
+            {
+                "full_reported_se_joint_pass": 0.417,
+                "max_kappa_se_scale_with_joint_pass_ge_080": 0.25,
+            }
+        ]
+    )
+    provenance = pd.DataFrame(
+        [
+            {
+                "public_source_raw_calibration_tables_found": False,
+                "primary_gap": "raw beam-deflection/broadening calibration data are still not in the public source package",
+                "source_inventory_file_count": 7,
+                "source_inventory_calibration_hit_files": 5,
+            }
+        ]
+    )
+    detector = pd.DataFrame(
+        [
+            {
+                "all_branches_within_two_reported_se": True,
+                "clears_g11": False,
+                "max_abs_predicted_minus_reported_k0": 0.088,
+            }
+        ]
+    )
+    gate_matrix = pd.DataFrame(
+        [
+            {
+                "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "gate_id": "G11A",
+                "passed": True,
+            },
+            {
+                "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "gate_id": "G11C",
+                "passed": False,
+            },
+            {
+                "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "gate_id": "G11F",
+                "passed": False,
+            },
+            {
+                "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "gate_id": "G11G",
+                "passed": False,
+            },
+        ]
+    )
+    paths = {}
+    for name, frame in [
+        ("stress", stress),
+        ("kappa", kappa),
+        ("provenance", provenance),
+        ("detector", detector),
+        ("gate_matrix", gate_matrix),
+    ]:
+        path = tmp_path / f"{name}.csv"
+        frame.to_csv(path, index=False)
+        paths[name] = path
+
+    output_dir = tmp_path / "kokorowski_g11_gaps"
+    gaps, summary = make_kokorowski_g11_closure_gap_outputs(
+        output_dir,
+        paths["stress"],
+        paths["kappa"],
+        paths["provenance"],
+        paths["detector"],
+        paths["gate_matrix"],
+    )
+    assert set(gaps["gate_id"]) == {"G11C", "G11F", "G11G"}
+    assert int(summary["failed_tracked_gates"].iloc[0]) == 3
+    assert summary["failed_gate_ids"].iloc[0] == "G11C;G11F;G11G"
+    assert bool(summary["all_tracked_gaps_clear"].iloc[0]) is False
+    assert bool(summary["can_update_g11_scorecard"].iloc[0]) is False
+    assert (output_dir / "kokorowski_g11_closure_gap_report.md").exists()
+
+    cli_output_dir = tmp_path / "kokorowski_g11_gaps_cli"
+    main(
+        [
+            "audit-kokorowski-g11-closure-gaps",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "kokorowski_g11_closure_gap_summary.csv").exists()
 
 
 def test_public_data_availability_outputs_and_cli(tmp_path):

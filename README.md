@@ -225,6 +225,7 @@ python src/constraint_dynamics_quantum_v3.py scout-mir-weak-value --source-dir o
 python src/constraint_dynamics_quantum_v3.py check-mir-fig4-eraser-phase --source-dir outputs/tmp/second_no_refit_sources/mir --output-dir outputs/mir_fig4_eraser_phase --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py check-kokorowski-detector-convolution --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv --output-dir outputs/kokorowski_detector_convolution
 python src/constraint_dynamics_quantum_v3.py profile-kokorowski-kappa-uncertainty --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv --output-dir outputs/kokorowski_kappa_uncertainty_profile
+python src/constraint_dynamics_quantum_v3.py audit-kokorowski-g11-closure-gaps --output-dir outputs/kokorowski_g11_closure_gaps
 python src/constraint_dynamics_quantum_v3.py probe-kokorowski-author-calibration --input data/extracted/KOKOROWSKI_2001_MULTIPHOTON_DIGITIZED.csv --author-calibration path/to/beam_deflection_broadening_calibration.csv --output-dir outputs/kokorowski_author_calibration_probe
 python src/constraint_dynamics_quantum_v3.py scout-hochrainer-momentum-correlation --source-dir outputs/tmp/second_no_refit_sources/hochrainer --output-dir outputs/hochrainer_momentum_correlation_scout --data-dir data/extracted
 python src/constraint_dynamics_quantum_v3.py scout-hornberger-collisional --source-dir outputs/tmp/third_hunt_sources/hornberger --output-dir outputs/hornberger_collisional_scout --data-dir data/extracted

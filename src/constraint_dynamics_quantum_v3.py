@@ -7964,6 +7964,9 @@ def make_current_goal_completion_audit_outputs(
     g11_scorecard_preflight_summary_csv: Path = Path(
         "outputs/g11_scorecard_preflight/g11_scorecard_update_preflight_summary.csv"
     ),
+    kokorowski_g11_closure_gap_summary_csv: Path = Path(
+        "outputs/kokorowski_g11_closure_gaps/kokorowski_g11_closure_gap_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7990,6 +7993,9 @@ def make_current_goal_completion_audit_outputs(
     g11_closure_readiness = _read_optional_metric_csv(g11_closure_readiness_summary_csv)
     g11_scorecard_preflight = _read_optional_metric_csv(
         g11_scorecard_preflight_summary_csv
+    )
+    kokorowski_g11_closure_gaps = _read_optional_metric_csv(
+        kokorowski_g11_closure_gap_summary_csv
     )
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
@@ -8261,6 +8267,21 @@ def make_current_goal_completion_audit_outputs(
     g11_scorecard_preflight_failed_checks = int(
         _first_value(g11_scorecard_preflight, "failed_preflight_checks", 0)
     )
+    kokorowski_failed_tracked_gates = int(
+        _first_value(kokorowski_g11_closure_gaps, "failed_tracked_gates", 0)
+    )
+    kokorowski_failed_gate_ids = str(
+        _first_value(kokorowski_g11_closure_gaps, "failed_gate_ids", "not available")
+    )
+    kokorowski_gap_can_update_scorecard = bool(
+        _truthy(
+            _first_value(
+                kokorowski_g11_closure_gaps,
+                "can_update_g11_scorecard",
+                False,
+            )
+        )
+    )
 
     second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
@@ -8289,7 +8310,8 @@ def make_current_goal_completion_audit_outputs(
                 f"{kokorowski_calibration_provenance_summary_csv}; "
                 f"{kokorowski_detector_convolution_summary_csv}; "
                 f"{kokorowski_fig3_decay_summary_csv}; "
-                f"{mir_fig4_eraser_phase_summary_csv}"
+                f"{mir_fig4_eraser_phase_summary_csv}; "
+                f"{kokorowski_g11_closure_gap_summary_csv}"
             ),
             "status": "fail",
             "passed": second_validation_found,
@@ -8325,6 +8347,9 @@ def make_current_goal_completion_audit_outputs(
                 f"public_candidates_clearing_all_gates={public_g11_candidates_clearing_all_gates}; "
                 f"top_public_candidate={top_public_g11_candidate_id}; "
                 f"top_public_failed_gates={top_public_g11_candidate_failed_gates}; "
+                f"kokorowski_failed_tracked_gates={kokorowski_failed_tracked_gates}; "
+                f"kokorowski_failed_gate_ids={kokorowski_failed_gate_ids}; "
+                f"kokorowski_gap_can_update_scorecard={kokorowski_gap_can_update_scorecard}; "
                 f"stress_pass={kokorowski_stress_pass}"
             ),
         },
@@ -8386,6 +8411,9 @@ def make_current_goal_completion_audit_outputs(
                 "top_public_g11_candidate_failed_gates": top_public_g11_candidate_failed_gates,
                 "can_update_g11_scorecard": can_update_g11_scorecard,
                 "g11_scorecard_preflight_failed_checks": g11_scorecard_preflight_failed_checks,
+                "kokorowski_failed_tracked_g11_gates": kokorowski_failed_tracked_gates,
+                "kokorowski_failed_g11_gate_ids": kokorowski_failed_gate_ids,
+                "kokorowski_gap_can_update_g11_scorecard": kokorowski_gap_can_update_scorecard,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
@@ -8454,6 +8482,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Top public G11 candidate: {top_public_g11_candidate_id}; failed gates: {top_public_g11_candidate_failed_gates}
 - Can update G11 scorecard: {can_update_g11_scorecard}
 - G11 scorecard preflight failed checks: {g11_scorecard_preflight_failed_checks}
+- Kokorowski failed tracked G11 gates: {kokorowski_failed_tracked_gates}
+- Kokorowski failed G11 gate ids: {kokorowski_failed_gate_ids}
+- Kokorowski gap audit can update G11 scorecard: {kokorowski_gap_can_update_scorecard}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
@@ -13550,6 +13581,232 @@ The Fig. 4 section supports the independence premise for the many-photon no-refi
         encoding="utf-8",
     )
     return provenance, summary
+
+
+def make_kokorowski_g11_closure_gap_outputs(
+    output_dir: Path,
+    stress_summary_csv: Path = Path(
+        "outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv"
+    ),
+    kappa_profile_summary_csv: Path = Path(
+        "outputs/kokorowski_kappa_uncertainty_profile/kokorowski_kappa_uncertainty_summary.csv"
+    ),
+    calibration_provenance_summary_csv: Path = Path(
+        "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv"
+    ),
+    detector_convolution_summary_csv: Path = Path(
+        "outputs/kokorowski_detector_convolution/kokorowski_detector_convolution_summary.csv"
+    ),
+    public_gate_matrix_csv: Path = Path(
+        "outputs/g11_closure_readiness/g11_public_candidate_gate_matrix.csv"
+    ),
+):
+    """Quantify the remaining Kokorowski-specific G11 closure gaps."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    stress = _read_optional_metric_csv(stress_summary_csv)
+    kappa_profile = _read_optional_metric_csv(kappa_profile_summary_csv)
+    provenance = _read_optional_metric_csv(calibration_provenance_summary_csv)
+    detector = _read_optional_metric_csv(detector_convolution_summary_csv)
+    gate_matrix = _read_optional_metric_csv(public_gate_matrix_csv)
+
+    kok_gates = pd.DataFrame()
+    if gate_matrix is not None and not gate_matrix.empty and "candidate_id" in gate_matrix.columns:
+        kok_gates = gate_matrix[
+            gate_matrix["candidate_id"].astype(str)
+            == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        ].copy()
+
+    joint_stress = float(
+        _first_value(stress, "bootstrap_p_joint_stress_gate", np.nan)
+    )
+    p_rmse = float(_first_value(stress, "bootstrap_p_rmse_lt_005", np.nan))
+    p_ratio = float(_first_value(stress, "bootstrap_p_ratio_lte_15", np.nan))
+    observed_rmse = float(
+        _first_value(stress, "observed_calculated_independent_kappa_rmse", np.nan)
+    )
+    full_reported_se_joint = float(
+        _first_value(kappa_profile, "full_reported_se_joint_pass", np.nan)
+    )
+    max_passing_scale = float(
+        _first_value(kappa_profile, "max_kappa_se_scale_with_joint_pass_ge_080", np.nan)
+    )
+    raw_tables_found = bool(
+        _truthy(
+            _first_value(
+                provenance,
+                "public_source_raw_calibration_tables_found",
+                False,
+            )
+        )
+    )
+    provenance_gap = str(
+        _first_value(
+            provenance,
+            "primary_gap",
+            "raw beam-deflection/broadening calibration data are not available",
+        )
+    )
+    source_file_count = int(_first_value(provenance, "source_inventory_file_count", 0))
+    source_hits = int(_first_value(provenance, "source_inventory_calibration_hit_files", 0))
+    detector_within_two_se = bool(
+        _truthy(
+            _first_value(detector, "all_branches_within_two_reported_se", False)
+        )
+    )
+    detector_clears = bool(_truthy(_first_value(detector, "clears_g11", False)))
+    detector_max_delta = float(
+        _first_value(detector, "max_abs_predicted_minus_reported_k0", np.nan)
+    )
+
+    target_threshold = 0.80
+    gap_rows = [
+        {
+            "gate_id": "G11C",
+            "gate": "uncertainty_budget",
+            "passed": bool(
+                math.isfinite(full_reported_se_joint)
+                and full_reported_se_joint >= target_threshold
+            ),
+            "observed_value": full_reported_se_joint,
+            "threshold": "full reported-SE joint pass >= 0.80",
+            "supporting_metric": "full_reported_se_joint_pass",
+            "evidence_path": str(kappa_profile_summary_csv),
+            "blocker": (
+                "reported independent-kappa uncertainty is too wide for closure-grade propagation"
+            ),
+            "next_valid_input": (
+                "raw beam-deflection/broadening calibration tables or an independently reproduced kappa-prime uncertainty budget"
+            ),
+        },
+        {
+            "gate_id": "G11F",
+            "gate": "stress_threshold",
+            "passed": bool(math.isfinite(joint_stress) and joint_stress >= target_threshold),
+            "observed_value": joint_stress,
+            "threshold": "bootstrap joint stress pass >= 0.80",
+            "supporting_metric": "bootstrap_p_joint_stress_gate",
+            "evidence_path": str(stress_summary_csv),
+            "blocker": (
+                "joint stress gate remains below the closure threshold under current public uncertainties"
+            ),
+            "next_valid_input": (
+                "tightened independent kappa uncertainty that raises both RMSE and ratio stress gates without refitting visibility"
+            ),
+        },
+        {
+            "gate_id": "G11G",
+            "gate": "provenance_permission",
+            "passed": raw_tables_found,
+            "observed_value": int(raw_tables_found),
+            "threshold": "public or permitted raw calibration tables present",
+            "supporting_metric": "public_source_raw_calibration_tables_found",
+            "evidence_path": str(calibration_provenance_summary_csv),
+            "blocker": provenance_gap,
+            "next_valid_input": (
+                "permitted raw calibration tables with source, permission, extraction method, and reproducible hashes"
+            ),
+        },
+    ]
+    gaps = pd.DataFrame(gap_rows)
+    failed = gaps[~gaps["passed"].map(_truthy)]
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": (
+                    "Kokorowski G11 closure gaps remain"
+                    if not failed.empty
+                    else "Kokorowski clears tracked G11 closure gaps"
+                ),
+                "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "failed_tracked_gates": int(len(failed)),
+                "failed_gate_ids": ";".join(failed["gate_id"].astype(str)),
+                "all_tracked_gaps_clear": bool(failed.empty),
+                "joint_stress_pass_probability": joint_stress,
+                "bootstrap_p_rmse_lt_005": p_rmse,
+                "bootstrap_p_ratio_lte_15": p_ratio,
+                "observed_calculated_independent_kappa_rmse": observed_rmse,
+                "full_reported_se_joint_pass": full_reported_se_joint,
+                "max_kappa_se_scale_with_joint_pass_ge_080": max_passing_scale,
+                "public_source_raw_calibration_tables_found": raw_tables_found,
+                "source_inventory_file_count": source_file_count,
+                "source_inventory_calibration_hit_files": source_hits,
+                "detector_convolution_all_within_two_reported_se": detector_within_two_se,
+                "detector_convolution_clears_g11": detector_clears,
+                "detector_convolution_max_delta_k0": detector_max_delta,
+                "can_update_g11_scorecard": False,
+            }
+        ]
+    )
+    gaps.to_csv(output_dir / "kokorowski_g11_closure_gap_audit.csv", index=False)
+    summary.to_csv(output_dir / "kokorowski_g11_closure_gap_summary.csv", index=False)
+
+    if kok_gates.empty:
+        gate_matrix_line = "- Kokorowski gate-matrix row not available."
+    else:
+        passed_gates = ";".join(kok_gates[kok_gates["passed"].map(_truthy)]["gate_id"].astype(str)) or "none"
+        failed_gates = ";".join(kok_gates[~kok_gates["passed"].map(_truthy)]["gate_id"].astype(str)) or "none"
+        gate_matrix_line = f"- Closure gate matrix: passed={passed_gates}; failed={failed_gates}"
+    gap_lines = "\n".join(
+        "- **{gate_id} {gate}**: observed `{metric}` = {value}; threshold: {threshold}; next: {next_input}".format(
+            gate_id=row["gate_id"],
+            gate=row["gate"],
+            metric=row["supporting_metric"],
+            value=(
+                f"{float(row['observed_value']):.3f}"
+                if isinstance(row["observed_value"], (int, float, np.floating))
+                and math.isfinite(float(row["observed_value"]))
+                else row["observed_value"]
+            ),
+            threshold=row["threshold"],
+            next_input=row["next_valid_input"],
+        )
+        for _, row in failed.iterrows()
+    ) or "- none"
+    detector_line = (
+        f"Detector-convolution reconstruction is within two reported SE: {detector_within_two_se}; "
+        f"max delta = {detector_max_delta:.3f} k0; clears G11 = {detector_clears}."
+        if math.isfinite(detector_max_delta)
+        else f"Detector-convolution reconstruction is within two reported SE: {detector_within_two_se}; clears G11 = {detector_clears}."
+    )
+    report = f"""# Kokorowski G11 Closure Gap Audit
+
+Verdict: {summary['verdict'].iloc[0]}
+
+This audit isolates the remaining Kokorowski-specific blockers after the public closure contract. It does not add model freedom and does not update the breakthrough scorecard.
+
+## Summary
+
+- Candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
+- Failed tracked gates: {int(summary['failed_tracked_gates'].iloc[0])}
+- Failed gate ids: {summary['failed_gate_ids'].iloc[0]}
+- Joint stress pass probability: {joint_stress if math.isfinite(joint_stress) else "not available"}
+- Full reported-SE joint pass probability: {full_reported_se_joint if math.isfinite(full_reported_se_joint) else "not available"}
+- Max kappa-SE scale with joint pass >= 0.80: {max_passing_scale if math.isfinite(max_passing_scale) else "not available"}
+- Raw public calibration tables found: {raw_tables_found}
+- Source inventory files / calibration-hit files: {source_file_count} / {source_hits}
+- {detector_line}
+- Can update G11 scorecard: False
+
+## Gate Matrix Context
+
+{gate_matrix_line}
+
+## Remaining Gaps
+
+{gap_lines}
+
+## Boundary
+
+- This does not close G11.
+- This does not make Kokorowski a second validation.
+- The next valid move is new or permitted calibration evidence, not relaxing the stress gate.
+"""
+    (output_dir / "kokorowski_g11_closure_gap_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return gaps, summary
 
 
 def make_breakthrough_author_data_requests(output_dir: Path):
@@ -19334,6 +19591,10 @@ def run_extract_kokorowski_calibration_provenance(
     make_kokorowski_calibration_provenance_outputs(source_dir, output_dir, data_dir)
 
 
+def run_audit_kokorowski_g11_closure_gaps(output_dir: Path):
+    make_kokorowski_g11_closure_gap_outputs(output_dir)
+
+
 def run_scout_hornberger_collisional(
     source_dir: Path | None,
     output_dir: Path,
@@ -20049,6 +20310,14 @@ def build_parser():
         default="outputs/kokorowski_calibration_provenance",
     )
     kokorowski_provenance.add_argument("--data-dir", default="data/extracted")
+    kokorowski_g11_gaps = sub.add_parser(
+        "audit-kokorowski-g11-closure-gaps",
+        help="quantify Kokorowski-specific G11C/G11F/G11G closure gaps",
+    )
+    kokorowski_g11_gaps.add_argument(
+        "--output-dir",
+        default="outputs/kokorowski_g11_closure_gaps",
+    )
     hornberger = sub.add_parser(
         "scout-hornberger-collisional",
         help="scout Hornberger 2003 collisional decoherence as a standard-decoherence guardrail",
@@ -20396,6 +20665,8 @@ def main(argv=None):
                 Path(args.output_dir),
                 Path(args.data_dir),
             )
+        elif command == "audit-kokorowski-g11-closure-gaps":
+            run_audit_kokorowski_g11_closure_gaps(Path(args.output_dir))
         elif command == "scout-hornberger-collisional":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_hornberger_collisional(
