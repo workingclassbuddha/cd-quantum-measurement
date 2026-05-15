@@ -1,0 +1,2 @@
+verdict,can_update_g11_scorecard,failed_preflight_checks,current_g11_passed,closure_ready_targets,author_data_g11_ready_rows,kokorowski_probe_present,kokorowski_probe_clears,kokorowski_probe_can_update,full_author_se_joint_pass
+G11 scorecard update remains blocked,False,4,False,0,0,False,False,False,

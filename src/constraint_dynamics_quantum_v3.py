@@ -14285,6 +14285,159 @@ This audit turns the missing second independent measured-distribution-to-visibil
     return contract, candidate_readiness, summary
 
 
+def make_g11_scorecard_update_preflight_outputs(
+    output_dir: Path,
+    scorecard_csv: Path = Path(
+        "outputs/breakthrough_candidate/breakthrough_candidate_scorecard.csv"
+    ),
+    closure_readiness_summary_csv: Path = Path(
+        "outputs/g11_closure_readiness/g11_closure_readiness_summary.csv"
+    ),
+    author_validation_summary_csv: Path = Path(
+        "outputs/author_data_validation/author_data_manifest_validation_summary.csv"
+    ),
+    kokorowski_probe_summary_csv: Path = Path(
+        "outputs/kokorowski_author_calibration_probe/kokorowski_author_calibration_probe_summary.csv"
+    ),
+):
+    """Audit whether evidence is strong enough to update G11 in the scorecard."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    scorecard = _read_optional_metric_csv(scorecard_csv)
+    closure = _read_optional_metric_csv(closure_readiness_summary_csv)
+    validation = _read_optional_metric_csv(author_validation_summary_csv)
+    probe = _read_optional_metric_csv(kokorowski_probe_summary_csv)
+
+    current_g11_passed = False
+    current_g11_value = "not available"
+    current_g11_evidence = "not available"
+    if scorecard is not None and not scorecard.empty and "gate_id" in scorecard.columns:
+        g11_rows = scorecard[scorecard["gate_id"] == "G11"]
+        if not g11_rows.empty:
+            current_g11_passed = _truthy(g11_rows["passed"].iloc[0])
+            current_g11_value = str(g11_rows["observed_value"].iloc[0])
+            current_g11_evidence = str(g11_rows["evidence_path"].iloc[0])
+
+    closure_ready_targets = int(_first_value(closure, "closure_ready_targets", 0))
+    contract_gate_count = int(_first_value(closure, "contract_gate_count", 0))
+    author_g11_ready_rows = int(_first_value(validation, "g11_ready_rows", 0))
+    probe_present = bool(probe is not None and not probe.empty)
+    probe_clears = bool(
+        _truthy(_first_value(probe, "clears_author_calibration_probe", False))
+    )
+    probe_can_update = bool(
+        _truthy(_first_value(probe, "can_update_g11_scorecard", False))
+    )
+    full_author_se_joint = float(
+        _first_value(probe, "full_author_se_joint_pass", np.nan)
+    )
+
+    rows = [
+        {
+            "check_id": "P1",
+            "check": "current_scorecard_g11_still_blocked",
+            "passed": not current_g11_passed,
+            "evidence": current_g11_evidence,
+            "note": f"current scorecard G11 passed={current_g11_passed}; observed={current_g11_value}",
+        },
+        {
+            "check_id": "P2",
+            "check": "closure_contract_ready_target_exists",
+            "passed": closure_ready_targets > 0,
+            "evidence": str(closure_readiness_summary_csv),
+            "note": f"closure_ready_targets={closure_ready_targets}; contract_gates={contract_gate_count}",
+        },
+        {
+            "check_id": "P3",
+            "check": "author_or_permitted_data_ready",
+            "passed": author_g11_ready_rows > 0,
+            "evidence": str(author_validation_summary_csv),
+            "note": f"author_data_g11_ready_rows={author_g11_ready_rows}",
+        },
+        {
+            "check_id": "P4",
+            "check": "kokorowski_probe_clears_stress_if_used",
+            "passed": probe_present and probe_clears,
+            "evidence": str(kokorowski_probe_summary_csv),
+            "note": (
+                f"probe_present={probe_present}; clears_probe={probe_clears}; "
+                f"full_author_se_joint={full_author_se_joint if math.isfinite(full_author_se_joint) else 'not available'}"
+            ),
+        },
+        {
+            "check_id": "P5",
+            "check": "scorecard_update_explicitly_allowed",
+            "passed": probe_can_update and closure_ready_targets > 0,
+            "evidence": f"{kokorowski_probe_summary_csv}; {closure_readiness_summary_csv}",
+            "note": (
+                "G11 scorecard update requires the probe or analysis artifact to "
+                "explicitly allow update after provenance, permission, contract, and stress review."
+            ),
+        },
+    ]
+    preflight = pd.DataFrame(rows)
+    can_update = bool(preflight["passed"].all())
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": (
+                    "G11 scorecard update is allowed"
+                    if can_update
+                    else "G11 scorecard update remains blocked"
+                ),
+                "can_update_g11_scorecard": can_update,
+                "failed_preflight_checks": int((~preflight["passed"]).sum()),
+                "current_g11_passed": current_g11_passed,
+                "closure_ready_targets": closure_ready_targets,
+                "author_data_g11_ready_rows": author_g11_ready_rows,
+                "kokorowski_probe_present": probe_present,
+                "kokorowski_probe_clears": probe_clears,
+                "kokorowski_probe_can_update": probe_can_update,
+                "full_author_se_joint_pass": full_author_se_joint,
+            }
+        ]
+    )
+    preflight.to_csv(output_dir / "g11_scorecard_update_preflight.csv", index=False)
+    summary.to_csv(output_dir / "g11_scorecard_update_preflight_summary.csv", index=False)
+    failed = preflight[~preflight["passed"]]
+    failed_lines = "\n".join(
+        "- **{check}**: {note}".format(check=row["check"], note=row["note"])
+        for _, row in failed.iterrows()
+    ) or "- none"
+    report = f"""# G11 Scorecard Update Preflight
+
+Verdict: {summary['verdict'].iloc[0]}
+
+This preflight is the last guard before changing the breakthrough scorecard's G11 gate. It deliberately blocks updates when a dataset is only schema-valid, only a near miss, or only a stress probe without provenance/permission and closure-contract clearance.
+
+## Summary
+
+- Can update G11 scorecard: {can_update}
+- Failed preflight checks: {int((~preflight['passed']).sum())}
+- Current scorecard G11 passed: {current_g11_passed}
+- Closure-ready targets: {closure_ready_targets}
+- Author-data G11-ready rows: {author_g11_ready_rows}
+- Kokorowski probe present: {probe_present}
+- Kokorowski probe clears stress: {probe_clears}
+- Kokorowski probe explicitly allows scorecard update: {probe_can_update}
+
+## Failed Checks
+
+{failed_lines}
+
+## Boundary
+
+- This does not close G11.
+- This does not update the breakthrough scorecard.
+- A G11 scorecard update is allowed only after all preflight checks pass.
+"""
+    (output_dir / "g11_scorecard_update_preflight_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return preflight, summary
+
+
 def eibenberger_default_metadata():
     """Return seeded Fig. 2b points and constants for Eibenberger 2014."""
 
@@ -18792,6 +18945,10 @@ def run_audit_g11_closure_readiness(output_dir: Path):
     make_g11_closure_readiness_audit_outputs(output_dir)
 
 
+def run_audit_g11_scorecard_update_preflight(output_dir: Path):
+    make_g11_scorecard_update_preflight_outputs(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -19472,6 +19629,14 @@ def build_parser():
         "--output-dir",
         default="outputs/g11_closure_readiness",
     )
+    g11_scorecard_preflight = sub.add_parser(
+        "audit-g11-scorecard-preflight",
+        help="audit whether evidence is sufficient to update the breakthrough scorecard G11 gate",
+    )
+    g11_scorecard_preflight.add_argument(
+        "--output-dir",
+        default="outputs/g11_scorecard_preflight",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -19880,6 +20045,8 @@ def main(argv=None):
             run_audit_breakthrough_path_exhaustion(Path(args.output_dir))
         elif command == "audit-g11-closure-readiness":
             run_audit_g11_closure_readiness(Path(args.output_dir))
+        elif command == "audit-g11-scorecard-preflight":
+            run_audit_g11_scorecard_update_preflight(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(

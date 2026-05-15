@@ -74,6 +74,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_public_g11_exhaustion_audit_outputs,
     make_breakthrough_path_exhaustion_audit_outputs,
     make_g11_closure_readiness_audit_outputs,
+    make_g11_scorecard_update_preflight_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_fig4_eraser_phase_control_outputs,
@@ -1502,6 +1503,68 @@ def test_g11_closure_readiness_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "g11_closure_readiness_summary.csv").exists()
+
+
+def test_g11_scorecard_update_preflight_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "g11_preflight"
+    scorecard = pd.DataFrame(
+        [
+            {
+                "gate_id": "G11",
+                "observed_value": 0.72,
+                "passed": False,
+                "evidence_path": "stress.csv",
+            }
+        ]
+    )
+    closure = pd.DataFrame(
+        [{"contract_gate_count": 7, "closure_ready_targets": 0}]
+    )
+    validation = pd.DataFrame([{"g11_ready_rows": 0}])
+    probe = pd.DataFrame(
+        [
+            {
+                "clears_author_calibration_probe": True,
+                "can_update_g11_scorecard": False,
+                "full_author_se_joint_pass": 0.91,
+            }
+        ]
+    )
+    scorecard_path = tmp_path / "scorecard.csv"
+    closure_path = tmp_path / "closure.csv"
+    validation_path = tmp_path / "validation.csv"
+    probe_path = tmp_path / "probe.csv"
+    scorecard.to_csv(scorecard_path, index=False)
+    closure.to_csv(closure_path, index=False)
+    validation.to_csv(validation_path, index=False)
+    probe.to_csv(probe_path, index=False)
+
+    preflight, summary = make_g11_scorecard_update_preflight_outputs(
+        output_dir,
+        scorecard_path,
+        closure_path,
+        validation_path,
+        probe_path,
+    )
+    assert not preflight.empty
+    assert bool(summary["can_update_g11_scorecard"].iloc[0]) is False
+    assert int(summary["failed_preflight_checks"].iloc[0]) >= 1
+    assert bool(summary["kokorowski_probe_clears"].iloc[0]) is True
+    assert bool(summary["kokorowski_probe_can_update"].iloc[0]) is False
+    assert (output_dir / "g11_scorecard_update_preflight_report.md").exists()
+    assert (output_dir / "g11_scorecard_update_preflight.csv").exists()
+
+    cli_output_dir = tmp_path / "g11_preflight_cli"
+    main(
+        [
+            "audit-g11-scorecard-preflight",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (
+        cli_output_dir / "g11_scorecard_update_preflight_summary.csv"
+    ).exists()
 
 
 def test_breakthrough_gap_audit_outputs_and_cli(tmp_path):

@@ -1,0 +1,6 @@
+check_id,check,passed,evidence,note
+P1,current_scorecard_g11_still_blocked,True,outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv,current scorecard G11 passed=False; observed=0.727
+P2,closure_contract_ready_target_exists,False,outputs/g11_closure_readiness/g11_closure_readiness_summary.csv,closure_ready_targets=0; contract_gates=7
+P3,author_or_permitted_data_ready,False,outputs/author_data_validation/author_data_manifest_validation_summary.csv,author_data_g11_ready_rows=0
+P4,kokorowski_probe_clears_stress_if_used,False,outputs/kokorowski_author_calibration_probe/kokorowski_author_calibration_probe_summary.csv,probe_present=False; clears_probe=False; full_author_se_joint=not available
+P5,scorecard_update_explicitly_allowed,False,outputs/kokorowski_author_calibration_probe/kokorowski_author_calibration_probe_summary.csv; outputs/g11_closure_readiness/g11_closure_readiness_summary.csv,"G11 scorecard update requires the probe or analysis artifact to explicitly allow update after provenance, permission, contract, and stress review."
