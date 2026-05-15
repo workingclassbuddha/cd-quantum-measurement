@@ -8229,6 +8229,26 @@ def make_current_goal_completion_audit_outputs(
     g11_closure_ready_targets = int(
         _first_value(g11_closure_readiness, "closure_ready_targets", 0)
     )
+    public_g11_candidate_count = int(
+        _first_value(g11_closure_readiness, "public_candidate_count", 0)
+    )
+    public_g11_candidates_clearing_all_gates = int(
+        _first_value(
+            g11_closure_readiness,
+            "public_candidates_clearing_all_contract_gates",
+            0,
+        )
+    )
+    top_public_g11_candidate_id = str(
+        _first_value(g11_closure_readiness, "top_public_candidate_id", "not available")
+    )
+    top_public_g11_candidate_failed_gates = str(
+        _first_value(
+            g11_closure_readiness,
+            "top_public_candidate_failed_gates",
+            "not available",
+        )
+    )
     can_update_g11_scorecard = bool(
         _truthy(
             _first_value(
@@ -8300,6 +8320,11 @@ def make_current_goal_completion_audit_outputs(
                 f"mir_fig4_zero_lag_corr={mir_fig4_zero_lag_corr:.3f}; "
                 f"mir_fig4_best_shift_corr={mir_fig4_best_shift_corr:.3f}; "
                 f"mir_fig4_clears_g11={mir_fig4_clears_g11}; "
+                f"g11_closure_ready={g11_closure_ready_targets}; "
+                f"public_candidates_scored={public_g11_candidate_count}; "
+                f"public_candidates_clearing_all_gates={public_g11_candidates_clearing_all_gates}; "
+                f"top_public_candidate={top_public_g11_candidate_id}; "
+                f"top_public_failed_gates={top_public_g11_candidate_failed_gates}; "
                 f"stress_pass={kokorowski_stress_pass}"
             ),
         },
@@ -8355,6 +8380,10 @@ def make_current_goal_completion_audit_outputs(
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "g11_closure_contract_gates": g11_closure_contract_gates,
                 "g11_closure_ready_targets": g11_closure_ready_targets,
+                "public_g11_candidate_count": public_g11_candidate_count,
+                "public_g11_candidates_clearing_all_contract_gates": public_g11_candidates_clearing_all_gates,
+                "top_public_g11_candidate_id": top_public_g11_candidate_id,
+                "top_public_g11_candidate_failed_gates": top_public_g11_candidate_failed_gates,
                 "can_update_g11_scorecard": can_update_g11_scorecard,
                 "g11_scorecard_preflight_failed_checks": g11_scorecard_preflight_failed_checks,
                 "public_supports_g11_without_author_contact": public_support,
@@ -8420,6 +8449,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - G11 closure contract gates: {g11_closure_contract_gates}
 - G11 closure-ready targets: {g11_closure_ready_targets}
+- Public G11 candidates scored against contract: {public_g11_candidate_count}
+- Public G11 candidates clearing all gates: {public_g11_candidates_clearing_all_gates}
+- Top public G11 candidate: {top_public_g11_candidate_id}; failed gates: {top_public_g11_candidate_failed_gates}
 - Can update G11 scorecard: {can_update_g11_scorecard}
 - G11 scorecard preflight failed checks: {g11_scorecard_preflight_failed_checks}
 - Public G11 support without author contact: {public_support}
@@ -14208,6 +14240,9 @@ def make_g11_closure_readiness_audit_outputs(
     breakthrough_path_exhaustion_summary_csv: Path = Path(
         "outputs/breakthrough_path_exhaustion/breakthrough_path_exhaustion_summary.csv"
     ),
+    public_g11_candidate_exhaustion_csv: Path = Path(
+        "outputs/public_g11_exhaustion/public_g11_candidate_exhaustion.csv"
+    ),
 ):
     """Write a strict acceptance contract for any prospective G11 closure dataset."""
 
@@ -14216,6 +14251,7 @@ def make_g11_closure_readiness_audit_outputs(
     validation_summary = _read_optional_metric_csv(validation_summary_csv)
     public_g11 = _read_optional_metric_csv(public_g11_exhaustion_summary_csv)
     path_exhaustion = _read_optional_metric_csv(breakthrough_path_exhaustion_summary_csv)
+    public_candidates = _read_optional_metric_csv(public_g11_candidate_exhaustion_csv)
 
     public_path_exhausted = bool(
         _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
@@ -14314,10 +14350,100 @@ def make_g11_closure_readiness_audit_outputs(
         output_dir / "g11_candidate_closure_readiness.csv",
         index=False,
     )
+    gate_matrix_rows = []
+    if public_candidates is not None and not public_candidates.empty:
+        for _, candidate in public_candidates.iterrows():
+            candidate_id = str(candidate.get("candidate_id", "unknown"))
+            implementation = str(candidate.get("implementation_status", "")).lower()
+            blocker = str(candidate.get("blocker", "not available"))
+            exhaustion_reason = str(candidate.get("exhaustion_reason", "not available"))
+            independent = bool(
+                _truthy(candidate.get("record_distribution_independent_of_visibility_fit", False))
+            )
+            paired_visibility = bool(_truthy(candidate.get("visibility_curve_available", False)))
+            no_refit_map = bool(
+                independent
+                and paired_visibility
+                and ("analyzed" in implementation or "stress-tested" in implementation)
+            )
+            null_controls = bool(
+                candidate_id == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+                and "stress-tested" in implementation
+            )
+            gate_passes = {
+                "G11A": independent,
+                "G11B": paired_visibility,
+                "G11C": False,
+                "G11D": no_refit_map,
+                "G11E": null_controls,
+                "G11F": False,
+                "G11G": False,
+            }
+            failure_notes = {
+                "G11A": blocker,
+                "G11B": blocker,
+                "G11C": "closure-grade uncertainty budget is still missing or limiting",
+                "G11D": blocker,
+                "G11E": "null controls are absent or not tied to a valid no-refit map",
+                "G11F": exhaustion_reason,
+                "G11G": "closure-grade provenance/permission is incomplete for validation use",
+            }
+            pass_notes = {
+                "G11A": "record variable is treated as independent of the target visibility fit",
+                "G11B": "paired visibility or contrast curve is available",
+                "G11C": "",
+                "G11D": "implemented no-refit map exists for the public candidate",
+                "G11E": "implemented stress/null controls exist for the public candidate",
+                "G11F": "",
+                "G11G": "",
+            }
+            for _, gate in contract.iterrows():
+                gate_id = str(gate["gate_id"])
+                passed = bool(gate_passes.get(gate_id, False))
+                gate_matrix_rows.append(
+                    {
+                        "candidate_id": candidate_id,
+                        "study": candidate.get("study", ""),
+                        "no_refit_gate_score": candidate.get("no_refit_gate_score", np.nan),
+                        "gate_id": gate_id,
+                        "gate": gate["gate"],
+                        "passed": passed,
+                        "blocker_or_note": pass_notes[gate_id] if passed else failure_notes[gate_id],
+                    }
+                )
+    public_gate_matrix = pd.DataFrame(gate_matrix_rows)
+    public_gate_matrix.to_csv(
+        output_dir / "g11_public_candidate_gate_matrix.csv",
+        index=False,
+    )
     closure_ready_targets = int(
         candidate_readiness["closure_ready_now"].map(_truthy).sum()
     ) if not candidate_readiness.empty else 0
     possible_targets = int(len(candidate_readiness))
+    public_candidate_count = (
+        int(public_gate_matrix["candidate_id"].nunique())
+        if not public_gate_matrix.empty
+        else 0
+    )
+    public_candidates_clearing_all_gates = 0
+    top_public_candidate_id = "not available"
+    top_public_candidate_failed_gates = "not available"
+    if not public_gate_matrix.empty:
+        grouped = public_gate_matrix.groupby("candidate_id", sort=False)
+        public_candidates_clearing_all_gates = int(
+            grouped["passed"].all().sum()
+        )
+        scored = (
+            public_gate_matrix[["candidate_id", "no_refit_gate_score"]]
+            .drop_duplicates()
+            .sort_values("no_refit_gate_score", ascending=False)
+        )
+        top_public_candidate_id = str(scored.iloc[0]["candidate_id"])
+        failed = public_gate_matrix[
+            (public_gate_matrix["candidate_id"] == top_public_candidate_id)
+            & ~public_gate_matrix["passed"].map(_truthy)
+        ]
+        top_public_candidate_failed_gates = ";".join(failed["gate_id"].astype(str))
     verdict = (
         "no dataset currently clears the G11 closure contract"
         if closure_ready_targets == 0
@@ -14331,6 +14457,10 @@ def make_g11_closure_readiness_audit_outputs(
                 "possible_g11_closure_targets": possible_targets,
                 "author_data_g11_ready_rows": g11_ready_rows,
                 "closure_ready_targets": closure_ready_targets,
+                "public_candidate_count": public_candidate_count,
+                "public_candidates_clearing_all_contract_gates": public_candidates_clearing_all_gates,
+                "top_public_candidate_id": top_public_candidate_id,
+                "top_public_candidate_failed_gates": top_public_candidate_failed_gates,
                 "current_public_g11_path_exhausted": public_path_exhausted,
                 "current_breakthrough_path_exhausted_without_closure": breakthrough_path_exhausted,
                 "objective_can_be_marked_complete": False,
@@ -14355,6 +14485,20 @@ def make_g11_closure_readiness_audit_outputs(
         )
         for _, row in candidate_readiness.iterrows()
     ) or "- None."
+    if public_gate_matrix.empty:
+        public_gate_lines = "- None."
+    else:
+        public_gate_lines = []
+        for candidate_id, group in public_gate_matrix.groupby("candidate_id", sort=False):
+            score = float(group["no_refit_gate_score"].iloc[0])
+            passed_gates = ";".join(group[group["passed"].map(_truthy)]["gate_id"].astype(str)) or "none"
+            failed_gates = ";".join(group[~group["passed"].map(_truthy)]["gate_id"].astype(str)) or "none"
+            public_gate_lines.append(
+                f"- **{candidate_id}**: score={score:.2f}; passed={passed_gates}; failed={failed_gates}"
+            )
+            if len(public_gate_lines) >= 8:
+                break
+        public_gate_lines = "\n".join(public_gate_lines)
     report = f"""# G11 Closure Readiness Audit
 
 Verdict: {verdict}
@@ -14367,6 +14511,9 @@ This audit turns the missing second independent measured-distribution-to-visibil
 - Possible G11 closure targets in intake schema: {possible_targets}
 - Author-data G11-ready rows already received: {g11_ready_rows}
 - Closure-ready targets now: {closure_ready_targets}
+- Public candidates scored against contract: {public_candidate_count}
+- Public candidates clearing all contract gates: {public_candidates_clearing_all_gates}
+- Top public candidate: {top_public_candidate_id}; failed gates: {top_public_candidate_failed_gates}
 - Current public G11 path exhausted: {public_path_exhausted}
 - Current breakthrough path exhausted without closure: {breakthrough_path_exhausted}
 - Objective can be marked complete: False
@@ -14378,6 +14525,10 @@ This audit turns the missing second independent measured-distribution-to-visibil
 ## Prospective Closure Targets
 
 {candidate_lines}
+
+## Public Candidate Gate Matrix
+
+{public_gate_lines}
 
 ## Boundary
 

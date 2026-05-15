@@ -10,6 +10,9 @@ This audit turns the missing second independent measured-distribution-to-visibil
 - Possible G11 closure targets in intake schema: 4
 - Author-data G11-ready rows already received: 0
 - Closure-ready targets now: 0
+- Public candidates scored against contract: 14
+- Public candidates clearing all contract gates: 0
+- Top public candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING; failed gates: G11C;G11F;G11G
 - Current public G11 path exhausted: True
 - Current breakthrough path exhausted without closure: True
 - Objective can be marked complete: False
@@ -30,6 +33,17 @@ This audit turns the missing second independent measured-distribution-to-visibil
 - **hochrainer_2017_independent_widths** (`hochrainer_visibility_widths`): record width must be measured or simulated independently of the visibility FWHM being predicted; next CLI: `new analyze-hochrainer-no-refit-widths command`
 - **mir_2007_visibility_context** (`mir_pwv_visibility_pairing`): P_wv(q) and visibility/contrast must be paired by controlled which-way settings; next CLI: `new analyze-mir-pwv-visibility command`
 - **eibenberger_2014_recoil_controls** (`eibenberger_held_out_recoil_load`): sigma_abs or equivalent recoil/load calibration must not be inferred from the same visibility reduction; next CLI: `extend scout-eibenberger-recoil-absorption with held-out calibration input`
+
+## Public Candidate Gate Matrix
+
+- **KOKOROWSKI_2001_MULTIPHOTON_SCATTERING**: score=0.84; passed=G11A;G11B;G11D;G11E; failed=G11C;G11F;G11G
+- **EIBENBERGER_2014_RECOIL_ABSORPTION**: score=0.70; passed=G11B; failed=G11A;G11C;G11D;G11E;G11F;G11G
+- **HORNBERGER_2003_COLLISIONAL_DECOHERENCE**: score=0.68; passed=G11B; failed=G11A;G11C;G11D;G11E;G11F;G11G
+- **HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION**: score=0.60; passed=G11B; failed=G11A;G11C;G11D;G11E;G11F;G11G
+- **LAHIRI_2017_TWIN_PHOTON_CORRELATIONS**: score=0.58; passed=G11B; failed=G11A;G11C;G11D;G11E;G11F;G11G
+- **MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER**: score=0.52; passed=G11A; failed=G11B;G11C;G11D;G11E;G11F;G11G
+- **DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD**: score=0.50; passed=G11B; failed=G11A;G11C;G11D;G11E;G11F;G11G
+- **CHEN_2022_ASYMMETRIC_BEAM_DUALITY**: score=0.48; passed=G11B; failed=G11A;G11C;G11D;G11E;G11F;G11G
 
 ## Boundary
 

@@ -1,0 +1,99 @@
+candidate_id,study,no_refit_gate_score,gate_id,gate,passed,blocker_or_note
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11A,independent_record_variable,True,record variable is treated as independent of the target visibility fit
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11D,no_refit_prediction_map,True,implemented no-refit map exists for the public candidate
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11E,null_controls,True,implemented stress/null controls exist for the public candidate
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11F,stress_threshold,False,stress/calibration uncertainty blocks closure
+KOKOROWSKI_2001_MULTIPHOTON_SCATTERING,Kokorowski et al. 2001,0.84,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11A,independent_record_variable,False,visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11D,no_refit_prediction_map,False,visibility reduction is used to extract absorption cross section; recoil scale is known but not an independently measured distribution in the Xiao sense
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+EIBENBERGER_2014_RECOIL_ABSORPTION,Eibenberger et al. 2014,0.7,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11A,independent_record_variable,False,excellent record-load control but not an independently measured record distribution
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11D,no_refit_prediction_map,False,excellent record-load control but not an independently measured record distribution
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+HORNBERGER_2003_COLLISIONAL_DECOHERENCE,Hackermueller/Hornberger et al. 2003,0.68,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11A,independent_record_variable,False,"visibility profiles are used to infer the momentum-correlation width, so the record variable is not independent of the visibility observable"
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11D,no_refit_prediction_map,False,"visibility profiles are used to infer the momentum-correlation width, so the record variable is not independent of the visibility observable"
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+HOCHRAINER_2017_INDUCED_COHERENCE_MOMENTUM_CORRELATION,Hochrainer et al. 2017,0.6,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11A,independent_record_variable,False,visibility is used to determine the momentum correlation rather than an independently measured correlation predicting visibility
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11D,no_refit_prediction_map,False,visibility is used to determine the momentum correlation rather than an independently measured correlation predicting visibility
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+LAHIRI_2017_TWIN_PHOTON_CORRELATIONS,Lahiri et al. 2017,0.58,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11A,independent_record_variable,True,record variable is treated as independent of the target visibility fit
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11B,paired_visibility_curve,False,directly measures a momentum-transfer distribution but does not yet provide the paired visibility curve needed for the no-refit gate
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11D,no_refit_prediction_map,False,directly measures a momentum-transfer distribution but does not yet provide the paired visibility curve needed for the no-refit gate
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11F,stress_threshold,False,paired visibility curve missing
+MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER,Mir et al. 2007,0.52,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11A,independent_record_variable,False,"tests wave-particle-entanglement conservation, but not a measured momentum/record distribution that predicts visibility without refit"
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11D,no_refit_prediction_map,False,"tests wave-particle-entanglement conservation, but not a measured momentum/record distribution that predicts visibility without refit"
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+DING_2025_WAVE_PARTICLE_ENTANGLEMENT_TRIAD,Ding et al. 2025,0.5,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11A,independent_record_variable,False,"measures distinguishability/visibility duality, not a measured conjugate record distribution held out from visibility"
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11D,no_refit_prediction_map,False,"measures distinguishability/visibility duality, not a measured conjugate record distribution held out from visibility"
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+CHEN_2022_ASYMMETRIC_BEAM_DUALITY,Chen et al. 2022,0.48,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11A,independent_record_variable,False,"useful record-accessibility analogue, but the variable is source purity/entanglement rather than a measured momentum-transfer distribution"
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11D,no_refit_prediction_map,False,"useful record-accessibility analogue, but the variable is source purity/entanglement rather than a measured momentum-transfer distribution"
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+YOON_2021_QUANTITATIVE_COMPLEMENTARITY,Yoon and Cho 2021,0.47,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11A,independent_record_variable,True,record variable is treated as independent of the target visibility fit
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11B,paired_visibility_curve,False,measures momentum/trajectories but does not provide a visibility-loss curve to predict
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11D,no_refit_prediction_map,False,measures momentum/trajectories but does not provide a visibility-loss curve to predict
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11F,stress_threshold,False,paired visibility curve missing
+KOCSIS_2011_AVERAGE_TRAJECTORIES,Kocsis et al. 2011,0.45,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11A,independent_record_variable,True,record variable is treated as independent of the target visibility fit
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11B,paired_visibility_curve,False,characterizes measurement disturbance with weak values but does not provide a paired interference-visibility loss curve
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11D,no_refit_prediction_map,False,characterizes measurement disturbance with weak values but does not provide a paired interference-visibility loss curve
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11F,stress_threshold,False,paired visibility curve missing
+ROZEMA_2012_WEAK_MEASUREMENT_DISTURBANCE,Rozema et al. 2012,0.44,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11A,independent_record_variable,True,record variable is treated as independent of the target visibility fit
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11B,paired_visibility_curve,False,tests error-disturbance uncertainty relations rather than record-distribution prediction of visibility
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11D,no_refit_prediction_map,False,tests error-disturbance uncertainty relations rather than record-distribution prediction of visibility
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11F,stress_threshold,False,paired visibility curve missing
+KANEDA_2014_ERROR_DISTURBANCE,Kaneda et al. 2014,0.43,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11A,independent_record_variable,False,useful visibility-plus-phase target but no independent measured record distribution
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11D,no_refit_prediction_map,False,useful visibility-plus-phase target but no independent measured record distribution
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+CORMANN_2016_MODULAR_VALUE,Cormann et al. 2016,0.42,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11A,independent_record_variable,False,distinguishability/visibility duality is not a measured record-bandwidth distribution
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11B,paired_visibility_curve,True,paired visibility or contrast curve is available
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11C,uncertainty_budget,False,closure-grade uncertainty budget is still missing or limiting
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11D,no_refit_prediction_map,False,distinguishability/visibility duality is not a measured record-bandwidth distribution
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11E,null_controls,False,null controls are absent or not tied to a valid no-refit map
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11F,stress_threshold,False,record variable is visibility-derived or not an independent distribution
+DURR_1998_COMPLEMENTARITY,Duerr/Nonn/Rempe 1998,0.35,G11G,provenance_permission,False,closure-grade provenance/permission is incomplete for validation use

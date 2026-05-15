@@ -983,6 +983,18 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     public_g11_exhaustion = pd.DataFrame(
         [{"current_public_g11_path_exhausted": True}]
     )
+    g11_closure_readiness = pd.DataFrame(
+        [
+            {
+                "contract_gate_count": 7,
+                "closure_ready_targets": 0,
+                "public_candidate_count": 14,
+                "public_candidates_clearing_all_contract_gates": 0,
+                "top_public_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "top_public_candidate_failed_gates": "G11C;G11F;G11G",
+            }
+        ]
+    )
     author_summary = pd.DataFrame(
         [{"g11_ready_rows": 0}]
     )
@@ -1071,6 +1083,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         ("g11", g11_summary),
         ("public", public_summary),
         ("public_g11_exhaustion", public_g11_exhaustion),
+        ("g11_closure_readiness", g11_closure_readiness),
         ("author", author_summary),
         ("product", product_summary),
         ("kappa", kappa_profile),
@@ -1091,6 +1104,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         paths["g11"],
         paths["public"],
         public_g11_exhaustion_summary_csv=paths["public_g11_exhaustion"],
+        g11_closure_readiness_summary_csv=paths["g11_closure_readiness"],
         author_validation_summary_csv=paths["author"],
         product_law_status_csv=paths["product"],
         kokorowski_kappa_profile_summary_csv=paths["kappa"],
@@ -1127,6 +1141,14 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         == "stress_or_calibration_uncertainty_limited"
     )
     assert bool(summary["current_public_g11_path_exhausted"].iloc[0]) is True
+    assert int(summary["public_g11_candidate_count"].iloc[0]) == 14
+    assert int(summary["public_g11_candidates_clearing_all_contract_gates"].iloc[0]) == 0
+    assert summary["top_public_g11_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert summary["top_public_g11_candidate_failed_gates"].iloc[0] == (
+        "G11C;G11F;G11G"
+    )
     assert bool(summary["can_update_g11_scorecard"].iloc[0]) is False
     assert int(summary["g11_scorecard_preflight_failed_checks"].iloc[0]) == 4
     assert bool(summary["kokorowski_detector_all_within_two_reported_se"].iloc[0]) is True
@@ -1160,6 +1182,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "stress_closed_second=0" in second_row["note"]
     assert "top_blocker=stress_or_calibration_uncertainty_limited" in second_row["note"]
     assert "current_public_path_exhausted=True" in second_row["note"]
+    assert "top_public_failed_gates=G11C;G11F;G11G" in second_row["note"]
     assert "full_reported_se_joint=0.417" in second_row["note"]
     assert "provenance_scope_warning=True" in second_row["note"]
     assert "public_raw_tables_found=False" in second_row["note"]
@@ -1482,12 +1505,38 @@ def test_g11_closure_readiness_audit_outputs_and_cli(tmp_path):
     path_exhaustion = pd.DataFrame(
         [{"current_breakthrough_path_exhausted_without_closure": True}]
     )
+    public_candidates = pd.DataFrame(
+        [
+            {
+                "candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "study": "Kokorowski et al. 2001",
+                "no_refit_gate_score": 0.84,
+                "record_distribution_independent_of_visibility_fit": True,
+                "visibility_curve_available": True,
+                "implementation_status": "digitized/analyzed/stress-tested",
+                "blocker": "independent kappa uncertainty is limiting",
+                "exhaustion_reason": "stress/calibration uncertainty blocks closure",
+            },
+            {
+                "candidate_id": "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER",
+                "study": "Mir et al. 2007",
+                "no_refit_gate_score": 0.52,
+                "record_distribution_independent_of_visibility_fit": True,
+                "visibility_curve_available": False,
+                "implementation_status": "scout implemented",
+                "blocker": "paired visibility curve missing",
+                "exhaustion_reason": "paired visibility curve missing",
+            },
+        ]
+    )
     validation_path = tmp_path / "validation_summary.csv"
     public_path = tmp_path / "public_g11.csv"
     path_exhaustion_path = tmp_path / "path_exhaustion.csv"
+    public_candidates_path = tmp_path / "public_candidates.csv"
     validation_summary.to_csv(validation_path, index=False)
     public_g11.to_csv(public_path, index=False)
     path_exhaustion.to_csv(path_exhaustion_path, index=False)
+    public_candidates.to_csv(public_candidates_path, index=False)
 
     output_dir = tmp_path / "g11_readiness"
     contract, readiness, summary = make_g11_closure_readiness_audit_outputs(
@@ -1496,10 +1545,17 @@ def test_g11_closure_readiness_audit_outputs_and_cli(tmp_path):
         validation_path,
         public_path,
         path_exhaustion_path,
+        public_candidates_path,
     )
     assert len(contract) == 7
     assert not readiness.empty
     assert int(summary["closure_ready_targets"].iloc[0]) == 0
+    assert int(summary["public_candidate_count"].iloc[0]) == 2
+    assert int(summary["public_candidates_clearing_all_contract_gates"].iloc[0]) == 0
+    assert summary["top_public_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert summary["top_public_candidate_failed_gates"].iloc[0] == "G11C;G11F;G11G"
     assert bool(summary["objective_can_be_marked_complete"].iloc[0]) is False
     assert set(contract["gate_id"]) == {
         "G11A",
@@ -1513,6 +1569,16 @@ def test_g11_closure_readiness_audit_outputs_and_cli(tmp_path):
     assert (output_dir / "g11_closure_readiness_report.md").exists()
     assert (output_dir / "g11_closure_acceptance_contract.csv").exists()
     assert (output_dir / "g11_candidate_closure_readiness.csv").exists()
+    gate_matrix = pd.read_csv(output_dir / "g11_public_candidate_gate_matrix.csv")
+    kok_gates = gate_matrix[
+        gate_matrix["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    ]
+    assert set(kok_gates[kok_gates["passed"]]["gate_id"]) == {
+        "G11A",
+        "G11B",
+        "G11D",
+        "G11E",
+    }
 
     cli_output_dir = tmp_path / "g11_readiness_cli"
     main(
@@ -1523,6 +1589,7 @@ def test_g11_closure_readiness_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "g11_closure_readiness_summary.csv").exists()
+    assert (cli_output_dir / "g11_public_candidate_gate_matrix.csv").exists()
 
 
 def test_g11_scorecard_update_preflight_outputs_and_cli(tmp_path):
