@@ -72,6 +72,7 @@ from constraint_dynamics_quantum_v3 import (  # noqa: E402
     make_product_law_readiness_audit_outputs,
     make_public_data_availability_outputs,
     make_public_g11_exhaustion_audit_outputs,
+    make_breakthrough_path_exhaustion_audit_outputs,
     make_no_refit_target_scout_outputs,
     make_eibenberger_recoil_scout_outputs,
     make_mir_fig4_eraser_phase_control_outputs,
@@ -1875,6 +1876,80 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
         ]
     )
     assert (cli_output_dir / "public_g11_exhaustion_summary.csv").exists()
+
+
+def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
+    output_dir = tmp_path / "path_exhaustion"
+    public_g11 = pd.DataFrame(
+        [
+            {
+                "current_public_g11_path_exhausted": True,
+                "stress_closed_second_no_refit_targets": 0,
+            }
+        ]
+    )
+    chapman = pd.DataFrame(
+        [
+            {
+                "g10_repaired": False,
+                "branch_optimized_gate_pass": False,
+                "branch_optimized_best_phase_rmse_rad": 1.475,
+            }
+        ]
+    )
+    product = pd.DataFrame(
+        [
+            {
+                "g12_validated": False,
+                "empirical_product_law_ready_datasets": 0,
+                "proxy_rich_apparatus_candidates": 2,
+            }
+        ]
+    )
+    current_goal = pd.DataFrame(
+        [
+            {
+                "objective_achieved": False,
+                "second_validation_found": False,
+                "author_g11_ready_rows": 0,
+            }
+        ]
+    )
+    public_path = tmp_path / "public_g11.csv"
+    chapman_path = tmp_path / "chapman.csv"
+    product_path = tmp_path / "product.csv"
+    current_goal_path = tmp_path / "current_goal.csv"
+    public_g11.to_csv(public_path, index=False)
+    chapman.to_csv(chapman_path, index=False)
+    product.to_csv(product_path, index=False)
+    current_goal.to_csv(current_goal_path, index=False)
+
+    summary, required_inputs = make_breakthrough_path_exhaustion_audit_outputs(
+        output_dir,
+        public_path,
+        chapman_path,
+        product_path,
+        current_goal_path,
+    )
+    assert not summary.empty
+    assert len(required_inputs) == 3
+    assert (
+        bool(summary["current_breakthrough_path_exhausted_without_closure"].iloc[0])
+        is True
+    )
+    assert bool(summary["objective_achieved"].iloc[0]) is False
+    assert (output_dir / "breakthrough_path_exhaustion_report.md").exists()
+    assert (output_dir / "breakthrough_path_required_new_inputs.csv").exists()
+
+    cli_output_dir = tmp_path / "path_exhaustion_cli"
+    main(
+        [
+            "audit-breakthrough-path-exhaustion",
+            "--output-dir",
+            str(cli_output_dir),
+        ]
+    )
+    assert (cli_output_dir / "breakthrough_path_exhaustion_summary.csv").exists()
 
 
 def test_eibenberger_recoil_reduction_is_bounded():

@@ -7955,6 +7955,9 @@ def make_current_goal_completion_audit_outputs(
     mir_fig4_eraser_phase_summary_csv: Path = Path(
         "outputs/mir_fig4_eraser_phase/mir_fig4_eraser_phase_summary.csv"
     ),
+    breakthrough_path_exhaustion_summary_csv: Path = Path(
+        "outputs/breakthrough_path_exhaustion/breakthrough_path_exhaustion_summary.csv"
+    ),
 ):
     """Write a completion audit for the active research objective."""
 
@@ -7975,6 +7978,9 @@ def make_current_goal_completion_audit_outputs(
     )
     kokorowski_fig3_decay = _read_optional_metric_csv(kokorowski_fig3_decay_summary_csv)
     mir_fig4_eraser_phase = _read_optional_metric_csv(mir_fig4_eraser_phase_summary_csv)
+    breakthrough_path_exhaustion = _read_optional_metric_csv(
+        breakthrough_path_exhaustion_summary_csv
+    )
     author_summary = _read_optional_metric_csv(author_validation_summary_csv)
     product_law_status = _read_optional_metric_csv(product_law_status_csv)
     chapman_phase_blocker = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
@@ -8195,6 +8201,15 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    current_breakthrough_path_exhausted_without_closure = bool(
+        _truthy(
+            _first_value(
+                breakthrough_path_exhaustion,
+                "current_breakthrough_path_exhausted_without_closure",
+                False,
+            )
+        )
+    )
 
     second_candidate_found = bool(eligible_second > 0 or public_support > 0 or author_ready > 0)
     second_validation_found = bool(
@@ -8305,6 +8320,7 @@ def make_current_goal_completion_audit_outputs(
                 "stress_closed_second_no_refit_targets": stress_closed_second,
                 "g11_top_blocker_class": g11_top_blocker,
                 "current_public_g11_path_exhausted": current_public_g11_path_exhausted,
+                "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "public_supports_g11_without_author_contact": public_support,
                 "author_g11_ready_rows": author_ready,
                 "empirical_product_law_ready_datasets": empirical_product_ready,
@@ -8364,6 +8380,7 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Stress-closed second no-refit targets: {stress_closed_second}
 - G11 top blocker class: {g11_top_blocker}
 - Current public G11 path exhausted: {current_public_g11_path_exhausted}
+- Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - Public G11 support without author contact: {public_support}
 - Author-data G11-ready rows: {author_ready}
 - Empirical product-law-ready datasets: {empirical_product_ready}
@@ -10260,6 +10277,178 @@ Kokorowski remains the only eligible public second-experiment no-refit candidate
         encoding="utf-8",
     )
     return summary, public_near_misses
+
+
+def make_breakthrough_path_exhaustion_audit_outputs(
+    output_dir: Path,
+    public_g11_exhaustion_summary_csv: Path = Path(
+        "outputs/public_g11_exhaustion/public_g11_exhaustion_summary.csv"
+    ),
+    chapman_phase_blocker_status_csv: Path = Path(
+        "outputs/chapman_raw_phase_blocker/chapman_raw_phase_blocker_status.csv"
+    ),
+    product_law_status_csv: Path = Path(
+        "outputs/product_law_readiness/product_law_readiness_status.csv"
+    ),
+    current_goal_summary_csv: Path = Path(
+        "outputs/current_goal_audit/current_goal_completion_summary.csv"
+    ),
+):
+    """Write a terminal audit for the currently implemented breakthrough path."""
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    public_g11 = _read_optional_metric_csv(public_g11_exhaustion_summary_csv)
+    chapman = _read_optional_metric_csv(chapman_phase_blocker_status_csv)
+    product = _read_optional_metric_csv(product_law_status_csv)
+    current_goal = _read_optional_metric_csv(current_goal_summary_csv)
+
+    public_g11_exhausted = bool(
+        _truthy(_first_value(public_g11, "current_public_g11_path_exhausted", False))
+    )
+    g11_closed = bool(
+        int(_first_value(public_g11, "stress_closed_second_no_refit_targets", 0)) > 0
+        or int(_first_value(current_goal, "author_g11_ready_rows", 0)) > 0
+        or bool(_truthy(_first_value(current_goal, "second_validation_found", False)))
+    )
+    chapman_g10_repaired = bool(
+        _truthy(_first_value(chapman, "g10_repaired", False))
+        or _truthy(_first_value(current_goal, "chapman_branch_optimized_gate_pass", False))
+    )
+    chapman_branch_gate_pass = bool(
+        _truthy(_first_value(chapman, "branch_optimized_gate_pass", False))
+    )
+    chapman_branch_rmse = float(
+        _first_value(chapman, "branch_optimized_best_phase_rmse_rad", np.nan)
+    )
+    empirical_product_ready = int(
+        _first_value(product, "empirical_product_law_ready_datasets", 0)
+    )
+    proxy_rich_product_candidates = int(
+        _first_value(product, "proxy_rich_apparatus_candidates", 0)
+    )
+    g12_validated = bool(_truthy(_first_value(product, "g12_validated", False)))
+    objective_achieved = bool(
+        _truthy(_first_value(current_goal, "objective_achieved", False))
+    )
+
+    current_path_exhausted_without_closure = bool(
+        public_g11_exhausted
+        and not g11_closed
+        and not chapman_g10_repaired
+        and not g12_validated
+        and empirical_product_ready == 0
+        and not objective_achieved
+    )
+    verdict = (
+        "current breakthrough path exhausted without closure"
+        if current_path_exhausted_without_closure
+        else "current breakthrough path still has an implemented closure route"
+    )
+    required_inputs = pd.DataFrame(
+        [
+            {
+                "blocker": "G11 second independent distribution-to-visibility validation",
+                "current_state": (
+                    "public Kokorowski route is exhausted without closure"
+                    if public_g11_exhausted
+                    else "public G11 route still needs testing"
+                ),
+                "next_valid_input": (
+                    "raw Kokorowski beam-deflection/broadening calibration tables "
+                    "or a newly identified cleaner public dataset"
+                ),
+                "overclaim_boundary": "do not count near-miss visibility-derived datasets as G11 closure",
+            },
+            {
+                "blocker": "G10 Chapman raw-phase repair",
+                "current_state": (
+                    f"branch-optimized raw phase gate pass={chapman_branch_gate_pass}; "
+                    f"best RMSE={chapman_branch_rmse:.3f}"
+                    if math.isfinite(chapman_branch_rmse)
+                    else f"branch-optimized raw phase gate pass={chapman_branch_gate_pass}"
+                ),
+                "next_valid_input": "author numerical phase trace or publication-grade redigitization",
+                "overclaim_boundary": "do not rescue G10 with branch wrapping alone",
+            },
+            {
+                "blocker": "G12 independent product-law validation",
+                "current_state": (
+                    f"empirical ready datasets={empirical_product_ready}; "
+                    f"proxy-rich candidates={proxy_rich_product_candidates}"
+                ),
+                "next_valid_input": (
+                    "empirical dataset with independently varied Lambda, Gamma, "
+                    "and Theta factors"
+                ),
+                "overclaim_boundary": "do not treat synthetic or proxy-rich rows as empirical product-law validation",
+            },
+        ]
+    )
+    required_inputs.to_csv(
+        output_dir / "breakthrough_path_required_new_inputs.csv",
+        index=False,
+    )
+    summary = pd.DataFrame(
+        [
+            {
+                "verdict": verdict,
+                "current_breakthrough_path_exhausted_without_closure": current_path_exhausted_without_closure,
+                "objective_achieved": objective_achieved,
+                "public_g11_path_exhausted": public_g11_exhausted,
+                "g11_closed": g11_closed,
+                "chapman_g10_repaired": chapman_g10_repaired,
+                "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
+                "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
+                "g12_validated": g12_validated,
+                "empirical_product_law_ready_datasets": empirical_product_ready,
+                "proxy_rich_product_law_candidates": proxy_rich_product_candidates,
+                "required_new_input_count": int(len(required_inputs)),
+            }
+        ]
+    )
+    summary.to_csv(output_dir / "breakthrough_path_exhaustion_summary.csv", index=False)
+    required_lines = "\n".join(
+        "- **{blocker}**: {current_state}. Next valid input: {next_valid_input}. Boundary: {overclaim_boundary}.".format(
+            blocker=row["blocker"],
+            current_state=row["current_state"],
+            next_valid_input=row["next_valid_input"],
+            overclaim_boundary=row["overclaim_boundary"],
+        )
+        for _, row in required_inputs.iterrows()
+    )
+    report = f"""# Breakthrough Path Exhaustion Audit
+
+Verdict: {verdict}
+
+This audit cross-links the active breakthrough blockers and asks whether the currently implemented public-data path still contains a valid closure move. It is deliberately conservative: path exhaustion is not a breakthrough claim, and it is not evidence that no outside dataset can close the gaps.
+
+## Summary
+
+- Objective achieved: {objective_achieved}
+- Current breakthrough path exhausted without closure: {current_path_exhausted_without_closure}
+- Public G11 path exhausted: {public_g11_exhausted}
+- G11 closed: {g11_closed}
+- Chapman G10 repaired: {chapman_g10_repaired}
+- Chapman branch gate pass: {chapman_branch_gate_pass}
+- G12 validated: {g12_validated}
+- Empirical product-law-ready datasets: {empirical_product_ready}
+- Proxy-rich product-law candidates: {proxy_rich_product_candidates}
+
+## Required New Inputs
+
+{required_lines}
+
+## Boundary
+
+- This does not mark the active goal complete.
+- This does not claim collapse, a new law, or a publication-ready breakthrough.
+- This records that the current public scout-and-audit path has no remaining implemented closure route unless new numerical inputs arrive.
+"""
+    (output_dir / "breakthrough_path_exhaustion_report.md").write_text(
+        report,
+        encoding="utf-8",
+    )
+    return summary, required_inputs
 
 
 def resolve_mir_source_dir(source_dir: Path | None):
@@ -18202,6 +18391,10 @@ def run_audit_public_g11_exhaustion(output_dir: Path):
     make_public_g11_exhaustion_audit_outputs(output_dir)
 
 
+def run_audit_breakthrough_path_exhaustion(output_dir: Path):
+    make_breakthrough_path_exhaustion_audit_outputs(output_dir)
+
+
 def run_scout_eibenberger_recoil_absorption(
     source_dir: Path | None,
     output_dir: Path,
@@ -18850,6 +19043,14 @@ def build_parser():
         "--output-dir",
         default="outputs/public_g11_exhaustion",
     )
+    path_exhaustion = sub.add_parser(
+        "audit-breakthrough-path-exhaustion",
+        help="audit whether the current implemented breakthrough path is exhausted without closure",
+    )
+    path_exhaustion.add_argument(
+        "--output-dir",
+        default="outputs/breakthrough_path_exhaustion",
+    )
     eibenberger = sub.add_parser(
         "scout-eibenberger-recoil-absorption",
         help="scout Eibenberger 2014 photon-recoil visibility reduction as a control lane",
@@ -19235,6 +19436,8 @@ def main(argv=None):
             run_audit_public_data_availability(Path(args.output_dir))
         elif command == "audit-public-g11-exhaustion":
             run_audit_public_g11_exhaustion(Path(args.output_dir))
+        elif command == "audit-breakthrough-path-exhaustion":
+            run_audit_breakthrough_path_exhaustion(Path(args.output_dir))
         elif command == "scout-eibenberger-recoil-absorption":
             source_dir = None if args.source_dir is None else Path(args.source_dir)
             run_scout_eibenberger_recoil_absorption(
