@@ -10385,6 +10385,52 @@ def make_public_g11_exhaustion_audit_outputs(
         output_dir / "public_g11_candidate_exhaustion.csv",
         index=False,
     )
+    evidence_specs = {
+        "stress/calibration uncertainty blocks closure": (
+            "raw_calibration_tables",
+            "raw beam-deflection/broadening calibration tables with independent kappa uncertainty provenance",
+            "do not count digitized contrast agreement as G11 closure without calibration uncertainty provenance",
+        ),
+        "paired visibility curve missing": (
+            "paired_visibility_curve",
+            "paired visibility or contrast curve measured under the same record-distribution settings",
+            "do not count an independent record distribution without a paired visibility-loss curve",
+        ),
+        "record variable is visibility-derived or not an independent distribution": (
+            "independent_record_distribution",
+            "record distribution measured independently of the target visibility fit",
+            "do not count visibility-derived record variables as independent distribution-to-visibility validation",
+        ),
+        "not a G11 distribution-to-visibility target": (
+            "new_candidate_identity",
+            "new candidate with both an independently measured record distribution and a paired visibility curve",
+            "do not count adjacent complementarity or duality measurements as G11 closure",
+        ),
+    }
+    evidence_queue_rows = []
+    for _, row in public_near_misses.iterrows():
+        evidence_class, next_valid_evidence, overclaim_boundary = evidence_specs[
+            row["exhaustion_reason"]
+        ]
+        evidence_queue_rows.append(
+            {
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "no_refit_gate_score": row["no_refit_gate_score"],
+                "evidence_class": evidence_class,
+                "current_blocker": row["blocker"],
+                "next_valid_evidence": next_valid_evidence,
+                "overclaim_boundary": overclaim_boundary,
+            }
+        )
+    evidence_queue = pd.DataFrame(evidence_queue_rows)
+    evidence_queue.to_csv(
+        output_dir / "public_g11_closure_evidence_queue.csv",
+        index=False,
+    )
+    evidence_classes_text = ";".join(
+        sorted(evidence_queue["evidence_class"].dropna().astype(str).unique())
+    )
 
     public_path_exhausted = bool(
         eligible_second > 0
@@ -10409,6 +10455,8 @@ def make_public_g11_exhaustion_audit_outputs(
                 "public_raw_calibration_tables_found": raw_tables_found,
                 "cleaner_public_candidates_than_kokorowski": int(len(cleaner_candidates)),
                 "near_miss_candidate_count": int(len(public_near_misses)),
+                "closure_evidence_queue_count": int(len(evidence_queue)),
+                "closure_evidence_classes": evidence_classes_text,
                 "recommended_next": (
                     "non-public Kokorowski calibration data or a newly identified cleaner public dataset"
                     if public_path_exhausted
@@ -10441,6 +10489,8 @@ This audit asks a narrow operational question: after the current public-data sco
 - Kokorowski raw calibration tables found in public source: {raw_tables_found}
 - Cleaner public candidates than Kokorowski: {int(len(cleaner_candidates))}
 - Current public G11 path exhausted: {public_path_exhausted}
+- Closure evidence queue rows: {int(len(evidence_queue))}
+- Closure evidence classes: {evidence_classes_text}
 
 ## Near Misses
 

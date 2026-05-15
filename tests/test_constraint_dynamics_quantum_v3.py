@@ -2252,6 +2252,30 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert not near_misses.empty
     assert bool(summary["current_public_g11_path_exhausted"].iloc[0]) is True
     assert int(summary["cleaner_public_candidates_than_kokorowski"].iloc[0]) == 0
+    assert int(summary["closure_evidence_queue_count"].iloc[0]) == 14
+    assert (
+        summary["closure_evidence_classes"].iloc[0]
+        == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
+    )
+    evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
+    assert {
+        "candidate_id",
+        "evidence_class",
+        "next_valid_evidence",
+        "overclaim_boundary",
+    }.issubset(evidence_queue.columns)
+    kokorowski_row = evidence_queue[
+        evidence_queue["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    ].iloc[0]
+    assert kokorowski_row["evidence_class"] == "raw_calibration_tables"
+    assert "beam-deflection/broadening calibration tables" in kokorowski_row[
+        "next_valid_evidence"
+    ]
+    mir_row = evidence_queue[
+        evidence_queue["candidate_id"] == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+    ].iloc[0]
+    assert mir_row["evidence_class"] == "paired_visibility_curve"
+    assert "paired visibility" in mir_row["next_valid_evidence"]
     assert (output_dir / "public_g11_exhaustion_report.md").exists()
     assert (output_dir / "public_g11_candidate_exhaustion.csv").exists()
 

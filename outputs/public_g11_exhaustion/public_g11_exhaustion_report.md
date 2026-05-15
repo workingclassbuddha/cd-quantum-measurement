@@ -12,6 +12,8 @@ This audit asks a narrow operational question: after the current public-data sco
 - Kokorowski raw calibration tables found in public source: False
 - Cleaner public candidates than Kokorowski: 0
 - Current public G11 path exhausted: True
+- Closure evidence queue rows: 14
+- Closure evidence classes: independent_record_distribution;paired_visibility_curve;raw_calibration_tables
 
 ## Near Misses
 
