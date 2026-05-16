@@ -997,6 +997,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_candidate_action_rows": 14,
                 "closure_evidence_candidate_action_blocked_count": 14,
                 "closure_evidence_top_action_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_acquisition_manifest_rows": 9,
+                "closure_evidence_top_acquisition_artifact": "independence_provenance.md",
+                "closure_evidence_top_acquisition_candidate_count": 9,
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1198,6 +1201,14 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["g11_closure_evidence_top_action_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    assert int(summary["g11_closure_evidence_acquisition_manifest_rows"].iloc[0]) == 9
+    assert summary["g11_closure_evidence_top_acquisition_artifact"].iloc[0] == (
+        "independence_provenance.md"
+    )
+    assert (
+        int(summary["g11_closure_evidence_top_acquisition_candidate_count"].iloc[0])
+        == 9
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1249,6 +1260,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_candidate_actions=14" in g11_row["note"]
     assert "closure_blocked_candidate_actions=14" in g11_row["note"]
     assert "closure_top_action_candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
+        "note"
+    ]
+    assert "closure_acquisition_manifest_rows=9" in g11_row["note"]
+    assert "closure_top_acquisition_artifact=independence_provenance.md" in g11_row[
         "note"
     ]
     assert (
@@ -2483,6 +2498,50 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["closure_evidence_top_action_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    acquisition_manifest = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_acquisition_manifest.csv"
+    )
+    assert {
+        "artifact",
+        "evidence_class",
+        "blocked_candidate_count",
+        "blocked_candidate_ids",
+        "first_priority_rank",
+        "target_repo_path",
+        "minimum_columns",
+        "validation_command",
+        "overclaim_boundary",
+    }.issubset(acquisition_manifest.columns)
+    assert len(acquisition_manifest) == 9
+    top_acquisition = acquisition_manifest.iloc[0]
+    assert top_acquisition["artifact"] == "independence_provenance.md"
+    assert top_acquisition["evidence_class"] == "independent_record_distribution"
+    assert int(top_acquisition["blocked_candidate_count"]) == 9
+    assert int(top_acquisition["first_priority_rank"]) == 6
+    assert top_acquisition["target_repo_path"] == (
+        "data/closure_evidence/public_g11/"
+        "independent_record_distribution/independence_provenance.md"
+    )
+    assert "audit-public-g11-exhaustion" in top_acquisition["validation_command"]
+    raw_acquisition = acquisition_manifest[
+        acquisition_manifest["artifact"]
+        == "beam_deflection_broadening_calibration.csv"
+    ].iloc[0]
+    assert raw_acquisition["evidence_class"] == "raw_calibration_tables"
+    assert int(raw_acquisition["blocked_candidate_count"]) == 1
+    assert "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in raw_acquisition[
+        "blocked_candidate_ids"
+    ]
+    assert "independence_basis" in raw_acquisition["minimum_columns"]
+    assert (
+        "do not count digitized contrast agreement"
+        in raw_acquisition["overclaim_boundary"]
+    )
+    assert int(summary["closure_evidence_acquisition_manifest_rows"].iloc[0]) == 9
+    assert summary["closure_evidence_top_acquisition_artifact"].iloc[0] == (
+        "independence_provenance.md"
+    )
+    assert int(summary["closure_evidence_top_acquisition_candidate_count"].iloc[0]) == 9
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2628,6 +2687,9 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_candidate_action_rows": 14,
                 "closure_evidence_candidate_action_blocked_count": 14,
                 "closure_evidence_top_action_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_acquisition_manifest_rows": 9,
+                "closure_evidence_top_acquisition_artifact": "independence_provenance.md",
+                "closure_evidence_top_acquisition_candidate_count": 9,
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -2771,6 +2833,14 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert int(summary["g11_closure_evidence_missing_artifact_row_count"].iloc[0]) == 42
     assert int(summary["g11_closure_evidence_blocked_class_count"].iloc[0]) == 3
     assert int(summary["g11_closure_evidence_blocked_candidate_count"].iloc[0]) == 14
+    assert int(summary["g11_closure_evidence_acquisition_manifest_rows"].iloc[0]) == 9
+    assert summary["g11_closure_evidence_top_acquisition_artifact"].iloc[0] == (
+        "independence_provenance.md"
+    )
+    assert (
+        int(summary["g11_closure_evidence_top_acquisition_candidate_count"].iloc[0])
+        == 9
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -2813,6 +2883,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         "top action candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
         in g11_row["current_state"]
     )
+    assert "acquisition manifest rows=9" in g11_row["current_state"]
+    assert "top acquisition artifact=independence_provenance.md" in g11_row[
+        "current_state"
+    ]
     assert "top intake preflight passed=False" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
