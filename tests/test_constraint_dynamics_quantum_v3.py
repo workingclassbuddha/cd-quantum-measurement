@@ -991,6 +991,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_intake_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
+                "top_closure_intake_acceptance_gate_count": 3,
+                "top_closure_intake_acceptance_gate_ids": "G11C;G11F;G11G",
             }
         ]
     )
@@ -1179,6 +1181,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["top_g11_closure_intake_priority_class"].iloc[0] == (
         "raw_calibration_tables"
     )
+    assert int(summary["top_g11_closure_intake_acceptance_gate_count"].iloc[0]) == 3
+    assert summary["top_g11_closure_intake_acceptance_gate_ids"].iloc[0] == (
+        "G11C;G11F;G11G"
+    )
     assert int(summary["public_g11_candidate_count"].iloc[0]) == 14
     assert int(summary["public_g11_candidates_clearing_all_contract_gates"].iloc[0]) == 0
     assert summary["top_public_g11_candidate_id"].iloc[0] == (
@@ -1223,6 +1229,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         "note"
     ]
     assert "top_intake_class=raw_calibration_tables" in g11_row["note"]
+    assert "top_intake_acceptance_gates=G11C;G11F;G11G" in g11_row["note"]
     g10_row = checklist[
         checklist["requirement"] == "chapman_raw_phase_repaired"
     ].iloc[0]
@@ -2279,18 +2286,58 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     calibration = pd.DataFrame(
         [{"public_source_raw_calibration_tables_found": False}]
     )
+    kokorowski_gaps = pd.DataFrame(
+        [
+            {
+                "gate_id": "G11C",
+                "gate": "uncertainty_budget",
+                "passed": False,
+                "observed_value": 0.4166666666666667,
+                "threshold": "full reported-SE joint pass >= 0.80",
+                "supporting_metric": "full_reported_se_joint_pass",
+                "evidence_path": "outputs/kokorowski_kappa_uncertainty_profile/kokorowski_kappa_uncertainty_summary.csv",
+                "blocker": "reported independent-kappa uncertainty is too wide for closure-grade propagation",
+                "next_valid_input": "raw beam-deflection/broadening calibration tables or an independently reproduced kappa-prime uncertainty budget",
+            },
+            {
+                "gate_id": "G11F",
+                "gate": "stress_threshold",
+                "passed": False,
+                "observed_value": 0.727,
+                "threshold": "bootstrap joint stress pass >= 0.80",
+                "supporting_metric": "bootstrap_p_joint_stress_gate",
+                "evidence_path": "outputs/kokorowski_multiphoton_stress/kokorowski_multiphoton_stress_summary.csv",
+                "blocker": "joint stress gate remains below the closure threshold under current public uncertainties",
+                "next_valid_input": "tightened independent kappa uncertainty that raises both RMSE and ratio stress gates without refitting visibility",
+            },
+            {
+                "gate_id": "G11G",
+                "gate": "provenance_permission",
+                "passed": False,
+                "observed_value": 0.0,
+                "threshold": "public or permitted raw calibration tables present",
+                "supporting_metric": "public_source_raw_calibration_tables_found",
+                "evidence_path": "outputs/kokorowski_calibration_provenance/kokorowski_calibration_provenance_summary.csv",
+                "blocker": "raw beam-deflection/broadening calibration data are still not in the public source package",
+                "next_valid_input": "permitted raw calibration tables with source, permission, extraction method, and reproducible hashes",
+            },
+        ]
+    )
     g11_path = tmp_path / "g11.csv"
     public_path = tmp_path / "public.csv"
     calibration_path = tmp_path / "calibration.csv"
+    kokorowski_gaps_path = tmp_path / "kokorowski_gaps.csv"
     g11.to_csv(g11_path, index=False)
     public.to_csv(public_path, index=False)
     calibration.to_csv(calibration_path, index=False)
+    kokorowski_gaps.to_csv(kokorowski_gaps_path, index=False)
 
     summary, near_misses = make_public_g11_exhaustion_audit_outputs(
         output_dir,
         g11_path,
         public_path,
         calibration_path,
+        kokorowski_gaps_path,
     )
     assert not summary.empty
     assert not near_misses.empty
@@ -2363,6 +2410,41 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "beam-deflection/broadening calibration tables" in top_priority[
         "first_valid_action"
     ]
+    acceptance = pd.read_csv(
+        output_dir / "public_g11_top_intake_acceptance_packet.csv"
+    )
+    assert {
+        "candidate_id",
+        "gate_id",
+        "gate",
+        "current_observed_value",
+        "acceptance_threshold",
+        "supporting_metric",
+        "required_artifact",
+        "required_columns",
+        "verification_command",
+        "closure_boundary",
+    }.issubset(acceptance.columns)
+    assert set(acceptance["gate_id"]) == {"G11C", "G11F", "G11G"}
+    g11c_acceptance = acceptance[acceptance["gate_id"] == "G11C"].iloc[0]
+    assert g11c_acceptance["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert "beam_deflection_broadening_calibration.csv" in g11c_acceptance[
+        "required_artifact"
+    ]
+    assert "value_se" in g11c_acceptance["required_columns"]
+    assert "audit-current-goal-status" in g11c_acceptance["verification_command"]
+    assert "without calibration uncertainty provenance" in g11c_acceptance[
+        "closure_boundary"
+    ]
+    g11g_acceptance = acceptance[acceptance["gate_id"] == "G11G"].iloc[0]
+    assert "reproducible hashes" in g11g_acceptance["required_artifact"]
+    assert "cannot enter the public repo as validation evidence" in g11g_acceptance[
+        "closure_boundary"
+    ]
+    assert int(summary["top_closure_intake_acceptance_gate_count"].iloc[0]) == 3
+    assert summary["top_closure_intake_acceptance_gate_ids"].iloc[0] == (
+        "G11C;G11F;G11G"
+    )
     assert (output_dir / "public_g11_exhaustion_report.md").exists()
     assert (output_dir / "public_g11_candidate_exhaustion.csv").exists()
 
@@ -2390,6 +2472,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_intake_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
+                "top_closure_intake_acceptance_gate_count": 3,
+                "top_closure_intake_acceptance_gate_ids": "G11C;G11F;G11G",
             }
         ]
     )
@@ -2528,6 +2612,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["top_g11_closure_intake_priority_class"].iloc[0] == (
         "raw_calibration_tables"
     )
+    assert int(summary["top_g11_closure_intake_acceptance_gate_count"].iloc[0]) == 3
+    assert summary["top_g11_closure_intake_acceptance_gate_ids"].iloc[0] == (
+        "G11C;G11F;G11G"
+    )
     assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
     g11_row = required_inputs[
         required_inputs["blocker"]
@@ -2547,6 +2635,7 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         "current_state"
     ]
     assert "top intake class=raw_calibration_tables" in g11_row["current_state"]
+    assert "top intake acceptance gates=G11C;G11F;G11G" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
     ].iloc[0]

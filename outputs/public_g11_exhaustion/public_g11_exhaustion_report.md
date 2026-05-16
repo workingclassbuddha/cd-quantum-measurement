@@ -18,6 +18,7 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence intake classes: independent_record_distribution;paired_visibility_curve;raw_calibration_tables
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
+- Top closure intake acceptance gates: G11C;G11F;G11G
 
 ## Near Misses
 
