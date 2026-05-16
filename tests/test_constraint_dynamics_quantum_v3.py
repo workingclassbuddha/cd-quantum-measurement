@@ -1000,6 +1000,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_acquisition_manifest_rows": 9,
                 "closure_evidence_top_acquisition_artifact": "independence_provenance.md",
                 "closure_evidence_top_acquisition_candidate_count": 9,
+                "closure_evidence_bundle_manifest_rows": 14,
+                "closure_evidence_blocked_bundle_count": 14,
+                "closure_evidence_top_bundle_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1209,6 +1212,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         int(summary["g11_closure_evidence_top_acquisition_candidate_count"].iloc[0])
         == 9
     )
+    assert int(summary["g11_closure_evidence_bundle_manifest_rows"].iloc[0]) == 14
+    assert int(summary["g11_closure_evidence_blocked_bundle_count"].iloc[0]) == 14
+    assert summary["g11_closure_evidence_top_bundle_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1264,6 +1272,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ]
     assert "closure_acquisition_manifest_rows=9" in g11_row["note"]
     assert "closure_top_acquisition_artifact=independence_provenance.md" in g11_row[
+        "note"
+    ]
+    assert "closure_bundle_manifest_rows=14" in g11_row["note"]
+    assert "closure_blocked_bundles=14" in g11_row["note"]
+    assert "closure_top_bundle_candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
         "note"
     ]
     assert (
@@ -2542,6 +2555,55 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
         "independence_provenance.md"
     )
     assert int(summary["closure_evidence_top_acquisition_candidate_count"].iloc[0]) == 9
+    bundle_manifest = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_candidate_bundle_manifest.csv"
+    )
+    assert {
+        "candidate_id",
+        "study",
+        "evidence_class",
+        "priority_rank",
+        "bundle_target_dir",
+        "required_artifact_paths",
+        "missing_artifact_count",
+        "candidate_preflight_passed",
+        "validation_command",
+        "closure_test",
+        "first_valid_action",
+        "overclaim_boundary",
+    }.issubset(bundle_manifest.columns)
+    assert len(bundle_manifest) == 14
+    assert bool(bundle_manifest["candidate_preflight_passed"].any()) is False
+    kokorowski_bundle = bundle_manifest[
+        bundle_manifest["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    ].iloc[0]
+    assert kokorowski_bundle["bundle_target_dir"] == (
+        "data/closure_evidence/public_g11/raw_calibration_tables/"
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert "beam_deflection_broadening_calibration.csv" in kokorowski_bundle[
+        "required_artifact_paths"
+    ]
+    assert "kappa_uncertainty_notes.md" in kokorowski_bundle[
+        "required_artifact_paths"
+    ]
+    assert int(kokorowski_bundle["missing_artifact_count"]) == 3
+    mir_bundle = bundle_manifest[
+        bundle_manifest["candidate_id"] == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+    ].iloc[0]
+    assert mir_bundle["bundle_target_dir"] == (
+        "data/closure_evidence/public_g11/paired_visibility_curve/"
+        "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+    )
+    assert "visibility_or_contrast_sweep.csv" in mir_bundle[
+        "required_artifact_paths"
+    ]
+    assert "paired visibility or contrast sweep" in mir_bundle["first_valid_action"]
+    assert int(summary["closure_evidence_bundle_manifest_rows"].iloc[0]) == 14
+    assert int(summary["closure_evidence_blocked_bundle_count"].iloc[0]) == 14
+    assert summary["closure_evidence_top_bundle_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2690,6 +2752,9 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_acquisition_manifest_rows": 9,
                 "closure_evidence_top_acquisition_artifact": "independence_provenance.md",
                 "closure_evidence_top_acquisition_candidate_count": 9,
+                "closure_evidence_bundle_manifest_rows": 14,
+                "closure_evidence_blocked_bundle_count": 14,
+                "closure_evidence_top_bundle_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -2841,6 +2906,11 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         int(summary["g11_closure_evidence_top_acquisition_candidate_count"].iloc[0])
         == 9
     )
+    assert int(summary["g11_closure_evidence_bundle_manifest_rows"].iloc[0]) == 14
+    assert int(summary["g11_closure_evidence_blocked_bundle_count"].iloc[0]) == 14
+    assert summary["g11_closure_evidence_top_bundle_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -2887,6 +2957,12 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "top acquisition artifact=independence_provenance.md" in g11_row[
         "current_state"
     ]
+    assert "bundle manifest rows=14" in g11_row["current_state"]
+    assert "blocked bundles=14" in g11_row["current_state"]
+    assert (
+        "top bundle candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        in g11_row["current_state"]
+    )
     assert "top intake preflight passed=False" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"

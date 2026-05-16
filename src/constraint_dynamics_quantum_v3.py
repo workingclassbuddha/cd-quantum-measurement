@@ -8124,6 +8124,27 @@ def make_current_goal_completion_audit_outputs(
             0,
         )
     )
+    g11_closure_evidence_bundle_manifest_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_bundle_manifest_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_blocked_bundle_count = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_blocked_bundle_count",
+            0,
+        )
+    )
+    g11_closure_evidence_top_bundle_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_bundle_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8483,6 +8504,9 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_acquisition_manifest_rows={g11_closure_evidence_acquisition_manifest_rows}; "
                 f"closure_top_acquisition_artifact={g11_closure_evidence_top_acquisition_artifact}; "
                 f"closure_top_acquisition_candidate_count={g11_closure_evidence_top_acquisition_candidate_count}; "
+                f"closure_bundle_manifest_rows={g11_closure_evidence_bundle_manifest_rows}; "
+                f"closure_blocked_bundles={g11_closure_evidence_blocked_bundle_count}; "
+                f"closure_top_bundle_candidate={g11_closure_evidence_top_bundle_candidate_id}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -8584,6 +8608,9 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_acquisition_manifest_rows": g11_closure_evidence_acquisition_manifest_rows,
                 "g11_closure_evidence_top_acquisition_artifact": g11_closure_evidence_top_acquisition_artifact,
                 "g11_closure_evidence_top_acquisition_candidate_count": g11_closure_evidence_top_acquisition_candidate_count,
+                "g11_closure_evidence_bundle_manifest_rows": g11_closure_evidence_bundle_manifest_rows,
+                "g11_closure_evidence_blocked_bundle_count": g11_closure_evidence_blocked_bundle_count,
+                "g11_closure_evidence_top_bundle_candidate_id": g11_closure_evidence_top_bundle_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -10970,6 +10997,70 @@ def make_public_g11_exhaustion_audit_outputs(
         if hasattr(top_acquisition, "get")
         else 0
     )
+    bundle_rows = []
+    preflight_by_candidate = {
+        str(candidate_id): rows.sort_values("artifact")
+        for candidate_id, rows in artifact_preflight.groupby("candidate_id")
+    }
+    for _, row in candidate_actions.iterrows():
+        candidate_id = str(row["candidate_id"])
+        evidence_class = str(row["evidence_class"])
+        bundle_target_dir = (
+            f"data/closure_evidence/public_g11/{evidence_class}/{candidate_id}"
+        )
+        candidate_preflight = preflight_by_candidate.get(candidate_id, pd.DataFrame())
+        required_artifact_paths = []
+        for artifact in candidate_preflight.get("artifact", pd.Series(dtype=object)):
+            artifact_name = str(artifact).strip()
+            if artifact_name:
+                required_artifact_paths.append(f"{bundle_target_dir}/{artifact_name}")
+        bundle_rows.append(
+            {
+                "candidate_id": candidate_id,
+                "study": row["study"],
+                "evidence_class": evidence_class,
+                "priority_rank": row["priority_rank"],
+                "bundle_target_dir": bundle_target_dir,
+                "required_artifact_paths": ";".join(required_artifact_paths),
+                "missing_artifact_count": row["missing_artifact_count"],
+                "candidate_preflight_passed": row["candidate_preflight_passed"],
+                "validation_command": validation_command,
+                "closure_test": row["closure_test"],
+                "first_valid_action": row["first_valid_action"],
+                "overclaim_boundary": row["overclaim_boundary"],
+            }
+        )
+    bundle_manifest = pd.DataFrame(
+        bundle_rows,
+        columns=[
+            "candidate_id",
+            "study",
+            "evidence_class",
+            "priority_rank",
+            "bundle_target_dir",
+            "required_artifact_paths",
+            "missing_artifact_count",
+            "candidate_preflight_passed",
+            "validation_command",
+            "closure_test",
+            "first_valid_action",
+            "overclaim_boundary",
+        ],
+    ).sort_values(["priority_rank", "candidate_id"], ascending=[True, True])
+    bundle_manifest.to_csv(
+        output_dir / "public_g11_closure_evidence_candidate_bundle_manifest.csv",
+        index=False,
+    )
+    blocked_bundle_count = int(
+        bundle_manifest["candidate_preflight_passed"]
+        .map(lambda value: not _truthy(value))
+        .sum()
+    )
+    top_bundle_candidate = (
+        str(bundle_manifest.iloc[0]["candidate_id"])
+        if not bundle_manifest.empty
+        else "not available"
+    )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
     top_priority_candidate = str(
         top_priority.get("candidate_id", "not available")
@@ -11182,6 +11273,9 @@ def make_public_g11_exhaustion_audit_outputs(
                 ),
                 "closure_evidence_top_acquisition_artifact": top_acquisition_artifact,
                 "closure_evidence_top_acquisition_candidate_count": top_acquisition_candidate_count,
+                "closure_evidence_bundle_manifest_rows": int(len(bundle_manifest)),
+                "closure_evidence_blocked_bundle_count": blocked_bundle_count,
+                "closure_evidence_top_bundle_candidate_id": top_bundle_candidate,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -11235,6 +11329,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence acquisition manifest rows: {int(len(acquisition_manifest))}
 - Closure evidence top acquisition artifact: {top_acquisition_artifact}
 - Closure evidence top acquisition candidate count: {top_acquisition_candidate_count}
+- Closure evidence bundle manifest rows: {int(len(bundle_manifest))}
+- Closure evidence blocked bundles: {blocked_bundle_count}
+- Closure evidence top bundle candidate: {top_bundle_candidate}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -11394,6 +11491,27 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             public_g11,
             "closure_evidence_top_acquisition_candidate_count",
             0,
+        )
+    )
+    g11_closure_evidence_bundle_manifest_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_bundle_manifest_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_blocked_bundle_count = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_blocked_bundle_count",
+            0,
+        )
+    )
+    g11_closure_evidence_top_bundle_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_bundle_candidate_id",
+            "not available",
         )
     )
     top_g11_closure_intake_priority_candidate_id = str(
@@ -11591,6 +11709,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"acquisition manifest rows={g11_closure_evidence_acquisition_manifest_rows}; "
                         f"top acquisition artifact={g11_closure_evidence_top_acquisition_artifact}; "
                         f"top acquisition candidate count={g11_closure_evidence_top_acquisition_candidate_count}; "
+                        f"bundle manifest rows={g11_closure_evidence_bundle_manifest_rows}; "
+                        f"blocked bundles={g11_closure_evidence_blocked_bundle_count}; "
+                        f"top bundle candidate={g11_closure_evidence_top_bundle_candidate_id}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -11684,6 +11805,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_acquisition_manifest_rows": g11_closure_evidence_acquisition_manifest_rows,
                 "g11_closure_evidence_top_acquisition_artifact": g11_closure_evidence_top_acquisition_artifact,
                 "g11_closure_evidence_top_acquisition_candidate_count": g11_closure_evidence_top_acquisition_candidate_count,
+                "g11_closure_evidence_bundle_manifest_rows": g11_closure_evidence_bundle_manifest_rows,
+                "g11_closure_evidence_blocked_bundle_count": g11_closure_evidence_blocked_bundle_count,
+                "g11_closure_evidence_top_bundle_candidate_id": g11_closure_evidence_top_bundle_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,

@@ -27,6 +27,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence acquisition manifest rows: 9
 - Closure evidence top acquisition artifact: independence_provenance.md
 - Closure evidence top acquisition candidate count: 9
+- Closure evidence bundle manifest rows: 14
+- Closure evidence blocked bundles: 14
+- Closure evidence top bundle candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
