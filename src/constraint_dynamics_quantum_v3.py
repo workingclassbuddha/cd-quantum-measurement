@@ -8045,6 +8045,20 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    top_g11_closure_intake_priority_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "top_closure_intake_priority_candidate_id",
+            "not available",
+        )
+    )
+    top_g11_closure_intake_priority_class = str(
+        _first_value(
+            public_g11_exhaustion,
+            "top_closure_intake_priority_class",
+            "not available",
+        )
+    )
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
     empirical_product_ready = int(
         _first_value(product_law_status, "empirical_product_law_ready_datasets", 0)
@@ -8349,6 +8363,8 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_evidence_classes={g11_closure_evidence_classes}; "
                 f"closure_evidence_intake_requirements={g11_closure_evidence_intake_requirement_count}; "
                 f"closure_evidence_intake_classes={g11_closure_evidence_intake_classes}; "
+                f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
+                f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
@@ -8434,6 +8450,8 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_classes": g11_closure_evidence_classes,
                 "g11_closure_evidence_intake_requirement_count": g11_closure_evidence_intake_requirement_count,
                 "g11_closure_evidence_intake_classes": g11_closure_evidence_intake_classes,
+                "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
+                "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "g11_closure_contract_gates": g11_closure_contract_gates,
                 "g11_closure_ready_targets": g11_closure_ready_targets,
@@ -8510,6 +8528,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence classes: {g11_closure_evidence_classes}
 - G11 closure evidence intake requirement rows: {g11_closure_evidence_intake_requirement_count}
 - G11 closure evidence intake classes: {g11_closure_evidence_intake_classes}
+- Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
+- Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - G11 closure contract gates: {g11_closure_contract_gates}
 - G11 closure-ready targets: {g11_closure_ready_targets}
@@ -10506,11 +10526,72 @@ def make_public_g11_exhaustion_audit_outputs(
         output_dir / "public_g11_closure_evidence_intake_requirements.csv",
         index=False,
     )
+    priority_specs = {
+        "raw_calibration_tables": {
+            "class_rank": 1,
+            "priority_reason": "only current stress-tested public route; calibration uncertainty gates block G11",
+            "first_valid_action": "recover raw beam-deflection/broadening calibration tables with independent kappa uncertainty provenance",
+        },
+        "paired_visibility_curve": {
+            "class_rank": 2,
+            "priority_reason": "candidate has an independent record distribution but lacks the paired visibility curve needed for no-refit closure",
+            "first_valid_action": "recover a paired visibility or contrast sweep measured under the same record-distribution settings",
+        },
+        "independent_record_distribution": {
+            "class_rank": 3,
+            "priority_reason": "candidate has a visibility/duality surface but lacks an independently measured record distribution",
+            "first_valid_action": "recover an independently measured record distribution with provenance separate from the visibility fit",
+        },
+        "new_candidate_identity": {
+            "class_rank": 4,
+            "priority_reason": "candidate identity is not yet a measured distribution-to-visibility target",
+            "first_valid_action": "register a new candidate with both record distribution and paired visibility artifacts",
+        },
+    }
+    priority_rows = []
+    for _, row in evidence_queue.iterrows():
+        spec = priority_specs[row["evidence_class"]]
+        priority_rows.append(
+            {
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "evidence_class": row["evidence_class"],
+                "class_rank": spec["class_rank"],
+                "no_refit_gate_score": row["no_refit_gate_score"],
+                "priority_reason": spec["priority_reason"],
+                "first_valid_action": spec["first_valid_action"],
+                "overclaim_boundary": row["overclaim_boundary"],
+            }
+        )
+    evidence_priority = pd.DataFrame(priority_rows).sort_values(
+        ["class_rank", "no_refit_gate_score", "candidate_id"],
+        ascending=[True, False, True],
+    )
+    evidence_priority.insert(
+        0,
+        "priority_rank",
+        range(1, len(evidence_priority) + 1),
+    )
+    evidence_priority.to_csv(
+        output_dir / "public_g11_closure_evidence_intake_priority.csv",
+        index=False,
+    )
     evidence_classes_text = ";".join(
         sorted(evidence_queue["evidence_class"].dropna().astype(str).unique())
     )
     intake_classes_text = ";".join(
         sorted(evidence_intake["evidence_class"].dropna().astype(str).unique())
+    )
+    top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
+    top_priority_candidate = str(
+        top_priority.get("candidate_id", "not available")
+        if hasattr(top_priority, "get")
+        else "not available"
+    )
+    top_priority_class = str(
+        top_priority.get("evidence_class", "not available")
+        if hasattr(top_priority, "get")
+        else "not available"
     )
 
     public_path_exhausted = bool(
@@ -10540,6 +10621,8 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_classes": evidence_classes_text,
                 "closure_evidence_intake_requirement_count": int(len(evidence_intake)),
                 "closure_evidence_intake_classes": intake_classes_text,
+                "top_closure_intake_priority_candidate_id": top_priority_candidate,
+                "top_closure_intake_priority_class": top_priority_class,
                 "recommended_next": (
                     "non-public Kokorowski calibration data or a newly identified cleaner public dataset"
                     if public_path_exhausted
@@ -10576,6 +10659,8 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence classes: {evidence_classes_text}
 - Closure evidence intake rows: {int(len(evidence_intake))}
 - Closure evidence intake classes: {intake_classes_text}
+- Top closure intake priority: {top_priority_candidate}
+- Top closure intake class: {top_priority_class}
 
 ## Near Misses
 
@@ -10650,6 +10735,20 @@ def make_breakthrough_path_exhaustion_audit_outputs(
         _first_value(
             public_g11,
             "closure_evidence_intake_classes",
+            "not available",
+        )
+    )
+    top_g11_closure_intake_priority_candidate_id = str(
+        _first_value(
+            public_g11,
+            "top_closure_intake_priority_candidate_id",
+            "not available",
+        )
+    )
+    top_g11_closure_intake_priority_class = str(
+        _first_value(
+            public_g11,
+            "top_closure_intake_priority_class",
             "not available",
         )
     )
@@ -10792,7 +10891,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"raw calibration tables found={kokorowski_raw_tables_found}; "
                         f"evidence classes={g11_closure_evidence_classes}; "
                         f"intake requirements={g11_closure_evidence_intake_requirement_count}; "
-                        f"intake classes={g11_closure_evidence_intake_classes}"
+                        f"intake classes={g11_closure_evidence_intake_classes}; "
+                        f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
+                        f"top intake class={top_g11_closure_intake_priority_class}"
                     )
                     if public_g11_exhausted
                     else "public G11 route still needs testing"
@@ -10870,6 +10971,8 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_classes": g11_closure_evidence_classes,
                 "g11_closure_evidence_intake_requirement_count": g11_closure_evidence_intake_requirement_count,
                 "g11_closure_evidence_intake_classes": g11_closure_evidence_intake_classes,
+                "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
+                "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "chapman_g10_repaired": chapman_g10_repaired,
                 "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
                 "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
@@ -10920,6 +11023,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence classes: {g11_closure_evidence_classes}
 - G11 closure evidence intake requirement rows: {g11_closure_evidence_intake_requirement_count}
 - G11 closure evidence intake classes: {g11_closure_evidence_intake_classes}
+- Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
+- Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Chapman G10 repaired: {chapman_g10_repaired}
 - Chapman branch gate pass: {chapman_branch_gate_pass}
 - Chapman wrap ambiguous rows: {chapman_wrap_ambiguous}

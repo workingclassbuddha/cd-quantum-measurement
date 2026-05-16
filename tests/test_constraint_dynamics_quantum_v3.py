@@ -989,6 +989,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
                 "closure_evidence_intake_requirement_count": 14,
                 "closure_evidence_intake_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
+                "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "top_closure_intake_priority_class": "raw_calibration_tables",
             }
         ]
     )
@@ -1171,6 +1173,12 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         summary["g11_closure_evidence_intake_classes"].iloc[0]
         == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
     )
+    assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert summary["top_g11_closure_intake_priority_class"].iloc[0] == (
+        "raw_calibration_tables"
+    )
     assert int(summary["public_g11_candidate_count"].iloc[0]) == 14
     assert int(summary["public_g11_candidates_clearing_all_contract_gates"].iloc[0]) == 0
     assert summary["top_public_g11_candidate_id"].iloc[0] == (
@@ -1211,6 +1219,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
         "closure_evidence_intake_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
     )
+    assert "top_intake_priority=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
+        "note"
+    ]
+    assert "top_intake_class=raw_calibration_tables" in g11_row["note"]
     g10_row = checklist[
         checklist["requirement"] == "chapman_raw_phase_repaired"
     ].iloc[0]
@@ -2335,6 +2347,22 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "visibility_or_contrast_sweep.csv" in mir_intake["minimum_artifacts"]
     assert "visibility_or_contrast" in mir_intake["minimum_columns"]
     assert bool(mir_intake["can_close_g11_if_satisfied"]) is True
+    priority = pd.read_csv(output_dir / "public_g11_closure_evidence_intake_priority.csv")
+    assert {
+        "priority_rank",
+        "candidate_id",
+        "evidence_class",
+        "priority_reason",
+        "first_valid_action",
+        "overclaim_boundary",
+    }.issubset(priority.columns)
+    top_priority = priority.sort_values("priority_rank").iloc[0]
+    assert top_priority["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert top_priority["evidence_class"] == "raw_calibration_tables"
+    assert "only current stress-tested public route" in top_priority["priority_reason"]
+    assert "beam-deflection/broadening calibration tables" in top_priority[
+        "first_valid_action"
+    ]
     assert (output_dir / "public_g11_exhaustion_report.md").exists()
     assert (output_dir / "public_g11_candidate_exhaustion.csv").exists()
 
@@ -2360,6 +2388,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
                 "closure_evidence_intake_requirement_count": 14,
                 "closure_evidence_intake_classes": "independent_record_distribution;paired_visibility_curve;raw_calibration_tables",
+                "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "top_closure_intake_priority_class": "raw_calibration_tables",
             }
         ]
     )
@@ -2492,6 +2522,12 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         summary["g11_closure_evidence_intake_classes"].iloc[0]
         == "independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
     )
+    assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert summary["top_g11_closure_intake_priority_class"].iloc[0] == (
+        "raw_calibration_tables"
+    )
     assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
     g11_row = required_inputs[
         required_inputs["blocker"]
@@ -2507,6 +2543,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         "intake classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["current_state"]
     )
+    assert "top intake priority=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
+        "current_state"
+    ]
+    assert "top intake class=raw_calibration_tables" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
     ].iloc[0]
