@@ -21,6 +21,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence missing artifact rows: 42
 - Closure evidence blocked classes: 3
 - Closure evidence blocked candidates: 14
+- Closure evidence candidate actions: 14
+- Closure evidence blocked candidate actions: 14
+- Closure evidence top action candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
