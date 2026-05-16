@@ -19,6 +19,8 @@ This audit asks a narrow operational question: after the current public-data sco
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
+- Top closure intake preflight passed: False
+- Top closure intake missing artifact count: 6
 
 ## Near Misses
 

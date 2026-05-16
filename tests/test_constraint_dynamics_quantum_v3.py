@@ -993,6 +993,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
                 "top_closure_intake_acceptance_gate_ids": "G11C;G11F;G11G",
+                "top_closure_intake_preflight_passed": False,
+                "top_closure_intake_missing_artifact_count": 6,
             }
         ]
     )
@@ -1185,6 +1187,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["top_g11_closure_intake_acceptance_gate_ids"].iloc[0] == (
         "G11C;G11F;G11G"
     )
+    assert bool(summary["top_g11_closure_intake_preflight_passed"].iloc[0]) is False
+    assert int(summary["top_g11_closure_intake_missing_artifact_count"].iloc[0]) == 6
     assert int(summary["public_g11_candidate_count"].iloc[0]) == 14
     assert int(summary["public_g11_candidates_clearing_all_contract_gates"].iloc[0]) == 0
     assert summary["top_public_g11_candidate_id"].iloc[0] == (
@@ -1230,6 +1234,7 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ]
     assert "top_intake_class=raw_calibration_tables" in g11_row["note"]
     assert "top_intake_acceptance_gates=G11C;G11F;G11G" in g11_row["note"]
+    assert "top_intake_preflight_passed=False" in g11_row["note"]
     g10_row = checklist[
         checklist["requirement"] == "chapman_raw_phase_repaired"
     ].iloc[0]
@@ -2441,10 +2446,30 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "cannot enter the public repo as validation evidence" in g11g_acceptance[
         "closure_boundary"
     ]
+    preflight = pd.read_csv(
+        output_dir / "public_g11_top_intake_evidence_preflight.csv"
+    )
+    assert {
+        "gate_id",
+        "artifact",
+        "artifact_present",
+        "status",
+        "acceptance_threshold",
+        "closure_boundary",
+    }.issubset(preflight.columns)
+    assert set(preflight["gate_id"]) == {"G11C", "G11F", "G11G"}
+    assert bool(preflight["artifact_present"].any()) is False
+    missing_artifacts = set(preflight["artifact"])
+    assert "beam_deflection_broadening_calibration.csv" in missing_artifacts
+    assert "source_permission.md" in missing_artifacts
+    assert "reproducible hashes manifest" in missing_artifacts
+    assert set(preflight["status"]) == {"missing_required_artifact"}
     assert int(summary["top_closure_intake_acceptance_gate_count"].iloc[0]) == 3
     assert summary["top_closure_intake_acceptance_gate_ids"].iloc[0] == (
         "G11C;G11F;G11G"
     )
+    assert bool(summary["top_closure_intake_preflight_passed"].iloc[0]) is False
+    assert int(summary["top_closure_intake_missing_artifact_count"].iloc[0]) == 6
     assert (output_dir / "public_g11_exhaustion_report.md").exists()
     assert (output_dir / "public_g11_candidate_exhaustion.csv").exists()
 
@@ -2474,6 +2499,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
                 "top_closure_intake_acceptance_gate_ids": "G11C;G11F;G11G",
+                "top_closure_intake_preflight_passed": False,
+                "top_closure_intake_missing_artifact_count": 6,
             }
         ]
     )
@@ -2616,6 +2643,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["top_g11_closure_intake_acceptance_gate_ids"].iloc[0] == (
         "G11C;G11F;G11G"
     )
+    assert bool(summary["top_g11_closure_intake_preflight_passed"].iloc[0]) is False
+    assert int(summary["top_g11_closure_intake_missing_artifact_count"].iloc[0]) == 6
     assert int(summary["named_proxy_rich_product_law_blockers"].iloc[0]) == 2
     g11_row = required_inputs[
         required_inputs["blocker"]
@@ -2636,6 +2665,7 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     ]
     assert "top intake class=raw_calibration_tables" in g11_row["current_state"]
     assert "top intake acceptance gates=G11C;G11F;G11G" in g11_row["current_state"]
+    assert "top intake preflight passed=False" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
     ].iloc[0]

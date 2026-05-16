@@ -8073,6 +8073,22 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    top_g11_closure_intake_preflight_passed = bool(
+        _truthy(
+            _first_value(
+                public_g11_exhaustion,
+                "top_closure_intake_preflight_passed",
+                False,
+            )
+        )
+    )
+    top_g11_closure_intake_missing_artifact_count = int(
+        _first_value(
+            public_g11_exhaustion,
+            "top_closure_intake_missing_artifact_count",
+            0,
+        )
+    )
     author_ready = int(_first_value(author_summary, "g11_ready_rows", 0))
     empirical_product_ready = int(
         _first_value(product_law_status, "empirical_product_law_ready_datasets", 0)
@@ -8380,6 +8396,8 @@ def make_current_goal_completion_audit_outputs(
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
+                f"top_intake_preflight_passed={top_g11_closure_intake_preflight_passed}; "
+                f"top_intake_missing_artifacts={top_g11_closure_intake_missing_artifact_count}; "
                 f"author_ready={author_ready}; kokorowski_joint={kokorowski_joint:.3f}; "
                 f"full_reported_se_joint={kokorowski_full_se_joint:.3f}; "
                 f"max_se_scale_for_joint_gate={kokorowski_max_se_scale:.3f}; "
@@ -8469,6 +8487,8 @@ def make_current_goal_completion_audit_outputs(
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
                 "top_g11_closure_intake_acceptance_gate_ids": top_g11_closure_intake_acceptance_gate_ids,
+                "top_g11_closure_intake_preflight_passed": top_g11_closure_intake_preflight_passed,
+                "top_g11_closure_intake_missing_artifact_count": top_g11_closure_intake_missing_artifact_count,
                 "current_breakthrough_path_exhausted_without_closure": current_breakthrough_path_exhausted_without_closure,
                 "g11_closure_contract_gates": g11_closure_contract_gates,
                 "g11_closure_ready_targets": g11_closure_ready_targets,
@@ -8548,6 +8568,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
+- Top G11 closure intake preflight passed: {top_g11_closure_intake_preflight_passed}
+- Top G11 closure intake missing artifact count: {top_g11_closure_intake_missing_artifact_count}
 - Current breakthrough path exhausted without closure: {current_breakthrough_path_exhausted_without_closure}
 - G11 closure contract gates: {g11_closure_contract_gates}
 - G11 closure-ready targets: {g11_closure_ready_targets}
@@ -10707,6 +10729,60 @@ def make_public_g11_exhaustion_audit_outputs(
     top_acceptance_gate_ids = ";".join(
         top_acceptance["gate_id"].dropna().astype(str).tolist()
     )
+    preflight_rows = []
+    for _, row in top_acceptance.iterrows():
+        artifacts = [
+            artifact.strip()
+            for artifact in str(row["required_artifact"]).split(";")
+            if artifact.strip()
+        ]
+        for artifact in artifacts:
+            artifact_path = Path(artifact)
+            artifact_present = artifact_path.exists()
+            preflight_rows.append(
+                {
+                    "candidate_id": row["candidate_id"],
+                    "gate_id": row["gate_id"],
+                    "gate": row["gate"],
+                    "artifact": artifact,
+                    "artifact_present": artifact_present,
+                    "status": (
+                        "artifact_present"
+                        if artifact_present
+                        else "missing_required_artifact"
+                    ),
+                    "acceptance_threshold": row["acceptance_threshold"],
+                    "supporting_metric": row["supporting_metric"],
+                    "closure_boundary": row["closure_boundary"],
+                }
+            )
+    preflight_columns = [
+        "candidate_id",
+        "gate_id",
+        "gate",
+        "artifact",
+        "artifact_present",
+        "status",
+        "acceptance_threshold",
+        "supporting_metric",
+        "closure_boundary",
+    ]
+    top_preflight = pd.DataFrame(preflight_rows, columns=preflight_columns)
+    top_preflight.to_csv(
+        output_dir / "public_g11_top_intake_evidence_preflight.csv",
+        index=False,
+    )
+    top_preflight_passed = bool(
+        not top_preflight.empty and top_preflight["artifact_present"].map(_truthy).all()
+    )
+    missing_artifacts = sorted(
+        {
+            str(row["artifact"])
+            for _, row in top_preflight.iterrows()
+            if not _truthy(row["artifact_present"])
+        }
+    )
+    top_missing_artifact_count = int(len(missing_artifacts))
     evidence_classes_text = ";".join(
         sorted(evidence_queue["evidence_class"].dropna().astype(str).unique())
     )
@@ -10745,6 +10821,8 @@ def make_public_g11_exhaustion_audit_outputs(
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
                 "top_closure_intake_acceptance_gate_ids": top_acceptance_gate_ids,
+                "top_closure_intake_preflight_passed": top_preflight_passed,
+                "top_closure_intake_missing_artifact_count": top_missing_artifact_count,
                 "recommended_next": (
                     "non-public Kokorowski calibration data or a newly identified cleaner public dataset"
                     if public_path_exhausted
@@ -10784,6 +10862,8 @@ This audit asks a narrow operational question: after the current public-data sco
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
+- Top closure intake preflight passed: {top_preflight_passed}
+- Top closure intake missing artifact count: {top_missing_artifact_count}
 
 ## Near Misses
 
@@ -10887,6 +10967,22 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             public_g11,
             "top_closure_intake_acceptance_gate_ids",
             "not available",
+        )
+    )
+    top_g11_closure_intake_preflight_passed = bool(
+        _truthy(
+            _first_value(
+                public_g11,
+                "top_closure_intake_preflight_passed",
+                False,
+            )
+        )
+    )
+    top_g11_closure_intake_missing_artifact_count = int(
+        _first_value(
+            public_g11,
+            "top_closure_intake_missing_artifact_count",
+            0,
         )
     )
     g11_closed = bool(
@@ -11031,7 +11127,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"intake classes={g11_closure_evidence_intake_classes}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
-                        f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}"
+                        f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
+                        f"top intake preflight passed={top_g11_closure_intake_preflight_passed}; "
+                        f"top intake missing artifacts={top_g11_closure_intake_missing_artifact_count}"
                     )
                     if public_g11_exhausted
                     else "public G11 route still needs testing"
@@ -11113,6 +11211,8 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
                 "top_g11_closure_intake_acceptance_gate_ids": top_g11_closure_intake_acceptance_gate_ids,
+                "top_g11_closure_intake_preflight_passed": top_g11_closure_intake_preflight_passed,
+                "top_g11_closure_intake_missing_artifact_count": top_g11_closure_intake_missing_artifact_count,
                 "chapman_g10_repaired": chapman_g10_repaired,
                 "chapman_branch_optimized_gate_pass": chapman_branch_gate_pass,
                 "chapman_branch_optimized_phase_rmse_rad": chapman_branch_rmse,
@@ -11166,6 +11266,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
+- Top G11 closure intake preflight passed: {top_g11_closure_intake_preflight_passed}
+- Top G11 closure intake missing artifact count: {top_g11_closure_intake_missing_artifact_count}
 - Chapman G10 repaired: {chapman_g10_repaired}
 - Chapman branch gate pass: {chapman_branch_gate_pass}
 - Chapman wrap ambiguous rows: {chapman_wrap_ambiguous}
