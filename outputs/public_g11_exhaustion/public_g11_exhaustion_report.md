@@ -19,6 +19,8 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence artifact preflight passed: False
 - Closure evidence missing artifact count: 9
 - Closure evidence missing artifact rows: 42
+- Closure evidence blocked classes: 3
+- Closure evidence blocked candidates: 14
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G

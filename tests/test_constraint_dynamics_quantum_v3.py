@@ -992,6 +992,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_artifact_preflight_passed": False,
                 "closure_evidence_missing_artifact_count": 9,
                 "closure_evidence_missing_artifact_row_count": 42,
+                "closure_evidence_blocked_class_count": 3,
+                "closure_evidence_blocked_candidate_count": 14,
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1183,6 +1185,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert bool(summary["g11_closure_evidence_artifact_preflight_passed"].iloc[0]) is False
     assert int(summary["g11_closure_evidence_missing_artifact_count"].iloc[0]) == 9
     assert int(summary["g11_closure_evidence_missing_artifact_row_count"].iloc[0]) == 42
+    assert int(summary["g11_closure_evidence_blocked_class_count"].iloc[0]) == 3
+    assert int(summary["g11_closure_evidence_blocked_candidate_count"].iloc[0]) == 14
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1229,6 +1233,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_evidence_intake_requirements=14" in g11_row["note"]
     assert "closure_artifact_preflight_passed=False" in g11_row["note"]
     assert "closure_missing_artifact_rows=42" in g11_row["note"]
+    assert "closure_blocked_classes=3" in g11_row["note"]
+    assert "closure_blocked_candidates=14" in g11_row["note"]
     assert (
         "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
@@ -2390,6 +2396,32 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert bool(summary["closure_evidence_artifact_preflight_passed"].iloc[0]) is False
     assert int(summary["closure_evidence_missing_artifact_count"].iloc[0]) == 9
     assert int(summary["closure_evidence_missing_artifact_row_count"].iloc[0]) == 42
+    class_preflight = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_preflight_by_class.csv"
+    )
+    assert {
+        "evidence_class",
+        "candidate_count",
+        "artifact_row_count",
+        "missing_artifact_row_count",
+        "missing_unique_artifact_count",
+        "class_preflight_passed",
+        "representative_missing_artifacts",
+    }.issubset(class_preflight.columns)
+    class_counts = class_preflight.set_index("evidence_class")
+    assert int(class_counts.loc["raw_calibration_tables", "candidate_count"]) == 1
+    assert int(class_counts.loc["paired_visibility_curve", "candidate_count"]) == 4
+    assert int(class_counts.loc["independent_record_distribution", "candidate_count"]) == 9
+    assert int(class_counts.loc["raw_calibration_tables", "missing_artifact_row_count"]) == 3
+    assert int(class_counts.loc["paired_visibility_curve", "missing_artifact_row_count"]) == 12
+    assert int(class_counts.loc["independent_record_distribution", "missing_artifact_row_count"]) == 27
+    assert bool(class_counts.loc["raw_calibration_tables", "class_preflight_passed"]) is False
+    assert "beam_deflection_broadening_calibration.csv" in class_counts.loc[
+        "raw_calibration_tables",
+        "representative_missing_artifacts",
+    ]
+    assert int(summary["closure_evidence_blocked_class_count"].iloc[0]) == 3
+    assert int(summary["closure_evidence_blocked_candidate_count"].iloc[0]) == 14
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2530,6 +2562,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_artifact_preflight_passed": False,
                 "closure_evidence_missing_artifact_count": 9,
                 "closure_evidence_missing_artifact_row_count": 42,
+                "closure_evidence_blocked_class_count": 3,
+                "closure_evidence_blocked_candidate_count": 14,
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -2671,6 +2705,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert bool(summary["g11_closure_evidence_artifact_preflight_passed"].iloc[0]) is False
     assert int(summary["g11_closure_evidence_missing_artifact_count"].iloc[0]) == 9
     assert int(summary["g11_closure_evidence_missing_artifact_row_count"].iloc[0]) == 42
+    assert int(summary["g11_closure_evidence_blocked_class_count"].iloc[0]) == 3
+    assert int(summary["g11_closure_evidence_blocked_candidate_count"].iloc[0]) == 14
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -2705,6 +2741,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "top intake acceptance gates=G11C;G11F;G11G" in g11_row["current_state"]
     assert "closure artifact preflight passed=False" in g11_row["current_state"]
     assert "closure missing artifact rows=42" in g11_row["current_state"]
+    assert "closure blocked classes=3" in g11_row["current_state"]
+    assert "closure blocked candidates=14" in g11_row["current_state"]
     assert "top intake preflight passed=False" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"

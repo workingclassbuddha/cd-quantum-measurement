@@ -17,6 +17,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence artifact preflight passed: False
 - G11 closure evidence missing artifact count: 9
 - G11 closure evidence missing artifact rows: 42
+- G11 closure evidence blocked classes: 3
+- G11 closure evidence blocked candidates: 14
 - Top G11 closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top G11 closure intake class: raw_calibration_tables
 - Top G11 closure intake acceptance gates: G11C;G11F;G11G
@@ -40,7 +42,7 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 
 ## Required New Inputs
 
-- **G11 second independent distribution-to-visibility validation**: public Kokorowski route is exhausted without closure; failed gates=G11C;G11F;G11G; joint stress=0.727; raw calibration tables found=False; evidence classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables; intake requirements=14; intake classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables; closure artifact preflight passed=False; closure missing artifacts=9; closure missing artifact rows=42; top intake priority=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING; top intake class=raw_calibration_tables; top intake acceptance gates=G11C;G11F;G11G; top intake preflight passed=False; top intake missing artifacts=6. Next valid input: raw Kokorowski beam-deflection/broadening calibration tables or a newly identified cleaner public dataset. Boundary: do not count near-miss visibility-derived datasets as G11 closure.
+- **G11 second independent distribution-to-visibility validation**: public Kokorowski route is exhausted without closure; failed gates=G11C;G11F;G11G; joint stress=0.727; raw calibration tables found=False; evidence classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables; intake requirements=14; intake classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables; closure artifact preflight passed=False; closure missing artifacts=9; closure missing artifact rows=42; closure blocked classes=3; closure blocked candidates=14; top intake priority=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING; top intake class=raw_calibration_tables; top intake acceptance gates=G11C;G11F;G11G; top intake preflight passed=False; top intake missing artifacts=6. Next valid input: raw Kokorowski beam-deflection/broadening calibration tables or a newly identified cleaner public dataset. Boundary: do not count near-miss visibility-derived datasets as G11 closure.
 - **G10 Chapman raw-phase repair**: branch-optimized raw phase gate pass=False; best RMSE=1.475; wrap ambiguous rows=5; low-contrast ambiguous rows=8; needed artifacts=fig2_raw_phase_trace.csv;fig2_phase_wrap_notes.md;paired_raw_visibility_table.csv. Next valid input: author numerical phase trace or publication-grade redigitization. Boundary: do not rescue G10 with branch wrapping alone.
 - **G12 independent product-law validation**: empirical ready datasets=0; proxy-rich candidates=2; named proxy-rich blockers=2; top proxy-rich blockers=data/extracted/CHAPMAN_1995_SCATTER.csv;data/extracted/CHAPMAN_1995_SCATTER_DIGITIZED.csv; closure gaps=proxy-rich candidate lacks formal independently measured Lambda/Gamma/Theta rows and held-out product-law comparison. Next valid input: provenance map from proxy controls to Lambda/Gamma/Theta plus low-confounding held-out validation. Boundary: do not treat synthetic or proxy-rich rows as empirical product-law validation.
 
