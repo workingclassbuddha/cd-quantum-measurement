@@ -1003,6 +1003,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_bundle_manifest_rows": 14,
                 "closure_evidence_blocked_bundle_count": 14,
                 "closure_evidence_top_bundle_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_source_query_rows": 42,
+                "closure_evidence_source_query_candidate_count": 14,
+                "closure_evidence_source_query_status": "not_searched",
+                "closure_evidence_top_source_query_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1217,6 +1221,12 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["g11_closure_evidence_top_bundle_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    assert int(summary["g11_closure_evidence_source_query_rows"].iloc[0]) == 42
+    assert int(summary["g11_closure_evidence_source_query_candidate_count"].iloc[0]) == 14
+    assert summary["g11_closure_evidence_source_query_status"].iloc[0] == "not_searched"
+    assert summary["g11_closure_evidence_top_source_query_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1277,6 +1287,11 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_bundle_manifest_rows=14" in g11_row["note"]
     assert "closure_blocked_bundles=14" in g11_row["note"]
     assert "closure_top_bundle_candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
+        "note"
+    ]
+    assert "closure_source_queries=42" in g11_row["note"]
+    assert "closure_source_query_status=not_searched" in g11_row["note"]
+    assert "closure_top_source_query_candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
         "note"
     ]
     assert (
@@ -2604,6 +2619,59 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["closure_evidence_top_bundle_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    source_queries = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_source_query_packet.csv"
+    )
+    assert {
+        "candidate_id",
+        "study",
+        "evidence_class",
+        "priority_rank",
+        "query_rank",
+        "artifact_focus",
+        "source_query",
+        "required_artifacts",
+        "acceptance_criteria",
+        "rejection_criteria",
+        "query_status",
+        "overclaim_boundary",
+    }.issubset(source_queries.columns)
+    assert len(source_queries) == 42
+    assert source_queries["candidate_id"].nunique() == 14
+    assert set(source_queries["query_status"]) == {"not_searched"}
+    kokorowski_query = source_queries[
+        (
+            source_queries["candidate_id"]
+            == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        )
+        & (
+            source_queries["artifact_focus"]
+            == "beam_deflection_broadening_calibration.csv"
+        )
+    ].iloc[0]
+    assert kokorowski_query["source_query"] == (
+        "Kokorowski 2001 multiphoton beam deflection broadening calibration "
+        "kappa uncertainty"
+    )
+    assert "independence_basis" in kokorowski_query["acceptance_criteria"]
+    assert "without source provenance" in kokorowski_query["rejection_criteria"]
+    mir_query = source_queries[
+        (
+            source_queries["candidate_id"]
+            == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+        )
+        & (source_queries["artifact_focus"] == "visibility_or_contrast_sweep.csv")
+    ].iloc[0]
+    assert mir_query["source_query"] == (
+        "Mir 2007 weak value momentum transfer visibility contrast sweep"
+    )
+    assert "paired visibility or contrast sweep" in mir_query["acceptance_criteria"]
+    assert int(summary["closure_evidence_source_query_rows"].iloc[0]) == 42
+    assert int(summary["closure_evidence_source_query_candidate_count"].iloc[0]) == 14
+    assert summary["closure_evidence_source_query_status"].iloc[0] == "not_searched"
+    assert summary["closure_evidence_top_source_query_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2755,6 +2823,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_bundle_manifest_rows": 14,
                 "closure_evidence_blocked_bundle_count": 14,
                 "closure_evidence_top_bundle_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_source_query_rows": 42,
+                "closure_evidence_source_query_candidate_count": 14,
+                "closure_evidence_source_query_status": "not_searched",
+                "closure_evidence_top_source_query_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -2909,6 +2981,12 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert int(summary["g11_closure_evidence_bundle_manifest_rows"].iloc[0]) == 14
     assert int(summary["g11_closure_evidence_blocked_bundle_count"].iloc[0]) == 14
     assert summary["g11_closure_evidence_top_bundle_candidate_id"].iloc[0] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert int(summary["g11_closure_evidence_source_query_rows"].iloc[0]) == 42
+    assert int(summary["g11_closure_evidence_source_query_candidate_count"].iloc[0]) == 14
+    assert summary["g11_closure_evidence_source_query_status"].iloc[0] == "not_searched"
+    assert summary["g11_closure_evidence_top_source_query_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (

@@ -30,6 +30,10 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence bundle manifest rows: 14
 - Closure evidence blocked bundles: 14
 - Closure evidence top bundle candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
+- Closure evidence source query rows: 42
+- Closure evidence source query candidate count: 14
+- Closure evidence source query status: not_searched
+- Closure evidence top source query candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
