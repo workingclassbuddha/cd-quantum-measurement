@@ -1010,6 +1010,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_query_batch_rows": 3,
                 "closure_evidence_source_query_top_batch_class": "raw_calibration_tables",
                 "closure_evidence_source_query_top_batch_status": "not_searched",
+                "closure_evidence_source_route_rows": 42,
+                "closure_evidence_source_route_status": "route_known_not_checked",
+                "closure_evidence_top_source_route_url": "https://arxiv.org/abs/quant-ph/0009044",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1237,6 +1240,13 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["g11_closure_evidence_source_query_top_batch_status"].iloc[0] == (
         "not_searched"
     )
+    assert int(summary["g11_closure_evidence_source_route_rows"].iloc[0]) == 42
+    assert summary["g11_closure_evidence_source_route_status"].iloc[0] == (
+        "route_known_not_checked"
+    )
+    assert summary["g11_closure_evidence_top_source_route_url"].iloc[0] == (
+        "https://arxiv.org/abs/quant-ph/0009044"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1306,6 +1316,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     ]
     assert "closure_source_query_batches=3" in g11_row["note"]
     assert "closure_top_source_query_batch=raw_calibration_tables" in g11_row["note"]
+    assert "closure_source_routes=42" in g11_row["note"]
+    assert "closure_source_route_status=route_known_not_checked" in g11_row["note"]
     assert (
         "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
@@ -2728,6 +2740,53 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["closure_evidence_source_query_top_batch_status"].iloc[0] == (
         "not_searched"
     )
+    source_routes = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_source_routes.csv"
+    )
+    assert {
+        "candidate_id",
+        "study",
+        "evidence_class",
+        "priority_rank",
+        "query_rank",
+        "artifact_focus",
+        "source_query",
+        "primary_source_url",
+        "doi",
+        "source_route",
+        "route_status",
+        "local_source_available",
+        "acceptance_criteria",
+        "overclaim_boundary",
+    }.issubset(source_routes.columns)
+    assert len(source_routes) == 42
+    assert set(source_routes["route_status"]) == {"route_known_not_checked"}
+    kokorowski_route = source_routes[
+        (
+            source_routes["candidate_id"]
+            == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        )
+        & (
+            source_routes["artifact_focus"]
+            == "beam_deflection_broadening_calibration.csv"
+        )
+    ].iloc[0]
+    assert kokorowski_route["primary_source_url"] == (
+        "https://arxiv.org/abs/quant-ph/0009044"
+    )
+    assert kokorowski_route["doi"] == "https://doi.org/10.1103/PhysRevLett.86.2191"
+    assert kokorowski_route["source_route"] == (
+        "primary_url:https://arxiv.org/abs/quant-ph/0009044;"
+        "doi:https://doi.org/10.1103/PhysRevLett.86.2191"
+    )
+    assert bool(kokorowski_route["local_source_available"]) is True
+    assert int(summary["closure_evidence_source_route_rows"].iloc[0]) == 42
+    assert summary["closure_evidence_source_route_status"].iloc[0] == (
+        "route_known_not_checked"
+    )
+    assert summary["closure_evidence_top_source_route_url"].iloc[0] == (
+        "https://arxiv.org/abs/quant-ph/0009044"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2886,6 +2945,9 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_query_batch_rows": 3,
                 "closure_evidence_source_query_top_batch_class": "raw_calibration_tables",
                 "closure_evidence_source_query_top_batch_status": "not_searched",
+                "closure_evidence_source_route_rows": 42,
+                "closure_evidence_source_route_status": "route_known_not_checked",
+                "closure_evidence_top_source_route_url": "https://arxiv.org/abs/quant-ph/0009044",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -3054,6 +3116,13 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     )
     assert summary["g11_closure_evidence_source_query_top_batch_status"].iloc[0] == (
         "not_searched"
+    )
+    assert int(summary["g11_closure_evidence_source_route_rows"].iloc[0]) == 42
+    assert summary["g11_closure_evidence_source_route_status"].iloc[0] == (
+        "route_known_not_checked"
+    )
+    assert summary["g11_closure_evidence_top_source_route_url"].iloc[0] == (
+        "https://arxiv.org/abs/quant-ph/0009044"
     )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
