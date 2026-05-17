@@ -1059,6 +1059,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_line_evidence_receipt_template_status": "template_ready",
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_required_columns": "candidate_id;required_artifact;source_file_hint;source_sha256;query_pattern;matched_line_count;matched_line_numbers;short_excerpt_hashes;acceptance_decision;closure_eligible;reviewer_note",
+                "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows": 21,
+                "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status": "receipt_pending",
+                "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate": "source_sha256 must be non-placeholder; matched_line_count > 0; line numbers and excerpt hashes populated; acceptance_decision=accepted; closure_eligible=true",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1555,6 +1559,29 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             "reviewer_note"
         )
     )
+    assert (
+        int(
+            summary[
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows"
+            ].iloc[0]
+        )
+        == 21
+    )
+    assert (
+        summary[
+            "g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status"
+        ].iloc[0]
+        == "receipt_pending"
+    )
+    assert (
+        summary[
+            "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id"
+        ].iloc[0]
+        == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert "source_sha256" in summary[
+        "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate"
+    ].iloc[0]
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1710,6 +1737,17 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     )
     assert (
         "closure_top_arxiv_package_line_evidence_receipt_candidate="
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        in second_row["note"]
+    )
+    assert "closure_arxiv_package_line_evidence_receipt_verification_plan=21" in (
+        second_row["note"]
+    )
+    assert "closure_arxiv_package_line_evidence_receipt_verification_status=receipt_pending" in (
+        second_row["note"]
+    )
+    assert (
+        "closure_top_arxiv_package_line_evidence_receipt_verification_candidate="
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
         in second_row["note"]
     )
@@ -3583,6 +3621,46 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "printf" in top_line_receipt["receipt_fill_command"]
     assert "source_sha256" in top_line_receipt["receipt_fill_command"]
     assert "closure_eligible" in top_line_receipt["receipt_fill_command"]
+    source_package_receipt_verification = pd.read_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_line_evidence_receipt_verification_plan.csv"
+    )
+    assert {
+        "package_rank",
+        "candidate_id",
+        "study",
+        "required_artifact",
+        "receipt_template_path",
+        "required_receipt_columns",
+        "receipt_verification_status",
+        "receipt_validation_command",
+        "acceptance_gate",
+        "failure_mode",
+        "closure_boundary",
+    }.issubset(source_package_receipt_verification.columns)
+    assert len(source_package_receipt_verification) == 21
+    assert set(source_package_receipt_verification["receipt_verification_status"]) == {
+        "receipt_pending"
+    }
+    top_receipt_verification = source_package_receipt_verification.iloc[0]
+    assert top_receipt_verification["candidate_id"] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert (
+        top_receipt_verification["receipt_template_path"]
+        == top_line_receipt["receipt_template_path"]
+    )
+    assert (
+        top_receipt_verification["required_receipt_columns"]
+        == top_line_receipt["required_receipt_columns"]
+    )
+    assert "pd.read_csv" in top_receipt_verification["receipt_validation_command"]
+    assert "closure_eligible" in top_receipt_verification["receipt_validation_command"]
+    assert "PENDING_SHA256" in top_receipt_verification["receipt_validation_command"]
+    assert "matched_line_count > 0" in top_receipt_verification["acceptance_gate"]
+    assert top_receipt_verification["failure_mode"] == (
+        "missing_or_placeholder_receipt"
+    )
     assert int(summary["closure_evidence_source_access_plan_rows"].iloc[0]) == 14
     assert int(
         summary["closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0]
@@ -3720,6 +3798,20 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
         "matched_line_count;matched_line_numbers;short_excerpt_hashes;"
         "acceptance_decision;closure_eligible;reviewer_note"
     )
+    assert int(
+        summary[
+            "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows"
+        ].iloc[0]
+    ) == 21
+    assert summary[
+        "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status"
+    ].iloc[0] == "receipt_pending"
+    assert summary[
+        "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id"
+    ].iloc[0] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert "source_sha256" in summary[
+        "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate"
+    ].iloc[0]
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -3927,6 +4019,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_line_evidence_receipt_template_status": "template_ready",
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_required_columns": "candidate_id;required_artifact;source_file_hint;source_sha256;query_pattern;matched_line_count;matched_line_numbers;short_excerpt_hashes;acceptance_decision;closure_eligible;reviewer_note",
+                "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows": 21,
+                "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status": "receipt_pending",
+                "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate": "source_sha256 must be non-placeholder; matched_line_count > 0; line numbers and excerpt hashes populated; acceptance_decision=accepted; closure_eligible=true",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -4174,6 +4270,29 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
         "matched_line_count;matched_line_numbers;short_excerpt_hashes;"
         "acceptance_decision;closure_eligible;reviewer_note"
     )
+    assert (
+        int(
+            summary[
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows"
+            ].iloc[0]
+        )
+        == 21
+    )
+    assert (
+        summary[
+            "g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status"
+        ].iloc[0]
+        == "receipt_pending"
+    )
+    assert (
+        summary[
+            "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id"
+        ].iloc[0]
+        == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert "source_sha256" in summary[
+        "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate"
+    ].iloc[0]
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -4256,6 +4375,17 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     )
     assert (
         "top arXiv package line evidence receipt candidate="
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+        in g11_row["current_state"]
+    )
+    assert "arXiv package line evidence receipt verification plan=21" in g11_row[
+        "current_state"
+    ]
+    assert "arXiv package line evidence receipt verification status=receipt_pending" in (
+        g11_row["current_state"]
+    )
+    assert (
+        "top arXiv package line evidence receipt verification candidate="
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
         in g11_row["current_state"]
     )
