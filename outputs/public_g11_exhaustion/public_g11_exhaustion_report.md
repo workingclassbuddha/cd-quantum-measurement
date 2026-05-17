@@ -70,6 +70,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package extraction target rows: 21
 - Closure evidence arXiv package extraction target status: planned
 - Closure evidence top arXiv package extraction target source file hint: decoh.tex
+- Closure evidence arXiv package line evidence manifest rows: 21
+- Closure evidence arXiv package line evidence manifest status: not_extracted
+- Closure evidence top arXiv package line evidence source file hint: decoh.tex
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
