@@ -8215,6 +8215,27 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_source_route_checklist_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_source_route_checklist_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_source_route_checklist_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_source_route_checklist_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_source_route_check_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_source_route_check_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8587,6 +8608,9 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_source_routes={g11_closure_evidence_source_route_rows}; "
                 f"closure_source_route_status={g11_closure_evidence_source_route_status}; "
                 f"closure_top_source_route={g11_closure_evidence_top_source_route_url}; "
+                f"closure_source_route_checklist={g11_closure_evidence_source_route_checklist_rows}; "
+                f"closure_source_route_checklist_status={g11_closure_evidence_source_route_checklist_status}; "
+                f"closure_top_source_route_check_candidate={g11_closure_evidence_top_source_route_check_candidate_id}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -8701,6 +8725,9 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_source_route_rows": g11_closure_evidence_source_route_rows,
                 "g11_closure_evidence_source_route_status": g11_closure_evidence_source_route_status,
                 "g11_closure_evidence_top_source_route_url": g11_closure_evidence_top_source_route_url,
+                "g11_closure_evidence_source_route_checklist_rows": g11_closure_evidence_source_route_checklist_rows,
+                "g11_closure_evidence_source_route_checklist_status": g11_closure_evidence_source_route_checklist_status,
+                "g11_closure_evidence_top_source_route_check_candidate_id": g11_closure_evidence_top_source_route_check_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -8794,6 +8821,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence top source query batch: {g11_closure_evidence_source_query_top_batch_class}
 - G11 closure evidence source routes: {g11_closure_evidence_source_route_rows}
 - G11 closure evidence source route status: {g11_closure_evidence_source_route_status}
+- G11 closure evidence source route checklist rows: {g11_closure_evidence_source_route_checklist_rows}
+- G11 closure evidence source route checklist status: {g11_closure_evidence_source_route_checklist_status}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -11370,6 +11399,65 @@ def make_public_g11_exhaustion_audit_outputs(
         if not source_routes.empty
         else "not available"
     )
+    route_check_rows = []
+    if not source_routes.empty:
+        grouped_routes = source_routes.groupby(
+            ["candidate_id", "primary_source_url", "doi", "source_route"],
+            sort=False,
+        )
+        for _, rows in grouped_routes:
+            rows = rows.sort_values(["priority_rank", "query_rank"])
+            first_row = rows.iloc[0]
+            route_check_rows.append(
+                {
+                    "route_rank": int(len(route_check_rows) + 1),
+                    "candidate_id": first_row["candidate_id"],
+                    "study": first_row["study"],
+                    "evidence_class": first_row["evidence_class"],
+                    "route_rows": int(len(rows)),
+                    "artifact_focuses": ";".join(rows["artifact_focus"].astype(str)),
+                    "primary_source_url": first_row["primary_source_url"],
+                    "doi": first_row["doi"],
+                    "source_route": first_row["source_route"],
+                    "route_check_status": "not_checked",
+                    "first_artifact_focus": first_row["artifact_focus"],
+                    "first_acceptance_criteria": first_row["acceptance_criteria"],
+                    "overclaim_boundary": first_row["overclaim_boundary"],
+                }
+            )
+    route_checklist = pd.DataFrame(
+        route_check_rows,
+        columns=[
+            "route_rank",
+            "candidate_id",
+            "study",
+            "evidence_class",
+            "route_rows",
+            "artifact_focuses",
+            "primary_source_url",
+            "doi",
+            "source_route",
+            "route_check_status",
+            "first_artifact_focus",
+            "first_acceptance_criteria",
+            "overclaim_boundary",
+        ],
+    )
+    route_checklist.to_csv(
+        output_dir / "public_g11_closure_evidence_source_route_checklist.csv",
+        index=False,
+    )
+    route_checklist_status = (
+        "not_checked"
+        if not route_checklist.empty
+        and set(route_checklist["route_check_status"].astype(str)) == {"not_checked"}
+        else "mixed_or_empty"
+    )
+    top_route_check_candidate = (
+        str(route_checklist.iloc[0]["candidate_id"])
+        if not route_checklist.empty
+        else "not available"
+    )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
     top_priority_candidate = str(
         top_priority.get("candidate_id", "not available")
@@ -11599,6 +11687,9 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_source_route_rows": int(len(source_routes)),
                 "closure_evidence_source_route_status": source_route_status,
                 "closure_evidence_top_source_route_url": top_source_route_url,
+                "closure_evidence_source_route_checklist_rows": int(len(route_checklist)),
+                "closure_evidence_source_route_checklist_status": route_checklist_status,
+                "closure_evidence_top_source_route_check_candidate_id": top_route_check_candidate,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -11665,6 +11756,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence source routes: {int(len(source_routes))}
 - Closure evidence source route status: {source_route_status}
 - Closure evidence top source route: {top_source_route_url}
+- Closure evidence source route checklist rows: {int(len(route_checklist))}
+- Closure evidence source route checklist status: {route_checklist_status}
+- Closure evidence top source route check candidate: {top_route_check_candidate}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -11917,6 +12011,27 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_source_route_checklist_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_source_route_checklist_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_source_route_checklist_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_source_route_checklist_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_source_route_check_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_source_route_check_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -12125,6 +12240,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"source routes={g11_closure_evidence_source_route_rows}; "
                         f"source route status={g11_closure_evidence_source_route_status}; "
                         f"top source route={g11_closure_evidence_top_source_route_url}; "
+                        f"source route checklist={g11_closure_evidence_source_route_checklist_rows}; "
+                        f"source route checklist status={g11_closure_evidence_source_route_checklist_status}; "
+                        f"top source route check candidate={g11_closure_evidence_top_source_route_check_candidate_id}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -12231,6 +12349,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_source_route_rows": g11_closure_evidence_source_route_rows,
                 "g11_closure_evidence_source_route_status": g11_closure_evidence_source_route_status,
                 "g11_closure_evidence_top_source_route_url": g11_closure_evidence_top_source_route_url,
+                "g11_closure_evidence_source_route_checklist_rows": g11_closure_evidence_source_route_checklist_rows,
+                "g11_closure_evidence_source_route_checklist_status": g11_closure_evidence_source_route_checklist_status,
+                "g11_closure_evidence_top_source_route_check_candidate_id": g11_closure_evidence_top_source_route_check_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -12298,6 +12419,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence top source query batch: {g11_closure_evidence_source_query_top_batch_class}
 - G11 closure evidence source routes: {g11_closure_evidence_source_route_rows}
 - G11 closure evidence source route status: {g11_closure_evidence_source_route_status}
+- G11 closure evidence source route checklist rows: {g11_closure_evidence_source_route_checklist_rows}
+- G11 closure evidence source route checklist status: {g11_closure_evidence_source_route_checklist_status}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}

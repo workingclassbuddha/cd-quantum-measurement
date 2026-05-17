@@ -40,6 +40,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence source routes: 42
 - Closure evidence source route status: route_known_not_checked
 - Closure evidence top source route: https://arxiv.org/abs/quant-ph/0009044
+- Closure evidence source route checklist rows: 14
+- Closure evidence source route checklist status: not_checked
+- Closure evidence top source route check candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
