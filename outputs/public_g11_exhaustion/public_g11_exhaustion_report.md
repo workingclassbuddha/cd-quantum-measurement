@@ -67,6 +67,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package cache probe plan rows: 7
 - Closure evidence arXiv package cache probe plan status: not_run
 - Closure evidence top arXiv package cache probe expected min files: 1
+- Closure evidence arXiv package extraction target rows: 21
+- Closure evidence arXiv package extraction target status: planned
+- Closure evidence top arXiv package extraction target source file hint: decoh.tex
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G

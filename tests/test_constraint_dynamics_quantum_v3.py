@@ -1047,6 +1047,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_cache_probe_plan_status": "not_run",
                 "closure_evidence_top_arxiv_package_cache_probe_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_cache_probe_expected_min_files": 1,
+                "closure_evidence_arxiv_package_extraction_target_rows": 21,
+                "closure_evidence_arxiv_package_extraction_target_status": "planned",
+                "closure_evidence_top_arxiv_package_extraction_target_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_top_arxiv_package_extraction_target_source_file_hint": "decoh.tex",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1374,6 +1378,18 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             "g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files"
         ].iloc[0]
     ) == 1
+    assert int(
+        summary["g11_closure_evidence_arxiv_package_extraction_target_rows"].iloc[0]
+    ) == 21
+    assert summary[
+        "g11_closure_evidence_arxiv_package_extraction_target_status"
+    ].iloc[0] == "planned"
+    assert summary[
+        "g11_closure_evidence_top_arxiv_package_extraction_target_candidate_id"
+    ].iloc[0] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert summary[
+        "g11_closure_evidence_top_arxiv_package_extraction_target_source_file_hint"
+    ].iloc[0] == "decoh.tex"
     assert (
         int(summary["g11_closure_evidence_arxiv_package_local_inspection_rows"].iloc[0])
         == 21
@@ -1437,6 +1453,28 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
             ].iloc[0]
         )
         == 1
+    )
+    assert (
+        int(
+            summary["g11_closure_evidence_arxiv_package_extraction_target_rows"].iloc[0]
+        )
+        == 21
+    )
+    assert (
+        summary["g11_closure_evidence_arxiv_package_extraction_target_status"].iloc[0]
+        == "planned"
+    )
+    assert (
+        summary[
+            "g11_closure_evidence_top_arxiv_package_extraction_target_candidate_id"
+        ].iloc[0]
+        == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert (
+        summary[
+            "g11_closure_evidence_top_arxiv_package_extraction_target_source_file_hint"
+        ].iloc[0]
+        == "decoh.tex"
     )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
@@ -1578,6 +1616,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_arxiv_package_cache_probe_plan_status=not_run" in second_row[
         "note"
     ]
+    assert "closure_arxiv_package_extraction_targets=21" in second_row["note"]
+    assert "closure_arxiv_package_extraction_status=planned" in second_row["note"]
     assert "raw beam-deflection/broadening calibration data" in second_row["note"]
     assert (output_dir / "current_goal_completion_audit.md").exists()
 
@@ -3322,6 +3362,53 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert lahiri_probe["known_legacy_cache_dir"] == "not available"
     assert int(lahiri_probe["expected_min_file_count"]) == 0
+    source_package_extraction_targets = pd.read_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_extraction_targets.csv"
+    )
+    assert {
+        "package_rank",
+        "candidate_id",
+        "study",
+        "required_artifact",
+        "known_legacy_cache_dir",
+        "source_file_hint",
+        "extraction_status",
+        "line_query_command",
+        "acceptance_question",
+        "overclaim_boundary",
+    }.issubset(source_package_extraction_targets.columns)
+    assert len(source_package_extraction_targets) == 21
+    assert set(source_package_extraction_targets["extraction_status"]) == {"planned"}
+    top_extraction = source_package_extraction_targets.iloc[0]
+    assert top_extraction["candidate_id"] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert top_extraction["required_artifact"] == (
+        "beam_deflection_broadening_calibration.csv"
+    )
+    assert top_extraction["source_file_hint"] == "decoh.tex"
+    assert "rg -n -i" in top_extraction["line_query_command"]
+    assert "outputs/tmp/kokorowski_source/extracted/decoh.tex" in top_extraction[
+        "line_query_command"
+    ]
+    assert "raw beam-deflection/broadening calibration" in top_extraction[
+        "acceptance_question"
+    ]
+    mir_extraction = source_package_extraction_targets[
+        (
+            source_package_extraction_targets["candidate_id"]
+            == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+        )
+        & (
+            source_package_extraction_targets["required_artifact"]
+            == "record_distribution.csv"
+        )
+    ].iloc[0]
+    assert mir_extraction["source_file_hint"] == "www-rev.tex"
+    assert "outputs/tmp/second_no_refit_sources/mir/extracted/www-rev.tex" in (
+        mir_extraction["line_query_command"]
+    )
     assert int(summary["closure_evidence_source_access_plan_rows"].iloc[0]) == 14
     assert int(
         summary["closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0]
@@ -3417,6 +3504,18 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
             "closure_evidence_top_arxiv_package_cache_probe_expected_min_files"
         ].iloc[0]
     ) == 1
+    assert int(
+        summary["closure_evidence_arxiv_package_extraction_target_rows"].iloc[0]
+    ) == 21
+    assert summary[
+        "closure_evidence_arxiv_package_extraction_target_status"
+    ].iloc[0] == "planned"
+    assert summary[
+        "closure_evidence_top_arxiv_package_extraction_target_candidate_id"
+    ].iloc[0] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert summary[
+        "closure_evidence_top_arxiv_package_extraction_target_source_file_hint"
+    ].iloc[0] == "decoh.tex"
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -3612,6 +3711,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_cache_probe_plan_status": "not_run",
                 "closure_evidence_top_arxiv_package_cache_probe_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_cache_probe_expected_min_files": 1,
+                "closure_evidence_arxiv_package_extraction_target_rows": 21,
+                "closure_evidence_arxiv_package_extraction_target_status": "planned",
+                "closure_evidence_top_arxiv_package_extraction_target_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_top_arxiv_package_extraction_target_source_file_hint": "decoh.tex",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -3909,6 +4012,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "arXiv package cache alias status=not_checked" in g11_row["current_state"]
     assert "arXiv package cache probe plan=7" in g11_row["current_state"]
     assert "arXiv package cache probe status=not_run" in g11_row["current_state"]
+    assert "arXiv package extraction targets=21" in g11_row["current_state"]
+    assert "arXiv package extraction status=planned" in g11_row["current_state"]
     assert "top intake preflight passed=False" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
