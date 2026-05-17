@@ -1027,6 +1027,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_acceptance_manifest_status": "not_checked",
                 "closure_evidence_top_arxiv_package_acceptance_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_required_artifact": "beam_deflection_broadening_calibration.csv",
+                "closure_evidence_arxiv_package_retrieval_ledger_rows": 7,
+                "closure_evidence_arxiv_package_retrieval_status": "not_fetched",
+                "closure_evidence_top_arxiv_package_retrieval_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_top_arxiv_package_expected_archive": "outputs/tmp/arxiv_source_packages/KOKOROWSKI_2001_MULTIPHOTON_SCATTERING/source.tar",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1294,6 +1298,17 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary[
         "g11_closure_evidence_top_arxiv_package_required_artifact"
     ].iloc[0] == "beam_deflection_broadening_calibration.csv"
+    assert int(
+        summary["g11_closure_evidence_arxiv_package_retrieval_ledger_rows"].iloc[0]
+    ) == 7
+    assert summary[
+        "g11_closure_evidence_arxiv_package_retrieval_status"
+    ].iloc[0] == "not_fetched"
+    assert summary[
+        "g11_closure_evidence_top_arxiv_package_expected_archive"
+    ].iloc[0] == (
+        "outputs/tmp/arxiv_source_packages/KOKOROWSKI_2001_MULTIPHOTON_SCATTERING/source.tar"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1373,6 +1388,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_arxiv_source_package_status=not_checked" in g11_row["note"]
     assert "closure_arxiv_package_acceptance_manifest=21" in g11_row["note"]
     assert "closure_arxiv_package_acceptance_status=not_checked" in g11_row["note"]
+    assert "closure_arxiv_package_retrieval_ledger=7" in g11_row["note"]
+    assert "closure_arxiv_package_retrieval_status=not_fetched" in g11_row["note"]
     assert (
         "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
@@ -2996,6 +3013,37 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     ].iloc[0]
     assert "which_way_strength_or_setting" in mir_acceptance["required_columns"]
     assert "paired visibility/contrast values" in mir_acceptance["acceptance_gate"]
+    source_package_retrieval = pd.read_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_retrieval_ledger.csv"
+    )
+    assert {
+        "package_rank",
+        "candidate_id",
+        "study",
+        "source_eprint_url",
+        "expected_archive_path",
+        "expected_extract_dir",
+        "retrieval_status",
+        "sha256_status",
+        "retrieval_command",
+        "post_fetch_inventory_command",
+        "acceptance_manifest_path",
+        "overclaim_boundary",
+    }.issubset(source_package_retrieval.columns)
+    assert len(source_package_retrieval) == 7
+    assert set(source_package_retrieval["retrieval_status"]) == {"not_fetched"}
+    assert set(source_package_retrieval["sha256_status"]) == {"pending_fetch"}
+    top_retrieval = source_package_retrieval.iloc[0]
+    assert top_retrieval["candidate_id"] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert top_retrieval["expected_archive_path"] == (
+        "outputs/tmp/arxiv_source_packages/KOKOROWSKI_2001_MULTIPHOTON_SCATTERING/source.tar"
+    )
+    assert "curl -L" in top_retrieval["retrieval_command"]
+    assert "quant-ph/0009044" in top_retrieval["retrieval_command"]
+    assert "sha256sum" in top_retrieval["post_fetch_inventory_command"]
     assert int(summary["closure_evidence_source_access_plan_rows"].iloc[0]) == 14
     assert int(
         summary["closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0]
@@ -3027,6 +3075,20 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary[
         "closure_evidence_top_arxiv_package_required_artifact"
     ].iloc[0] == "beam_deflection_broadening_calibration.csv"
+    assert int(
+        summary["closure_evidence_arxiv_package_retrieval_ledger_rows"].iloc[0]
+    ) == 7
+    assert summary[
+        "closure_evidence_arxiv_package_retrieval_status"
+    ].iloc[0] == "not_fetched"
+    assert summary[
+        "closure_evidence_top_arxiv_package_retrieval_candidate_id"
+    ].iloc[0] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert summary[
+        "closure_evidence_top_arxiv_package_expected_archive"
+    ].iloc[0] == (
+        "outputs/tmp/arxiv_source_packages/KOKOROWSKI_2001_MULTIPHOTON_SCATTERING/source.tar"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -3202,6 +3264,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_acceptance_manifest_status": "not_checked",
                 "closure_evidence_top_arxiv_package_acceptance_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_required_artifact": "beam_deflection_broadening_calibration.csv",
+                "closure_evidence_arxiv_package_retrieval_ledger_rows": 7,
+                "closure_evidence_arxiv_package_retrieval_status": "not_fetched",
+                "closure_evidence_top_arxiv_package_retrieval_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_top_arxiv_package_expected_archive": "outputs/tmp/arxiv_source_packages/KOKOROWSKI_2001_MULTIPHOTON_SCATTERING/source.tar",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -3411,6 +3477,17 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary[
         "g11_closure_evidence_top_arxiv_package_required_artifact"
     ].iloc[0] == "beam_deflection_broadening_calibration.csv"
+    assert int(
+        summary["g11_closure_evidence_arxiv_package_retrieval_ledger_rows"].iloc[0]
+    ) == 7
+    assert summary[
+        "g11_closure_evidence_arxiv_package_retrieval_status"
+    ].iloc[0] == "not_fetched"
+    assert summary[
+        "g11_closure_evidence_top_arxiv_package_expected_archive"
+    ].iloc[0] == (
+        "outputs/tmp/arxiv_source_packages/KOKOROWSKI_2001_MULTIPHOTON_SCATTERING/source.tar"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -3467,6 +3544,8 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert "arXiv source package status=not_checked" in g11_row["current_state"]
     assert "arXiv package acceptance manifest=21" in g11_row["current_state"]
     assert "arXiv package acceptance status=not_checked" in g11_row["current_state"]
+    assert "arXiv package retrieval ledger=7" in g11_row["current_state"]
+    assert "arXiv package retrieval status=not_fetched" in g11_row["current_state"]
     assert "top intake preflight passed=False" in g11_row["current_state"]
     g10_row = required_inputs[
         required_inputs["blocker"] == "G10 Chapman raw-phase repair"
