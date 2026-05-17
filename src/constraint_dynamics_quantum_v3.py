@@ -8369,6 +8369,34 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_local_inspection_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_local_inspection_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_local_inspection_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_local_inspection_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_local_inspection_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_local_inspection_match_count = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_local_inspection_match_count",
+            0,
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8762,6 +8790,10 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_arxiv_package_inspection_status={g11_closure_evidence_arxiv_package_inspection_status}; "
                 f"closure_top_arxiv_package_inspection_candidate={g11_closure_evidence_top_arxiv_package_inspection_candidate_id}; "
                 f"closure_top_arxiv_package_inspection_pattern={g11_closure_evidence_top_arxiv_package_inspection_pattern}; "
+                f"closure_arxiv_package_local_inspection_rows={g11_closure_evidence_arxiv_package_local_inspection_rows}; "
+                f"closure_arxiv_package_local_inspection_status={g11_closure_evidence_arxiv_package_local_inspection_status}; "
+                f"closure_top_arxiv_package_local_inspection_candidate={g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id}; "
+                f"closure_top_arxiv_package_local_inspection_match_count={g11_closure_evidence_top_arxiv_package_local_inspection_match_count}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -8898,6 +8930,10 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_inspection_status": g11_closure_evidence_arxiv_package_inspection_status,
                 "g11_closure_evidence_top_arxiv_package_inspection_candidate_id": g11_closure_evidence_top_arxiv_package_inspection_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_inspection_pattern": g11_closure_evidence_top_arxiv_package_inspection_pattern,
+                "g11_closure_evidence_arxiv_package_local_inspection_rows": g11_closure_evidence_arxiv_package_local_inspection_rows,
+                "g11_closure_evidence_arxiv_package_local_inspection_status": g11_closure_evidence_arxiv_package_local_inspection_status,
+                "g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id": g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id,
+                "g11_closure_evidence_top_arxiv_package_local_inspection_match_count": g11_closure_evidence_top_arxiv_package_local_inspection_match_count,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -9007,6 +9043,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence arXiv package inspection checklist rows: {g11_closure_evidence_arxiv_package_inspection_checklist_rows}
 - G11 closure evidence arXiv package inspection status: {g11_closure_evidence_arxiv_package_inspection_status}
 - G11 closure evidence top arXiv package inspection pattern: {g11_closure_evidence_top_arxiv_package_inspection_pattern}
+- G11 closure evidence arXiv package local inspection rows: {g11_closure_evidence_arxiv_package_local_inspection_rows}
+- G11 closure evidence arXiv package local inspection status: {g11_closure_evidence_arxiv_package_local_inspection_status}
+- G11 closure evidence top arXiv package local inspection matches: {g11_closure_evidence_top_arxiv_package_local_inspection_match_count}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -12008,6 +12047,75 @@ def make_public_g11_exhaustion_audit_outputs(
         / "public_g11_closure_evidence_arxiv_source_package_inspection_checklist.csv",
         index=False,
     )
+    package_local_inspection_rows = []
+    for _, row in package_inspection_checklist.iterrows():
+        expected_extract_dir = Path(str(row["expected_extract_dir"]))
+        pattern_text = str(row["artifact_search_pattern"])
+        matched_files = []
+        if expected_extract_dir.is_dir():
+            pattern = re.compile(pattern_text, re.IGNORECASE)
+            for path in sorted(expected_extract_dir.rglob("*")):
+                if not path.is_file():
+                    continue
+                relative_path = path.relative_to(expected_extract_dir).as_posix()
+                matched = bool(pattern.search(relative_path))
+                if not matched:
+                    try:
+                        sample = path.read_text(encoding="utf-8", errors="ignore")
+                    except OSError:
+                        sample = ""
+                    matched = bool(pattern.search(sample))
+                if matched:
+                    matched_files.append(relative_path)
+            local_status = "pattern_matches_found" if matched_files else "no_pattern_matches"
+            local_note = (
+                "local extracted package was inspected; matched files are only search candidates, "
+                "not accepted closure evidence"
+            )
+        else:
+            local_status = "missing_cache"
+            local_note = (
+                "fetch and extract the arXiv source package before interpreting local "
+                "inspection results"
+            )
+        package_local_inspection_rows.append(
+            {
+                "package_rank": int(row["package_rank"]),
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "required_artifact": row["required_artifact"],
+                "expected_extract_dir": row["expected_extract_dir"],
+                "artifact_search_pattern": pattern_text,
+                "local_inspection_status": local_status,
+                "matched_file_count": int(len(matched_files)),
+                "matched_files": ";".join(matched_files),
+                "required_columns": row["required_columns"],
+                "closure_boundary": row["closure_boundary"],
+                "local_cache_note": local_note,
+            }
+        )
+    package_local_inspection = pd.DataFrame(
+        package_local_inspection_rows,
+        columns=[
+            "package_rank",
+            "candidate_id",
+            "study",
+            "required_artifact",
+            "expected_extract_dir",
+            "artifact_search_pattern",
+            "local_inspection_status",
+            "matched_file_count",
+            "matched_files",
+            "required_columns",
+            "closure_boundary",
+            "local_cache_note",
+        ],
+    )
+    package_local_inspection.to_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_local_inspection.csv",
+        index=False,
+    )
     source_package_inventory_status = (
         "not_checked"
         if not source_package_inventory.empty
@@ -12034,6 +12142,13 @@ def make_public_g11_exhaustion_audit_outputs(
         if not package_inspection_checklist.empty
         and set(package_inspection_checklist["inspection_status"].astype(str))
         == {"pending_fetch"}
+        else "mixed_or_empty"
+    )
+    package_local_inspection_status = (
+        str(package_local_inspection["local_inspection_status"].iloc[0])
+        if not package_local_inspection.empty
+        and package_local_inspection["local_inspection_status"].astype(str).nunique()
+        == 1
         else "mixed_or_empty"
     )
     top_source_package_candidate = (
@@ -12075,6 +12190,16 @@ def make_public_g11_exhaustion_audit_outputs(
         str(package_inspection_checklist.iloc[0]["artifact_search_pattern"])
         if not package_inspection_checklist.empty
         else "not available"
+    )
+    top_package_local_inspection_candidate = (
+        str(package_local_inspection.iloc[0]["candidate_id"])
+        if not package_local_inspection.empty
+        else "not available"
+    )
+    top_package_local_inspection_match_count = (
+        int(package_local_inspection.iloc[0]["matched_file_count"])
+        if not package_local_inspection.empty
+        else 0
     )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
     top_priority_candidate = str(
@@ -12335,6 +12460,12 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_arxiv_package_inspection_status": package_inspection_status,
                 "closure_evidence_top_arxiv_package_inspection_candidate_id": top_package_inspection_candidate,
                 "closure_evidence_top_arxiv_package_inspection_pattern": top_package_inspection_pattern,
+                "closure_evidence_arxiv_package_local_inspection_rows": int(
+                    len(package_local_inspection)
+                ),
+                "closure_evidence_arxiv_package_local_inspection_status": package_local_inspection_status,
+                "closure_evidence_top_arxiv_package_local_inspection_candidate_id": top_package_local_inspection_candidate,
+                "closure_evidence_top_arxiv_package_local_inspection_match_count": top_package_local_inspection_match_count,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -12419,6 +12550,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package inspection checklist rows: {int(len(package_inspection_checklist))}
 - Closure evidence arXiv package inspection status: {package_inspection_status}
 - Closure evidence top arXiv package inspection pattern: {top_package_inspection_pattern}
+- Closure evidence arXiv package local inspection rows: {int(len(package_local_inspection))}
+- Closure evidence arXiv package local inspection status: {package_local_inspection_status}
+- Closure evidence top arXiv package local inspection matches: {top_package_local_inspection_match_count}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -12825,6 +12959,34 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_local_inspection_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_local_inspection_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_local_inspection_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_local_inspection_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_local_inspection_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_local_inspection_match_count = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_local_inspection_match_count",
+            0,
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -13054,6 +13216,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"arXiv package inspection status={g11_closure_evidence_arxiv_package_inspection_status}; "
                         f"top arXiv package inspection candidate={g11_closure_evidence_top_arxiv_package_inspection_candidate_id}; "
                         f"top arXiv package inspection pattern={g11_closure_evidence_top_arxiv_package_inspection_pattern}; "
+                        f"arXiv package local inspection rows={g11_closure_evidence_arxiv_package_local_inspection_rows}; "
+                        f"arXiv package local inspection status={g11_closure_evidence_arxiv_package_local_inspection_status}; "
+                        f"top arXiv package local inspection candidate={g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id}; "
+                        f"top arXiv package local inspection matches={g11_closure_evidence_top_arxiv_package_local_inspection_match_count}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -13182,6 +13348,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_inspection_status": g11_closure_evidence_arxiv_package_inspection_status,
                 "g11_closure_evidence_top_arxiv_package_inspection_candidate_id": g11_closure_evidence_top_arxiv_package_inspection_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_inspection_pattern": g11_closure_evidence_top_arxiv_package_inspection_pattern,
+                "g11_closure_evidence_arxiv_package_local_inspection_rows": g11_closure_evidence_arxiv_package_local_inspection_rows,
+                "g11_closure_evidence_arxiv_package_local_inspection_status": g11_closure_evidence_arxiv_package_local_inspection_status,
+                "g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id": g11_closure_evidence_top_arxiv_package_local_inspection_candidate_id,
+                "g11_closure_evidence_top_arxiv_package_local_inspection_match_count": g11_closure_evidence_top_arxiv_package_local_inspection_match_count,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -13265,6 +13435,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence arXiv package inspection checklist rows: {g11_closure_evidence_arxiv_package_inspection_checklist_rows}
 - G11 closure evidence arXiv package inspection status: {g11_closure_evidence_arxiv_package_inspection_status}
 - G11 closure evidence top arXiv package inspection pattern: {g11_closure_evidence_top_arxiv_package_inspection_pattern}
+- G11 closure evidence arXiv package local inspection rows: {g11_closure_evidence_arxiv_package_local_inspection_rows}
+- G11 closure evidence arXiv package local inspection status: {g11_closure_evidence_arxiv_package_local_inspection_status}
+- G11 closure evidence top arXiv package local inspection matches: {g11_closure_evidence_top_arxiv_package_local_inspection_match_count}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
