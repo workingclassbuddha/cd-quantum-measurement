@@ -1007,6 +1007,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_query_candidate_count": 14,
                 "closure_evidence_source_query_status": "not_searched",
                 "closure_evidence_top_source_query_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_source_query_batch_rows": 3,
+                "closure_evidence_source_query_top_batch_class": "raw_calibration_tables",
+                "closure_evidence_source_query_top_batch_status": "not_searched",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1227,6 +1230,13 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["g11_closure_evidence_top_source_query_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    assert int(summary["g11_closure_evidence_source_query_batch_rows"].iloc[0]) == 3
+    assert summary["g11_closure_evidence_source_query_top_batch_class"].iloc[0] == (
+        "raw_calibration_tables"
+    )
+    assert summary["g11_closure_evidence_source_query_top_batch_status"].iloc[0] == (
+        "not_searched"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1294,6 +1304,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_top_source_query_candidate=KOKOROWSKI_2001_MULTIPHOTON_SCATTERING" in g11_row[
         "note"
     ]
+    assert "closure_source_query_batches=3" in g11_row["note"]
+    assert "closure_top_source_query_batch=raw_calibration_tables" in g11_row["note"]
     assert (
         "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
@@ -2672,6 +2684,50 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["closure_evidence_top_source_query_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    source_query_batches = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_source_query_batches.csv"
+    )
+    assert {
+        "batch_rank",
+        "evidence_class",
+        "query_rows",
+        "candidate_count",
+        "artifact_focus_count",
+        "first_candidate_id",
+        "first_artifact_focus",
+        "first_source_query",
+        "batch_status",
+        "acceptance_focus",
+        "overclaim_boundary",
+    }.issubset(source_query_batches.columns)
+    assert len(source_query_batches) == 3
+    top_batch = source_query_batches.iloc[0]
+    assert top_batch["evidence_class"] == "raw_calibration_tables"
+    assert int(top_batch["query_rows"]) == 3
+    assert int(top_batch["candidate_count"]) == 1
+    assert top_batch["first_candidate_id"] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert top_batch["first_source_query"] == (
+        "Kokorowski 2001 multiphoton beam deflection broadening calibration "
+        "kappa uncertainty"
+    )
+    assert set(source_query_batches["batch_status"]) == {"not_searched"}
+    paired_batch = source_query_batches[
+        source_query_batches["evidence_class"] == "paired_visibility_curve"
+    ].iloc[0]
+    assert int(paired_batch["query_rows"]) == 12
+    independent_batch = source_query_batches[
+        source_query_batches["evidence_class"] == "independent_record_distribution"
+    ].iloc[0]
+    assert int(independent_batch["query_rows"]) == 27
+    assert int(summary["closure_evidence_source_query_batch_rows"].iloc[0]) == 3
+    assert summary["closure_evidence_source_query_top_batch_class"].iloc[0] == (
+        "raw_calibration_tables"
+    )
+    assert summary["closure_evidence_source_query_top_batch_status"].iloc[0] == (
+        "not_searched"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -2827,6 +2883,9 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_query_candidate_count": 14,
                 "closure_evidence_source_query_status": "not_searched",
                 "closure_evidence_top_source_query_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_source_query_batch_rows": 3,
+                "closure_evidence_source_query_top_batch_class": "raw_calibration_tables",
+                "closure_evidence_source_query_top_batch_status": "not_searched",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -2988,6 +3047,13 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["g11_closure_evidence_source_query_status"].iloc[0] == "not_searched"
     assert summary["g11_closure_evidence_top_source_query_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert int(summary["g11_closure_evidence_source_query_batch_rows"].iloc[0]) == 3
+    assert summary["g11_closure_evidence_source_query_top_batch_class"].iloc[0] == (
+        "raw_calibration_tables"
+    )
+    assert summary["g11_closure_evidence_source_query_top_batch_status"].iloc[0] == (
+        "not_searched"
     )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"

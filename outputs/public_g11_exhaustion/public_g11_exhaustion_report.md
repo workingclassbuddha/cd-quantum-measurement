@@ -34,6 +34,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence source query candidate count: 14
 - Closure evidence source query status: not_searched
 - Closure evidence top source query candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
+- Closure evidence source query batches: 3
+- Closure evidence top source query batch: raw_calibration_tables
+- Closure evidence top source query batch status: not_searched
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G

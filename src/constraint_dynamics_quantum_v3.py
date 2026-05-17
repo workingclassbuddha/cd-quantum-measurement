@@ -8173,6 +8173,27 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_source_query_batch_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_source_query_batch_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_source_query_top_batch_class = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_source_query_top_batch_class",
+            "not available",
+        )
+    )
+    g11_closure_evidence_source_query_top_batch_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_source_query_top_batch_status",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8539,6 +8560,9 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_source_query_candidates={g11_closure_evidence_source_query_candidate_count}; "
                 f"closure_source_query_status={g11_closure_evidence_source_query_status}; "
                 f"closure_top_source_query_candidate={g11_closure_evidence_top_source_query_candidate_id}; "
+                f"closure_source_query_batches={g11_closure_evidence_source_query_batch_rows}; "
+                f"closure_top_source_query_batch={g11_closure_evidence_source_query_top_batch_class}; "
+                f"closure_top_source_query_batch_status={g11_closure_evidence_source_query_top_batch_status}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -8647,6 +8671,9 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_source_query_candidate_count": g11_closure_evidence_source_query_candidate_count,
                 "g11_closure_evidence_source_query_status": g11_closure_evidence_source_query_status,
                 "g11_closure_evidence_top_source_query_candidate_id": g11_closure_evidence_top_source_query_candidate_id,
+                "g11_closure_evidence_source_query_batch_rows": g11_closure_evidence_source_query_batch_rows,
+                "g11_closure_evidence_source_query_top_batch_class": g11_closure_evidence_source_query_top_batch_class,
+                "g11_closure_evidence_source_query_top_batch_status": g11_closure_evidence_source_query_top_batch_status,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -8736,6 +8763,8 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence blocked candidates: {g11_closure_evidence_blocked_candidate_count}
 - G11 closure evidence source query rows: {g11_closure_evidence_source_query_rows}
 - G11 closure evidence source query status: {g11_closure_evidence_source_query_status}
+- G11 closure evidence source query batches: {g11_closure_evidence_source_query_batch_rows}
+- G11 closure evidence top source query batch: {g11_closure_evidence_source_query_top_batch_class}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -11191,6 +11220,62 @@ def make_public_g11_exhaustion_audit_outputs(
         if not source_queries.empty
         else "not available"
     )
+    source_query_batch_rows = []
+    for evidence_class, rows in source_queries.groupby("evidence_class", sort=False):
+        rows = rows.sort_values(["priority_rank", "query_rank"])
+        first_row = rows.iloc[0]
+        source_query_batch_rows.append(
+            {
+                "batch_rank": int(len(source_query_batch_rows) + 1),
+                "evidence_class": evidence_class,
+                "query_rows": int(len(rows)),
+                "candidate_count": int(rows["candidate_id"].nunique()),
+                "artifact_focus_count": int(rows["artifact_focus"].nunique()),
+                "first_candidate_id": first_row["candidate_id"],
+                "first_artifact_focus": first_row["artifact_focus"],
+                "first_source_query": first_row["source_query"],
+                "batch_status": (
+                    "not_searched"
+                    if set(rows["query_status"].astype(str)) == {"not_searched"}
+                    else "mixed"
+                ),
+                "acceptance_focus": first_row["acceptance_criteria"],
+                "overclaim_boundary": first_row["overclaim_boundary"],
+            }
+        )
+    source_query_batches = pd.DataFrame(
+        source_query_batch_rows,
+        columns=[
+            "batch_rank",
+            "evidence_class",
+            "query_rows",
+            "candidate_count",
+            "artifact_focus_count",
+            "first_candidate_id",
+            "first_artifact_focus",
+            "first_source_query",
+            "batch_status",
+            "acceptance_focus",
+            "overclaim_boundary",
+        ],
+    )
+    source_query_batches.to_csv(
+        output_dir / "public_g11_closure_evidence_source_query_batches.csv",
+        index=False,
+    )
+    top_source_query_batch = (
+        source_query_batches.iloc[0] if not source_query_batches.empty else {}
+    )
+    top_source_query_batch_class = str(
+        top_source_query_batch.get("evidence_class", "not available")
+        if hasattr(top_source_query_batch, "get")
+        else "not available"
+    )
+    top_source_query_batch_status = str(
+        top_source_query_batch.get("batch_status", "not available")
+        if hasattr(top_source_query_batch, "get")
+        else "not available"
+    )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
     top_priority_candidate = str(
         top_priority.get("candidate_id", "not available")
@@ -11412,6 +11497,11 @@ def make_public_g11_exhaustion_audit_outputs(
                 ),
                 "closure_evidence_source_query_status": source_query_status,
                 "closure_evidence_top_source_query_candidate_id": top_source_query_candidate,
+                "closure_evidence_source_query_batch_rows": int(
+                    len(source_query_batches)
+                ),
+                "closure_evidence_source_query_top_batch_class": top_source_query_batch_class,
+                "closure_evidence_source_query_top_batch_status": top_source_query_batch_status,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -11472,6 +11562,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence source query candidate count: {int(source_queries["candidate_id"].nunique())}
 - Closure evidence source query status: {source_query_status}
 - Closure evidence top source query candidate: {top_source_query_candidate}
+- Closure evidence source query batches: {int(len(source_query_batches))}
+- Closure evidence top source query batch: {top_source_query_batch_class}
+- Closure evidence top source query batch status: {top_source_query_batch_status}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -11682,6 +11775,27 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_source_query_batch_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_source_query_batch_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_source_query_top_batch_class = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_source_query_top_batch_class",
+            "not available",
+        )
+    )
+    g11_closure_evidence_source_query_top_batch_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_source_query_top_batch_status",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -11884,6 +11998,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"source query candidates={g11_closure_evidence_source_query_candidate_count}; "
                         f"source query status={g11_closure_evidence_source_query_status}; "
                         f"top source query candidate={g11_closure_evidence_top_source_query_candidate_id}; "
+                        f"source query batches={g11_closure_evidence_source_query_batch_rows}; "
+                        f"top source query batch={g11_closure_evidence_source_query_top_batch_class}; "
+                        f"top source query batch status={g11_closure_evidence_source_query_top_batch_status}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -11984,6 +12101,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_source_query_candidate_count": g11_closure_evidence_source_query_candidate_count,
                 "g11_closure_evidence_source_query_status": g11_closure_evidence_source_query_status,
                 "g11_closure_evidence_top_source_query_candidate_id": g11_closure_evidence_top_source_query_candidate_id,
+                "g11_closure_evidence_source_query_batch_rows": g11_closure_evidence_source_query_batch_rows,
+                "g11_closure_evidence_source_query_top_batch_class": g11_closure_evidence_source_query_top_batch_class,
+                "g11_closure_evidence_source_query_top_batch_status": g11_closure_evidence_source_query_top_batch_status,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -12047,6 +12167,8 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence blocked candidates: {g11_closure_evidence_blocked_candidate_count}
 - G11 closure evidence source query rows: {g11_closure_evidence_source_query_rows}
 - G11 closure evidence source query status: {g11_closure_evidence_source_query_status}
+- G11 closure evidence source query batches: {g11_closure_evidence_source_query_batch_rows}
+- G11 closure evidence top source query batch: {g11_closure_evidence_source_query_top_batch_class}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
