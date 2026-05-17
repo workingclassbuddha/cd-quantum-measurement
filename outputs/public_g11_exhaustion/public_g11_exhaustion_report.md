@@ -73,6 +73,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package line evidence manifest rows: 21
 - Closure evidence arXiv package line evidence manifest status: not_extracted
 - Closure evidence top arXiv package line evidence source file hint: decoh.tex
+- Closure evidence arXiv package line evidence receipt template rows: 21
+- Closure evidence arXiv package line evidence receipt template status: template_ready
+- Closure evidence top arXiv package line evidence receipt required columns: candidate_id;required_artifact;source_file_hint;source_sha256;query_pattern;matched_line_count;matched_line_numbers;short_excerpt_hashes;acceptance_decision;closure_eligible;reviewer_note
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
