@@ -79,6 +79,10 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package line evidence receipt verification plan rows: 21
 - Closure evidence arXiv package line evidence receipt verification status: receipt_pending
 - Closure evidence top arXiv package line evidence receipt verification gate: source_sha256 must be non-placeholder; matched_line_count > 0; line numbers and excerpt hashes populated; acceptance_decision=accepted; closure_eligible=true
+- Closure evidence arXiv package line evidence receipt acceptance ledger rows: 21
+- Closure evidence arXiv package line evidence receipt acceptance status: awaiting_reviewed_receipt
+- Closure evidence arXiv package line evidence receipt accepted count: 0
+- Closure evidence arXiv package line evidence receipt closure credit allowed: False
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G

@@ -8565,6 +8565,43 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_line_evidence_receipt_accepted_count",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed = bool(
+        _truthy(
+            _first_value(
+                public_g11_exhaustion,
+                "closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed",
+                False,
+            )
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8984,6 +9021,10 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_arxiv_package_line_evidence_receipt_verification_plan={g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows}; "
                 f"closure_arxiv_package_line_evidence_receipt_verification_status={g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status}; "
                 f"closure_top_arxiv_package_line_evidence_receipt_verification_candidate={g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id}; "
+                f"closure_arxiv_package_line_evidence_receipt_acceptance_ledger={g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows}; "
+                f"closure_arxiv_package_line_evidence_receipt_acceptance_status={g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status}; "
+                f"closure_arxiv_package_line_evidence_receipt_accepted={g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count}; "
+                f"closure_arxiv_package_line_evidence_receipt_closure_credit_allowed={g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -9148,6 +9189,11 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status": g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows": g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status": g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count": g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed": g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed,
+                "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -9278,6 +9324,10 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence arXiv package line evidence receipt verification plan rows: {g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows}
 - G11 closure evidence arXiv package line evidence receipt verification status: {g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status}
 - G11 closure evidence top arXiv package line evidence receipt verification gate: {g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate}
+- G11 closure evidence arXiv package line evidence receipt acceptance ledger rows: {g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows}
+- G11 closure evidence arXiv package line evidence receipt acceptance status: {g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status}
+- G11 closure evidence arXiv package line evidence receipt accepted count: {g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count}
+- G11 closure evidence arXiv package line evidence receipt closure credit allowed: {g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -12756,6 +12806,53 @@ def make_public_g11_exhaustion_audit_outputs(
         / "public_g11_closure_evidence_arxiv_source_package_line_evidence_receipt_verification_plan.csv",
         index=False,
     )
+    package_line_evidence_receipt_acceptance_rows = []
+    for _, row in package_line_evidence_receipt_verification_plan.iterrows():
+        package_line_evidence_receipt_acceptance_rows.append(
+            {
+                "package_rank": int(row["package_rank"]),
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "required_artifact": row["required_artifact"],
+                "receipt_template_path": row["receipt_template_path"],
+                "receipt_verification_status": row["receipt_verification_status"],
+                "acceptance_ledger_status": "awaiting_reviewed_receipt",
+                "accepted_receipt_present": False,
+                "closure_credit_allowed": False,
+                "acceptance_gate": row["acceptance_gate"],
+                "blocking_reason": (
+                    "no accepted non-placeholder source-line receipt has been reviewed"
+                ),
+                "next_valid_action": (
+                    "fill and pass the receipt_validation_command, then review the "
+                    "receipt before allowing any closure credit"
+                ),
+                "closure_boundary": row["closure_boundary"],
+            }
+        )
+    package_line_evidence_receipt_acceptance_ledger = pd.DataFrame(
+        package_line_evidence_receipt_acceptance_rows,
+        columns=[
+            "package_rank",
+            "candidate_id",
+            "study",
+            "required_artifact",
+            "receipt_template_path",
+            "receipt_verification_status",
+            "acceptance_ledger_status",
+            "accepted_receipt_present",
+            "closure_credit_allowed",
+            "acceptance_gate",
+            "blocking_reason",
+            "next_valid_action",
+            "closure_boundary",
+        ],
+    )
+    package_line_evidence_receipt_acceptance_ledger.to_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_line_evidence_receipt_acceptance_ledger.csv",
+        index=False,
+    )
     source_package_inventory_status = (
         "not_checked"
         if not source_package_inventory.empty
@@ -12840,6 +12937,28 @@ def make_public_g11_exhaustion_audit_outputs(
         )
         == {"receipt_pending"}
         else "mixed_or_empty"
+    )
+    package_line_evidence_receipt_acceptance_ledger_status = (
+        "awaiting_reviewed_receipt"
+        if not package_line_evidence_receipt_acceptance_ledger.empty
+        and set(
+            package_line_evidence_receipt_acceptance_ledger[
+                "acceptance_ledger_status"
+            ].astype(str)
+        )
+        == {"awaiting_reviewed_receipt"}
+        else "mixed_or_empty"
+    )
+    package_line_evidence_receipt_accepted_count = int(
+        package_line_evidence_receipt_acceptance_ledger[
+            "accepted_receipt_present"
+        ].map(_truthy).sum()
+    )
+    package_line_evidence_receipt_closure_credit_allowed = bool(
+        not package_line_evidence_receipt_acceptance_ledger.empty
+        and package_line_evidence_receipt_acceptance_ledger[
+            "closure_credit_allowed"
+        ].map(_truthy).all()
     )
     top_source_package_candidate = (
         str(source_package_inventory.iloc[0]["candidate_id"])
@@ -12949,6 +13068,11 @@ def make_public_g11_exhaustion_audit_outputs(
     top_package_line_evidence_receipt_verification_gate = (
         str(package_line_evidence_receipt_verification_plan.iloc[0]["acceptance_gate"])
         if not package_line_evidence_receipt_verification_plan.empty
+        else "not available"
+    )
+    top_package_line_evidence_receipt_acceptance_candidate = (
+        str(package_line_evidence_receipt_acceptance_ledger.iloc[0]["candidate_id"])
+        if not package_line_evidence_receipt_acceptance_ledger.empty
         else "not available"
     )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
@@ -13252,6 +13376,13 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status": package_line_evidence_receipt_verification_plan_status,
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id": top_package_line_evidence_receipt_verification_candidate,
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate": top_package_line_evidence_receipt_verification_gate,
+                "closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows": int(
+                    len(package_line_evidence_receipt_acceptance_ledger)
+                ),
+                "closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status": package_line_evidence_receipt_acceptance_ledger_status,
+                "closure_evidence_arxiv_package_line_evidence_receipt_accepted_count": package_line_evidence_receipt_accepted_count,
+                "closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed": package_line_evidence_receipt_closure_credit_allowed,
+                "closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id": top_package_line_evidence_receipt_acceptance_candidate,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -13357,6 +13488,10 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package line evidence receipt verification plan rows: {int(len(package_line_evidence_receipt_verification_plan))}
 - Closure evidence arXiv package line evidence receipt verification status: {package_line_evidence_receipt_verification_plan_status}
 - Closure evidence top arXiv package line evidence receipt verification gate: {top_package_line_evidence_receipt_verification_gate}
+- Closure evidence arXiv package line evidence receipt acceptance ledger rows: {int(len(package_line_evidence_receipt_acceptance_ledger))}
+- Closure evidence arXiv package line evidence receipt acceptance status: {package_line_evidence_receipt_acceptance_ledger_status}
+- Closure evidence arXiv package line evidence receipt accepted count: {package_line_evidence_receipt_accepted_count}
+- Closure evidence arXiv package line evidence receipt closure credit allowed: {package_line_evidence_receipt_closure_credit_allowed}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -13959,6 +14094,43 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_line_evidence_receipt_accepted_count",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed = bool(
+        _truthy(
+            _first_value(
+                public_g11,
+                "closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed",
+                False,
+            )
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -14214,6 +14386,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"arXiv package line evidence receipt verification plan={g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows}; "
                         f"arXiv package line evidence receipt verification status={g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status}; "
                         f"top arXiv package line evidence receipt verification candidate={g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id}; "
+                        f"arXiv package line evidence receipt acceptance ledger={g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows}; "
+                        f"arXiv package line evidence receipt acceptance status={g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status}; "
+                        f"arXiv package line evidence receipt accepted={g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count}; "
+                        f"arXiv package line evidence receipt closure credit allowed={g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -14370,6 +14546,11 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status": g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows": g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status": g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count": g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count,
+                "g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed": g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed,
+                "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_acceptance_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -14474,6 +14655,10 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence arXiv package line evidence receipt verification plan rows: {g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_rows}
 - G11 closure evidence arXiv package line evidence receipt verification status: {g11_closure_evidence_arxiv_package_line_evidence_receipt_verification_plan_status}
 - G11 closure evidence top arXiv package line evidence receipt verification gate: {g11_closure_evidence_top_arxiv_package_line_evidence_receipt_verification_gate}
+- G11 closure evidence arXiv package line evidence receipt acceptance ledger rows: {g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_rows}
+- G11 closure evidence arXiv package line evidence receipt acceptance status: {g11_closure_evidence_arxiv_package_line_evidence_receipt_acceptance_ledger_status}
+- G11 closure evidence arXiv package line evidence receipt accepted count: {g11_closure_evidence_arxiv_package_line_evidence_receipt_accepted_count}
+- G11 closure evidence arXiv package line evidence receipt closure credit allowed: {g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_credit_allowed}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
