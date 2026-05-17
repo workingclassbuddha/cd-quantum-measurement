@@ -1023,6 +1023,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_non_arxiv_source_route_status": "not_checked",
                 "closure_evidence_top_non_arxiv_source_route_candidate_id": "YOON_2021_QUANTITATIVE_COMPLEMENTARITY",
                 "closure_evidence_non_arxiv_source_route_closure_credit_allowed": False,
+                "closure_evidence_non_arxiv_artifact_review_plan_rows": 21,
+                "closure_evidence_non_arxiv_artifact_review_plan_status": "not_checked",
+                "closure_evidence_top_non_arxiv_artifact_review_candidate_id": "YOON_2021_QUANTITATIVE_COMPLEMENTARITY",
+                "closure_evidence_non_arxiv_artifact_review_closure_credit_allowed": False,
                 "closure_evidence_arxiv_source_package_inventory_rows": 7,
                 "closure_evidence_arxiv_source_package_inventory_status": "not_checked",
                 "closure_evidence_top_arxiv_source_package_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
@@ -3406,6 +3410,52 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
             "closure_evidence_non_arxiv_source_route_closure_credit_allowed"
         ].iloc[0]
     ) is False
+    non_arxiv_artifact_review = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_non_arxiv_artifact_review_plan.csv"
+    )
+    assert {
+        "route_rank",
+        "candidate_id",
+        "study",
+        "evidence_class",
+        "source_access_class",
+        "required_artifact",
+        "primary_source_url",
+        "minimum_columns",
+        "artifact_review_status",
+        "acceptance_gate",
+        "closure_credit_allowed",
+        "overclaim_boundary",
+    }.issubset(non_arxiv_artifact_review.columns)
+    assert len(non_arxiv_artifact_review) == 21
+    assert non_arxiv_artifact_review["candidate_id"].nunique() == 7
+    assert set(non_arxiv_artifact_review["artifact_review_status"]) == {
+        "not_checked"
+    }
+    assert not non_arxiv_artifact_review["closure_credit_allowed"].map(bool).any()
+    top_non_arxiv_artifact = non_arxiv_artifact_review.iloc[0]
+    assert top_non_arxiv_artifact["candidate_id"] == (
+        "YOON_2021_QUANTITATIVE_COMPLEMENTARITY"
+    )
+    assert top_non_arxiv_artifact["required_artifact"] == (
+        "independence_provenance.md"
+    )
+    assert "source_note" in top_non_arxiv_artifact["minimum_columns"]
+    assert "source page must provide" in top_non_arxiv_artifact["acceptance_gate"]
+    assert int(
+        summary["closure_evidence_non_arxiv_artifact_review_plan_rows"].iloc[0]
+    ) == 21
+    assert summary[
+        "closure_evidence_non_arxiv_artifact_review_plan_status"
+    ].iloc[0] == "not_checked"
+    assert summary[
+        "closure_evidence_top_non_arxiv_artifact_review_candidate_id"
+    ].iloc[0] == "YOON_2021_QUANTITATIVE_COMPLEMENTARITY"
+    assert bool(
+        summary[
+            "closure_evidence_non_arxiv_artifact_review_closure_credit_allowed"
+        ].iloc[0]
+    ) is False
     source_package_inventory = pd.read_csv(
         output_dir / "public_g11_closure_evidence_arxiv_source_package_inventory.csv"
     )
@@ -4304,6 +4354,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_non_arxiv_source_route_status": "not_checked",
                 "closure_evidence_top_non_arxiv_source_route_candidate_id": "YOON_2021_QUANTITATIVE_COMPLEMENTARITY",
                 "closure_evidence_non_arxiv_source_route_closure_credit_allowed": False,
+                "closure_evidence_non_arxiv_artifact_review_plan_rows": 21,
+                "closure_evidence_non_arxiv_artifact_review_plan_status": "not_checked",
+                "closure_evidence_top_non_arxiv_artifact_review_candidate_id": "YOON_2021_QUANTITATIVE_COMPLEMENTARITY",
+                "closure_evidence_non_arxiv_artifact_review_closure_credit_allowed": False,
                 "closure_evidence_arxiv_source_package_inventory_rows": 7,
                 "closure_evidence_arxiv_source_package_inventory_status": "not_checked",
                 "closure_evidence_top_arxiv_source_package_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
