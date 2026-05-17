@@ -49,6 +49,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv source package inventory rows: 7
 - Closure evidence arXiv source package inventory status: not_checked
 - Closure evidence top arXiv source package candidate: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
+- Closure evidence arXiv package acceptance manifest rows: 21
+- Closure evidence arXiv package acceptance manifest status: not_checked
+- Closure evidence top arXiv package required artifact: beam_deflection_broadening_calibration.csv
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G

@@ -8285,6 +8285,34 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_acceptance_manifest_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_acceptance_manifest_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_acceptance_manifest_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_acceptance_manifest_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_acceptance_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_acceptance_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_required_artifact = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_required_artifact",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8666,6 +8694,10 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_arxiv_source_package_inventory={g11_closure_evidence_arxiv_source_package_inventory_rows}; "
                 f"closure_arxiv_source_package_status={g11_closure_evidence_arxiv_source_package_inventory_status}; "
                 f"closure_top_arxiv_source_package_candidate={g11_closure_evidence_top_arxiv_source_package_candidate_id}; "
+                f"closure_arxiv_package_acceptance_manifest={g11_closure_evidence_arxiv_package_acceptance_manifest_rows}; "
+                f"closure_arxiv_package_acceptance_status={g11_closure_evidence_arxiv_package_acceptance_manifest_status}; "
+                f"closure_top_arxiv_package_acceptance_candidate={g11_closure_evidence_top_arxiv_package_acceptance_candidate_id}; "
+                f"closure_top_arxiv_package_required_artifact={g11_closure_evidence_top_arxiv_package_required_artifact}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -8790,6 +8822,10 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_arxiv_source_package_inventory_status": g11_closure_evidence_arxiv_source_package_inventory_status,
                 "g11_closure_evidence_top_arxiv_source_package_candidate_id": g11_closure_evidence_top_arxiv_source_package_candidate_id,
                 "g11_closure_evidence_top_arxiv_source_package_url": g11_closure_evidence_top_arxiv_source_package_url,
+                "g11_closure_evidence_arxiv_package_acceptance_manifest_rows": g11_closure_evidence_arxiv_package_acceptance_manifest_rows,
+                "g11_closure_evidence_arxiv_package_acceptance_manifest_status": g11_closure_evidence_arxiv_package_acceptance_manifest_status,
+                "g11_closure_evidence_top_arxiv_package_acceptance_candidate_id": g11_closure_evidence_top_arxiv_package_acceptance_candidate_id,
+                "g11_closure_evidence_top_arxiv_package_required_artifact": g11_closure_evidence_top_arxiv_package_required_artifact,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -8890,6 +8926,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence arXiv source package inventory rows: {g11_closure_evidence_arxiv_source_package_inventory_rows}
 - G11 closure evidence arXiv source package inventory status: {g11_closure_evidence_arxiv_source_package_inventory_status}
 - G11 closure evidence top arXiv source package candidate: {g11_closure_evidence_top_arxiv_source_package_candidate_id}
+- G11 closure evidence arXiv package acceptance manifest rows: {g11_closure_evidence_arxiv_package_acceptance_manifest_rows}
+- G11 closure evidence arXiv package acceptance manifest status: {g11_closure_evidence_arxiv_package_acceptance_manifest_status}
+- G11 closure evidence top arXiv package required artifact: {g11_closure_evidence_top_arxiv_package_required_artifact}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -11687,10 +11726,82 @@ def make_public_g11_exhaustion_audit_outputs(
         output_dir / "public_g11_closure_evidence_arxiv_source_package_inventory.csv",
         index=False,
     )
+    package_acceptance_rows = []
+    intake_by_candidate = (
+        evidence_intake.set_index("candidate_id")
+        if not evidence_intake.empty and "candidate_id" in evidence_intake.columns
+        else pd.DataFrame()
+    )
+    for _, row in source_package_inventory.iterrows():
+        candidate_id = str(row["candidate_id"])
+        intake_row = (
+            intake_by_candidate.loc[candidate_id]
+            if candidate_id in intake_by_candidate.index
+            else {}
+        )
+        if isinstance(intake_row, pd.DataFrame):
+            intake_row = intake_row.iloc[0]
+        required_columns = str(
+            intake_row.get("minimum_columns", "not available")
+            if hasattr(intake_row, "get")
+            else "not available"
+        )
+        required_artifacts = [
+            artifact.strip()
+            for artifact in str(row["artifact_focuses"]).split(";")
+            if artifact.strip()
+        ]
+        for artifact in required_artifacts:
+            package_acceptance_rows.append(
+                {
+                    "package_rank": int(row["package_rank"]),
+                    "candidate_id": candidate_id,
+                    "study": row["study"],
+                    "evidence_class": row["evidence_class"],
+                    "source_eprint_url": row["source_eprint_url"],
+                    "required_artifact": artifact,
+                    "required_columns": required_columns,
+                    "package_acceptance_status": "not_checked",
+                    "triage_question": (
+                        "Does the extracted arXiv source package contain "
+                        f"{artifact} or an explicit absence note for it?"
+                    ),
+                    "acceptance_gate": row["acceptance_gate"],
+                    "closure_boundary": row["overclaim_boundary"],
+                }
+            )
+    package_acceptance_manifest = pd.DataFrame(
+        package_acceptance_rows,
+        columns=[
+            "package_rank",
+            "candidate_id",
+            "study",
+            "evidence_class",
+            "source_eprint_url",
+            "required_artifact",
+            "required_columns",
+            "package_acceptance_status",
+            "triage_question",
+            "acceptance_gate",
+            "closure_boundary",
+        ],
+    )
+    package_acceptance_manifest.to_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_acceptance_manifest.csv",
+        index=False,
+    )
     source_package_inventory_status = (
         "not_checked"
         if not source_package_inventory.empty
         and set(source_package_inventory["source_package_status"].astype(str))
+        == {"not_checked"}
+        else "mixed_or_empty"
+    )
+    package_acceptance_manifest_status = (
+        "not_checked"
+        if not package_acceptance_manifest.empty
+        and set(package_acceptance_manifest["package_acceptance_status"].astype(str))
         == {"not_checked"}
         else "mixed_or_empty"
     )
@@ -11702,6 +11813,16 @@ def make_public_g11_exhaustion_audit_outputs(
     top_source_package_url = (
         str(source_package_inventory.iloc[0]["source_eprint_url"])
         if not source_package_inventory.empty
+        else "not available"
+    )
+    top_package_acceptance_candidate = (
+        str(package_acceptance_manifest.iloc[0]["candidate_id"])
+        if not package_acceptance_manifest.empty
+        else "not available"
+    )
+    top_package_required_artifact = (
+        str(package_acceptance_manifest.iloc[0]["required_artifact"])
+        if not package_acceptance_manifest.empty
         else "not available"
     )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
@@ -11945,6 +12066,12 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_arxiv_source_package_inventory_status": source_package_inventory_status,
                 "closure_evidence_top_arxiv_source_package_candidate_id": top_source_package_candidate,
                 "closure_evidence_top_arxiv_source_package_url": top_source_package_url,
+                "closure_evidence_arxiv_package_acceptance_manifest_rows": int(
+                    len(package_acceptance_manifest)
+                ),
+                "closure_evidence_arxiv_package_acceptance_manifest_status": package_acceptance_manifest_status,
+                "closure_evidence_top_arxiv_package_acceptance_candidate_id": top_package_acceptance_candidate,
+                "closure_evidence_top_arxiv_package_required_artifact": top_package_required_artifact,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -12020,6 +12147,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv source package inventory rows: {int(len(source_package_inventory))}
 - Closure evidence arXiv source package inventory status: {source_package_inventory_status}
 - Closure evidence top arXiv source package candidate: {top_source_package_candidate}
+- Closure evidence arXiv package acceptance manifest rows: {int(len(package_acceptance_manifest))}
+- Closure evidence arXiv package acceptance manifest status: {package_acceptance_manifest_status}
+- Closure evidence top arXiv package required artifact: {top_package_required_artifact}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -12342,6 +12472,34 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_acceptance_manifest_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_acceptance_manifest_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_acceptance_manifest_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_acceptance_manifest_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_acceptance_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_acceptance_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_required_artifact = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_required_artifact",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -12559,6 +12717,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"arXiv source package inventory={g11_closure_evidence_arxiv_source_package_inventory_rows}; "
                         f"arXiv source package status={g11_closure_evidence_arxiv_source_package_inventory_status}; "
                         f"top arXiv source package candidate={g11_closure_evidence_top_arxiv_source_package_candidate_id}; "
+                        f"arXiv package acceptance manifest={g11_closure_evidence_arxiv_package_acceptance_manifest_rows}; "
+                        f"arXiv package acceptance status={g11_closure_evidence_arxiv_package_acceptance_manifest_status}; "
+                        f"top arXiv package acceptance candidate={g11_closure_evidence_top_arxiv_package_acceptance_candidate_id}; "
+                        f"top arXiv package required artifact={g11_closure_evidence_top_arxiv_package_required_artifact}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -12675,6 +12837,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_arxiv_source_package_inventory_status": g11_closure_evidence_arxiv_source_package_inventory_status,
                 "g11_closure_evidence_top_arxiv_source_package_candidate_id": g11_closure_evidence_top_arxiv_source_package_candidate_id,
                 "g11_closure_evidence_top_arxiv_source_package_url": g11_closure_evidence_top_arxiv_source_package_url,
+                "g11_closure_evidence_arxiv_package_acceptance_manifest_rows": g11_closure_evidence_arxiv_package_acceptance_manifest_rows,
+                "g11_closure_evidence_arxiv_package_acceptance_manifest_status": g11_closure_evidence_arxiv_package_acceptance_manifest_status,
+                "g11_closure_evidence_top_arxiv_package_acceptance_candidate_id": g11_closure_evidence_top_arxiv_package_acceptance_candidate_id,
+                "g11_closure_evidence_top_arxiv_package_required_artifact": g11_closure_evidence_top_arxiv_package_required_artifact,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -12749,6 +12915,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence arXiv source package inventory rows: {g11_closure_evidence_arxiv_source_package_inventory_rows}
 - G11 closure evidence arXiv source package inventory status: {g11_closure_evidence_arxiv_source_package_inventory_status}
 - G11 closure evidence top arXiv source package candidate: {g11_closure_evidence_top_arxiv_source_package_candidate_id}
+- G11 closure evidence arXiv package acceptance manifest rows: {g11_closure_evidence_arxiv_package_acceptance_manifest_rows}
+- G11 closure evidence arXiv package acceptance manifest status: {g11_closure_evidence_arxiv_package_acceptance_manifest_status}
+- G11 closure evidence top arXiv package required artifact: {g11_closure_evidence_top_arxiv_package_required_artifact}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
