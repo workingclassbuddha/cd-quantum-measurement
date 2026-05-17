@@ -11307,7 +11307,7 @@ def make_public_g11_exhaustion_audit_outputs(
     )
     route_lookup = (
         register.set_index("candidate_id")[
-            ["primary_url", "doi", "local_source_available"]
+            ["primary_url", "doi"]
         ].to_dict("index")
         if not register.empty
         else {}
@@ -11331,9 +11331,7 @@ def make_public_g11_exhaustion_audit_outputs(
                 "doi": doi,
                 "source_route": f"primary_url:{primary_url};doi:{doi}",
                 "route_status": "route_known_not_checked",
-                "local_source_available": bool(
-                    _truthy(route.get("local_source_available", False))
-                ),
+                "local_source_available": False,
                 "acceptance_criteria": row["acceptance_criteria"],
                 "overclaim_boundary": row["overclaim_boundary"],
             }

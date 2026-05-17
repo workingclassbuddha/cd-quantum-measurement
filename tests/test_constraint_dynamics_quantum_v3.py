@@ -2779,7 +2779,7 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
         "primary_url:https://arxiv.org/abs/quant-ph/0009044;"
         "doi:https://doi.org/10.1103/PhysRevLett.86.2191"
     )
-    assert bool(kokorowski_route["local_source_available"]) is True
+    assert bool(kokorowski_route["local_source_available"]) is False
     assert int(summary["closure_evidence_source_route_rows"].iloc[0]) == 42
     assert summary["closure_evidence_source_route_status"].iloc[0] == (
         "route_known_not_checked"
