@@ -61,6 +61,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package local inspection rows: 21
 - Closure evidence arXiv package local inspection status: missing_cache
 - Closure evidence top arXiv package local inspection matches: 0
+- Closure evidence arXiv package cache alias rows: 7
+- Closure evidence arXiv package cache alias status: not_checked
+- Closure evidence top arXiv package cache alias legacy dir: outputs/tmp/kokorowski_source/extracted
 - Top closure intake priority: KOKOROWSKI_2001_MULTIPHOTON_SCATTERING
 - Top closure intake class: raw_calibration_tables
 - Top closure intake acceptance gates: G11C;G11F;G11G
