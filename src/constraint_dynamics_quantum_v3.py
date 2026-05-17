@@ -8425,6 +8425,34 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_cache_probe_plan_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_cache_probe_plan_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_cache_probe_plan_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_cache_probe_plan_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_cache_probe_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_cache_probe_expected_min_files",
+            0,
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -8826,6 +8854,10 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_arxiv_package_cache_alias_status={g11_closure_evidence_arxiv_package_cache_alias_status}; "
                 f"closure_top_arxiv_package_cache_alias_candidate={g11_closure_evidence_top_arxiv_package_cache_alias_candidate_id}; "
                 f"closure_top_arxiv_package_cache_alias_legacy_dir={g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir}; "
+                f"closure_arxiv_package_cache_probe_plan_rows={g11_closure_evidence_arxiv_package_cache_probe_plan_rows}; "
+                f"closure_arxiv_package_cache_probe_plan_status={g11_closure_evidence_arxiv_package_cache_probe_plan_status}; "
+                f"closure_top_arxiv_package_cache_probe_candidate={g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id}; "
+                f"closure_top_arxiv_package_cache_probe_expected_min_files={g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -8970,6 +9002,10 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_cache_alias_status": g11_closure_evidence_arxiv_package_cache_alias_status,
                 "g11_closure_evidence_top_arxiv_package_cache_alias_candidate_id": g11_closure_evidence_top_arxiv_package_cache_alias_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir": g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir,
+                "g11_closure_evidence_arxiv_package_cache_probe_plan_rows": g11_closure_evidence_arxiv_package_cache_probe_plan_rows,
+                "g11_closure_evidence_arxiv_package_cache_probe_plan_status": g11_closure_evidence_arxiv_package_cache_probe_plan_status,
+                "g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id": g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id,
+                "g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files": g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -9085,6 +9121,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence arXiv package cache alias rows: {g11_closure_evidence_arxiv_package_cache_alias_rows}
 - G11 closure evidence arXiv package cache alias status: {g11_closure_evidence_arxiv_package_cache_alias_status}
 - G11 closure evidence top arXiv package cache alias legacy dir: {g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir}
+- G11 closure evidence arXiv package cache probe plan rows: {g11_closure_evidence_arxiv_package_cache_probe_plan_rows}
+- G11 closure evidence arXiv package cache probe plan status: {g11_closure_evidence_arxiv_package_cache_probe_plan_status}
+- G11 closure evidence top arXiv package cache probe expected min files: {g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -12227,6 +12266,59 @@ def make_public_g11_exhaustion_audit_outputs(
         / "public_g11_closure_evidence_arxiv_source_package_cache_aliases.csv",
         index=False,
     )
+    package_cache_probe_rows = []
+    for _, row in package_cache_aliases.iterrows():
+        legacy_cache_dir = str(row["known_legacy_cache_dir"])
+        has_known_cache_dir = legacy_cache_dir != "not available"
+        if has_known_cache_dir:
+            probe_command = (
+                f"test -d {legacy_cache_dir} && "
+                f"find {legacy_cache_dir} -type f | sort | wc -l"
+            )
+            post_probe_action = (
+                "if file count meets threshold, run alias_command then rerun "
+                "local inspection"
+            )
+        else:
+            probe_command = (
+                "no known ignored legacy cache; run the retrieval_command before "
+                "probing"
+            )
+            post_probe_action = (
+                "fetch and extract the arXiv package before local inspection"
+            )
+        package_cache_probe_rows.append(
+            {
+                "package_rank": int(row["package_rank"]),
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "known_legacy_cache_dir": legacy_cache_dir,
+                "cache_probe_status": "not_run",
+                "expected_min_file_count": 1 if has_known_cache_dir else 0,
+                "probe_command": probe_command,
+                "post_probe_action": post_probe_action,
+                "overclaim_boundary": row["overclaim_boundary"],
+            }
+        )
+    package_cache_probe_plan = pd.DataFrame(
+        package_cache_probe_rows,
+        columns=[
+            "package_rank",
+            "candidate_id",
+            "study",
+            "known_legacy_cache_dir",
+            "cache_probe_status",
+            "expected_min_file_count",
+            "probe_command",
+            "post_probe_action",
+            "overclaim_boundary",
+        ],
+    )
+    package_cache_probe_plan.to_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_cache_probe_plan.csv",
+        index=False,
+    )
     source_package_inventory_status = (
         "not_checked"
         if not source_package_inventory.empty
@@ -12267,6 +12359,13 @@ def make_public_g11_exhaustion_audit_outputs(
         if not package_cache_aliases.empty
         and set(package_cache_aliases["cache_alias_status"].astype(str))
         == {"not_checked"}
+        else "mixed_or_empty"
+    )
+    package_cache_probe_plan_status = (
+        "not_run"
+        if not package_cache_probe_plan.empty
+        and set(package_cache_probe_plan["cache_probe_status"].astype(str))
+        == {"not_run"}
         else "mixed_or_empty"
     )
     top_source_package_candidate = (
@@ -12328,6 +12427,16 @@ def make_public_g11_exhaustion_audit_outputs(
         str(package_cache_aliases.iloc[0]["known_legacy_cache_dir"])
         if not package_cache_aliases.empty
         else "not available"
+    )
+    top_package_cache_probe_candidate = (
+        str(package_cache_probe_plan.iloc[0]["candidate_id"])
+        if not package_cache_probe_plan.empty
+        else "not available"
+    )
+    top_package_cache_probe_expected_min_files = (
+        int(package_cache_probe_plan.iloc[0]["expected_min_file_count"])
+        if not package_cache_probe_plan.empty
+        else 0
     )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
     top_priority_candidate = str(
@@ -12600,6 +12709,12 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_arxiv_package_cache_alias_status": package_cache_alias_status,
                 "closure_evidence_top_arxiv_package_cache_alias_candidate_id": top_package_cache_alias_candidate,
                 "closure_evidence_top_arxiv_package_cache_alias_legacy_dir": top_package_cache_alias_legacy_dir,
+                "closure_evidence_arxiv_package_cache_probe_plan_rows": int(
+                    len(package_cache_probe_plan)
+                ),
+                "closure_evidence_arxiv_package_cache_probe_plan_status": package_cache_probe_plan_status,
+                "closure_evidence_top_arxiv_package_cache_probe_candidate_id": top_package_cache_probe_candidate,
+                "closure_evidence_top_arxiv_package_cache_probe_expected_min_files": top_package_cache_probe_expected_min_files,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -12690,6 +12805,9 @@ This audit asks a narrow operational question: after the current public-data sco
 - Closure evidence arXiv package cache alias rows: {int(len(package_cache_aliases))}
 - Closure evidence arXiv package cache alias status: {package_cache_alias_status}
 - Closure evidence top arXiv package cache alias legacy dir: {top_package_cache_alias_legacy_dir}
+- Closure evidence arXiv package cache probe plan rows: {int(len(package_cache_probe_plan))}
+- Closure evidence arXiv package cache probe plan status: {package_cache_probe_plan_status}
+- Closure evidence top arXiv package cache probe expected min files: {top_package_cache_probe_expected_min_files}
 - Top closure intake priority: {top_priority_candidate}
 - Top closure intake class: {top_priority_class}
 - Top closure intake acceptance gates: {top_acceptance_gate_ids if top_acceptance_gate_ids else "not available"}
@@ -13152,6 +13270,34 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_arxiv_package_cache_probe_plan_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_cache_probe_plan_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_cache_probe_plan_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_cache_probe_plan_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_cache_probe_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_cache_probe_expected_min_files",
+            0,
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -13389,6 +13535,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"arXiv package cache alias status={g11_closure_evidence_arxiv_package_cache_alias_status}; "
                         f"top arXiv package cache alias candidate={g11_closure_evidence_top_arxiv_package_cache_alias_candidate_id}; "
                         f"top arXiv package cache alias legacy dir={g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir}; "
+                        f"arXiv package cache probe plan={g11_closure_evidence_arxiv_package_cache_probe_plan_rows}; "
+                        f"arXiv package cache probe status={g11_closure_evidence_arxiv_package_cache_probe_plan_status}; "
+                        f"top arXiv package cache probe candidate={g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id}; "
+                        f"top arXiv package cache probe expected min files={g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -13525,6 +13675,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_cache_alias_status": g11_closure_evidence_arxiv_package_cache_alias_status,
                 "g11_closure_evidence_top_arxiv_package_cache_alias_candidate_id": g11_closure_evidence_top_arxiv_package_cache_alias_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir": g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir,
+                "g11_closure_evidence_arxiv_package_cache_probe_plan_rows": g11_closure_evidence_arxiv_package_cache_probe_plan_rows,
+                "g11_closure_evidence_arxiv_package_cache_probe_plan_status": g11_closure_evidence_arxiv_package_cache_probe_plan_status,
+                "g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id": g11_closure_evidence_top_arxiv_package_cache_probe_candidate_id,
+                "g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files": g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -13614,6 +13768,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence arXiv package cache alias rows: {g11_closure_evidence_arxiv_package_cache_alias_rows}
 - G11 closure evidence arXiv package cache alias status: {g11_closure_evidence_arxiv_package_cache_alias_status}
 - G11 closure evidence top arXiv package cache alias legacy dir: {g11_closure_evidence_top_arxiv_package_cache_alias_legacy_dir}
+- G11 closure evidence arXiv package cache probe plan rows: {g11_closure_evidence_arxiv_package_cache_probe_plan_rows}
+- G11 closure evidence arXiv package cache probe plan status: {g11_closure_evidence_arxiv_package_cache_probe_plan_status}
+- G11 closure evidence top arXiv package cache probe expected min files: {g11_closure_evidence_top_arxiv_package_cache_probe_expected_min_files}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
