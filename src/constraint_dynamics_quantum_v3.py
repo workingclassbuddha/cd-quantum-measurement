@@ -8637,6 +8637,34 @@ def make_current_goal_completion_audit_outputs(
             0,
         )
     )
+    g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_candidate_gate_matrix_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_candidate_gate_matrix_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_candidate_gate_matrix_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count",
+            0,
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11_exhaustion,
@@ -9064,6 +9092,10 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_arxiv_package_line_evidence_receipt_candidate_rollup_status={g11_closure_evidence_arxiv_package_line_evidence_receipt_candidate_rollup_status}; "
                 f"closure_arxiv_package_line_evidence_receipt_closure_ready_candidates={g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count}; "
                 f"closure_top_arxiv_package_line_evidence_receipt_rollup_candidate={g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id}; "
+                f"closure_arxiv_package_candidate_gate_matrix={g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows}; "
+                f"closure_arxiv_package_candidate_gate_matrix_status={g11_closure_evidence_arxiv_package_candidate_gate_matrix_status}; "
+                f"closure_arxiv_package_candidate_gate_matrix_closure_ready={g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count}; "
+                f"closure_top_arxiv_package_candidate_gate_matrix_candidate={g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id}; "
                 f"top_intake_priority={top_g11_closure_intake_priority_candidate_id}; "
                 f"top_intake_class={top_g11_closure_intake_priority_class}; "
                 f"top_intake_acceptance_gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -9238,6 +9270,10 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count": g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count,
+                "g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows": g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows,
+                "g11_closure_evidence_arxiv_package_candidate_gate_matrix_status": g11_closure_evidence_arxiv_package_candidate_gate_matrix_status,
+                "g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count": g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count,
+                "g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id": g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -9375,6 +9411,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence arXiv package line evidence receipt candidate rollup rows: {g11_closure_evidence_arxiv_package_line_evidence_receipt_candidate_rollup_rows}
 - G11 closure evidence arXiv package line evidence receipt candidate rollup status: {g11_closure_evidence_arxiv_package_line_evidence_receipt_candidate_rollup_status}
 - G11 closure evidence arXiv package line evidence receipt closure-ready candidates: {g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count}
+- G11 closure evidence arXiv package candidate gate matrix rows: {g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows}
+- G11 closure evidence arXiv package candidate gate matrix status: {g11_closure_evidence_arxiv_package_candidate_gate_matrix_status}
+- G11 closure evidence arXiv package candidate gate matrix closure-ready candidates: {g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}
@@ -12965,6 +13004,84 @@ def make_public_g11_exhaustion_audit_outputs(
         / "public_g11_closure_evidence_arxiv_source_package_line_evidence_receipt_candidate_rollup.csv",
         index=False,
     )
+    package_candidate_gate_matrix_rows = []
+    for _, candidate_row in package_line_evidence_receipt_candidate_rollup.iterrows():
+        candidate_id = str(candidate_row["candidate_id"])
+        required_artifacts = (
+            package_acceptance_manifest[
+                package_acceptance_manifest["candidate_id"].astype(str)
+                == candidate_id
+            ]["required_artifact"]
+            .dropna()
+            .astype(str)
+            .tolist()
+        )
+        candidate_artifact_preflight = artifact_preflight[
+            (artifact_preflight["candidate_id"].astype(str) == candidate_id)
+            & (artifact_preflight["artifact"].astype(str).isin(required_artifacts))
+        ]
+        required_artifact_count = int(len(required_artifacts))
+        artifact_present_count = int(
+            candidate_artifact_preflight["artifact_present"].map(_truthy).sum()
+        )
+        accepted_receipt_count = int(candidate_row["accepted_receipt_count"])
+        artifact_gate_status = (
+            "artifacts_ready"
+            if required_artifact_count > 0
+            and artifact_present_count == required_artifact_count
+            else "missing_required_artifacts"
+        )
+        receipt_gate_status = str(candidate_row["candidate_receipt_status"])
+        closure_credit_allowed = bool(
+            artifact_gate_status == "artifacts_ready"
+            and receipt_gate_status == "candidate_receipts_accepted"
+            and _truthy(candidate_row["closure_credit_allowed"])
+        )
+        package_candidate_gate_matrix_rows.append(
+            {
+                "package_rank": int(candidate_row["package_rank"]),
+                "candidate_id": candidate_id,
+                "study": candidate_row["study"],
+                "required_artifact_count": required_artifact_count,
+                "artifact_present_count": artifact_present_count,
+                "accepted_receipt_count": accepted_receipt_count,
+                "artifact_gate_status": artifact_gate_status,
+                "receipt_gate_status": receipt_gate_status,
+                "candidate_gate_status": (
+                    "candidate_gate_ready"
+                    if closure_credit_allowed
+                    else "blocked_pending_artifacts_and_reviewed_receipts"
+                ),
+                "closure_credit_allowed": closure_credit_allowed,
+                "next_valid_action": (
+                    "provide required package artifacts and accepted source-line "
+                    "receipts before any G11 closure credit"
+                ),
+                "closure_boundary": candidate_row["closure_boundary"],
+            }
+        )
+    package_candidate_gate_matrix = pd.DataFrame(
+        package_candidate_gate_matrix_rows,
+        columns=[
+            "package_rank",
+            "candidate_id",
+            "study",
+            "required_artifact_count",
+            "artifact_present_count",
+            "accepted_receipt_count",
+            "artifact_gate_status",
+            "receipt_gate_status",
+            "candidate_gate_status",
+            "closure_credit_allowed",
+            "next_valid_action",
+            "closure_boundary",
+        ],
+    ).sort_values(["package_rank", "candidate_id"])
+    package_candidate_gate_matrix.to_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_candidate_gate_matrix.csv",
+        index=False,
+    )
     source_package_inventory_status = (
         "not_checked"
         if not source_package_inventory.empty
@@ -13087,6 +13204,16 @@ def make_public_g11_exhaustion_audit_outputs(
         package_line_evidence_receipt_candidate_rollup[
             "closure_credit_allowed"
         ].map(_truthy).sum()
+    )
+    package_candidate_gate_matrix_status = (
+        "blocked_pending_artifacts_and_reviewed_receipts"
+        if not package_candidate_gate_matrix.empty
+        and set(package_candidate_gate_matrix["candidate_gate_status"].astype(str))
+        == {"blocked_pending_artifacts_and_reviewed_receipts"}
+        else "mixed_or_empty"
+    )
+    package_candidate_gate_matrix_closure_ready_count = int(
+        package_candidate_gate_matrix["closure_credit_allowed"].map(_truthy).sum()
     )
     top_source_package_candidate = (
         str(source_package_inventory.iloc[0]["candidate_id"])
@@ -13212,6 +13339,11 @@ def make_public_g11_exhaustion_audit_outputs(
         int(package_line_evidence_receipt_candidate_rollup.iloc[0]["pending_receipt_count"])
         if not package_line_evidence_receipt_candidate_rollup.empty
         else 0
+    )
+    top_package_candidate_gate_matrix_candidate = (
+        str(package_candidate_gate_matrix.iloc[0]["candidate_id"])
+        if not package_candidate_gate_matrix.empty
+        else "not available"
     )
     top_priority = evidence_priority.iloc[0] if not evidence_priority.empty else {}
     top_priority_candidate = str(
@@ -13528,6 +13660,12 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count": package_line_evidence_receipt_closure_ready_candidate_count,
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id": top_package_line_evidence_receipt_rollup_candidate,
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count": top_package_line_evidence_receipt_rollup_pending_count,
+                "closure_evidence_arxiv_package_candidate_gate_matrix_rows": int(
+                    len(package_candidate_gate_matrix)
+                ),
+                "closure_evidence_arxiv_package_candidate_gate_matrix_status": package_candidate_gate_matrix_status,
+                "closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count": package_candidate_gate_matrix_closure_ready_count,
+                "closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id": top_package_candidate_gate_matrix_candidate,
                 "top_closure_intake_priority_candidate_id": top_priority_candidate,
                 "top_closure_intake_priority_class": top_priority_class,
                 "top_closure_intake_acceptance_gate_count": int(len(top_acceptance)),
@@ -14314,6 +14452,34 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             0,
         )
     )
+    g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_candidate_gate_matrix_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_arxiv_package_candidate_gate_matrix_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_candidate_gate_matrix_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count",
+            0,
+        )
+    )
+    g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id",
+            "not available",
+        )
+    )
     top_g11_closure_intake_priority_candidate_id = str(
         _first_value(
             public_g11,
@@ -14577,6 +14743,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"arXiv package line evidence receipt candidate rollup status={g11_closure_evidence_arxiv_package_line_evidence_receipt_candidate_rollup_status}; "
                         f"arXiv package line evidence receipt closure-ready candidates={g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count}; "
                         f"top arXiv package line evidence receipt rollup candidate={g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id}; "
+                        f"arXiv package candidate gate matrix={g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows}; "
+                        f"arXiv package candidate gate matrix status={g11_closure_evidence_arxiv_package_candidate_gate_matrix_status}; "
+                        f"arXiv package candidate gate matrix closure-ready candidates={g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count}; "
+                        f"top arXiv package candidate gate matrix candidate={g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id}; "
                         f"top intake priority={top_g11_closure_intake_priority_candidate_id}; "
                         f"top intake class={top_g11_closure_intake_priority_class}; "
                         f"top intake acceptance gates={top_g11_closure_intake_acceptance_gate_ids}; "
@@ -14743,6 +14913,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count": g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id,
                 "g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count": g11_closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count,
+                "g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows": g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows,
+                "g11_closure_evidence_arxiv_package_candidate_gate_matrix_status": g11_closure_evidence_arxiv_package_candidate_gate_matrix_status,
+                "g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count": g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count,
+                "g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id": g11_closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id,
                 "top_g11_closure_intake_priority_candidate_id": top_g11_closure_intake_priority_candidate_id,
                 "top_g11_closure_intake_priority_class": top_g11_closure_intake_priority_class,
                 "top_g11_closure_intake_acceptance_gate_count": top_g11_closure_intake_acceptance_gate_count,
@@ -14854,6 +15028,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence arXiv package line evidence receipt candidate rollup rows: {g11_closure_evidence_arxiv_package_line_evidence_receipt_candidate_rollup_rows}
 - G11 closure evidence arXiv package line evidence receipt candidate rollup status: {g11_closure_evidence_arxiv_package_line_evidence_receipt_candidate_rollup_status}
 - G11 closure evidence arXiv package line evidence receipt closure-ready candidates: {g11_closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count}
+- G11 closure evidence arXiv package candidate gate matrix rows: {g11_closure_evidence_arxiv_package_candidate_gate_matrix_rows}
+- G11 closure evidence arXiv package candidate gate matrix status: {g11_closure_evidence_arxiv_package_candidate_gate_matrix_status}
+- G11 closure evidence arXiv package candidate gate matrix closure-ready candidates: {g11_closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count}
 - Top G11 closure intake priority: {top_g11_closure_intake_priority_candidate_id}
 - Top G11 closure intake class: {top_g11_closure_intake_priority_class}
 - Top G11 closure intake acceptance gates: {top_g11_closure_intake_acceptance_gate_ids}

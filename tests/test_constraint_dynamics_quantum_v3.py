@@ -1073,6 +1073,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count": 0,
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count": 3,
+                "closure_evidence_arxiv_package_candidate_gate_matrix_rows": 7,
+                "closure_evidence_arxiv_package_candidate_gate_matrix_status": "blocked_pending_artifacts_and_reviewed_receipts",
+                "closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count": 0,
+                "closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -3839,6 +3843,56 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
         "beam_deflection_broadening_calibration.csv;kappa_uncertainty_notes.md;"
         "paired_contrast_values.csv"
     )
+    source_package_candidate_gate_matrix = pd.read_csv(
+        output_dir
+        / "public_g11_closure_evidence_arxiv_source_package_candidate_gate_matrix.csv"
+    )
+    assert {
+        "package_rank",
+        "candidate_id",
+        "study",
+        "required_artifact_count",
+        "artifact_present_count",
+        "accepted_receipt_count",
+        "artifact_gate_status",
+        "receipt_gate_status",
+        "candidate_gate_status",
+        "closure_credit_allowed",
+        "next_valid_action",
+        "closure_boundary",
+    }.issubset(source_package_candidate_gate_matrix.columns)
+    assert len(source_package_candidate_gate_matrix) == 7
+    assert set(source_package_candidate_gate_matrix["candidate_gate_status"]) == {
+        "blocked_pending_artifacts_and_reviewed_receipts"
+    }
+    assert not source_package_candidate_gate_matrix["closure_credit_allowed"].map(
+        bool
+    ).any()
+    top_candidate_gate = source_package_candidate_gate_matrix.iloc[0]
+    assert top_candidate_gate["candidate_id"] == (
+        "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert int(top_candidate_gate["required_artifact_count"]) == 3
+    assert int(top_candidate_gate["artifact_present_count"]) == 0
+    assert int(top_candidate_gate["accepted_receipt_count"]) == 0
+    assert top_candidate_gate["artifact_gate_status"] == "missing_required_artifacts"
+    assert top_candidate_gate["receipt_gate_status"] == "awaiting_reviewed_receipts"
+    assert int(
+        summary[
+            "closure_evidence_arxiv_package_candidate_gate_matrix_rows"
+        ].iloc[0]
+    ) == 7
+    assert summary[
+        "closure_evidence_arxiv_package_candidate_gate_matrix_status"
+    ].iloc[0] == "blocked_pending_artifacts_and_reviewed_receipts"
+    assert int(
+        summary[
+            "closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count"
+        ].iloc[0]
+    ) == 0
+    assert summary[
+        "closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id"
+    ].iloc[0] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     assert int(summary["closure_evidence_source_access_plan_rows"].iloc[0]) == 14
     assert int(
         summary["closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0]
@@ -4250,6 +4304,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_arxiv_package_line_evidence_receipt_closure_ready_candidate_count": 0,
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "closure_evidence_top_arxiv_package_line_evidence_receipt_rollup_pending_count": 3,
+                "closure_evidence_arxiv_package_candidate_gate_matrix_rows": 7,
+                "closure_evidence_arxiv_package_candidate_gate_matrix_status": "blocked_pending_artifacts_and_reviewed_receipts",
+                "closure_evidence_arxiv_package_candidate_gate_matrix_closure_ready_count": 0,
+                "closure_evidence_top_arxiv_package_candidate_gate_matrix_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
