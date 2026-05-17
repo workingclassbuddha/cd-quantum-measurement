@@ -8317,6 +8317,27 @@ def make_current_goal_completion_audit_outputs(
             )
         )
     )
+    g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_non_arxiv_artifact_review_receipt_template_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_non_arxiv_artifact_review_receipt_template_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id",
+            "not available",
+        )
+    )
     g11_closure_evidence_arxiv_source_package_inventory_rows = int(
         _first_value(
             public_g11_exhaustion,
@@ -9111,6 +9132,9 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_non_arxiv_artifact_review_status={g11_closure_evidence_non_arxiv_artifact_review_plan_status}; "
                 f"closure_top_non_arxiv_artifact_review_candidate={g11_closure_evidence_top_non_arxiv_artifact_review_candidate_id}; "
                 f"closure_non_arxiv_artifact_review_closure_credit_allowed={g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed}; "
+                f"closure_non_arxiv_artifact_review_receipt_templates={g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows}; "
+                f"closure_non_arxiv_artifact_review_receipt_template_status={g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status}; "
+                f"closure_top_non_arxiv_artifact_review_receipt_candidate={g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id}; "
                 f"closure_arxiv_source_package_inventory={g11_closure_evidence_arxiv_source_package_inventory_rows}; "
                 f"closure_arxiv_source_package_status={g11_closure_evidence_arxiv_source_package_inventory_status}; "
                 f"closure_top_arxiv_source_package_candidate={g11_closure_evidence_top_arxiv_source_package_candidate_id}; "
@@ -9292,6 +9316,9 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_non_arxiv_artifact_review_plan_status": g11_closure_evidence_non_arxiv_artifact_review_plan_status,
                 "g11_closure_evidence_top_non_arxiv_artifact_review_candidate_id": g11_closure_evidence_top_non_arxiv_artifact_review_candidate_id,
                 "g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed": g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed,
+                "g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows": g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows,
+                "g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status": g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status,
+                "g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id": g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id,
                 "g11_closure_evidence_arxiv_source_package_inventory_rows": g11_closure_evidence_arxiv_source_package_inventory_rows,
                 "g11_closure_evidence_arxiv_source_package_inventory_status": g11_closure_evidence_arxiv_source_package_inventory_status,
                 "g11_closure_evidence_top_arxiv_source_package_candidate_id": g11_closure_evidence_top_arxiv_source_package_candidate_id,
@@ -9453,6 +9480,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence non-arXiv artifact review plan rows: {g11_closure_evidence_non_arxiv_artifact_review_plan_rows}
 - G11 closure evidence non-arXiv artifact review plan status: {g11_closure_evidence_non_arxiv_artifact_review_plan_status}
 - G11 closure evidence non-arXiv artifact review closure credit allowed: {g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed}
+- G11 closure evidence non-ArXiv artifact review receipt template rows: {g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows}
+- G11 closure evidence non-ArXiv artifact review receipt template status: {g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status}
+- G11 closure evidence top non-ArXiv artifact review receipt candidate: {g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id}
 - G11 closure evidence arXiv source package inventory rows: {g11_closure_evidence_arxiv_source_package_inventory_rows}
 - G11 closure evidence arXiv source package inventory status: {g11_closure_evidence_arxiv_source_package_inventory_status}
 - G11 closure evidence top arXiv source package candidate: {g11_closure_evidence_top_arxiv_source_package_candidate_id}
@@ -12428,6 +12458,78 @@ def make_public_g11_exhaustion_audit_outputs(
         output_dir / "public_g11_closure_evidence_non_arxiv_artifact_review_plan.csv",
         index=False,
     )
+    non_arxiv_artifact_review_receipt_columns = (
+        "candidate_id;required_artifact;source_url;source_page_sha256;"
+        "reviewed_artifact_status;matched_evidence_locator;acceptance_decision;"
+        "closure_eligible;reviewer_note"
+    )
+    non_arxiv_artifact_review_receipt_header = (
+        non_arxiv_artifact_review_receipt_columns.replace(";", ",")
+    )
+    non_arxiv_artifact_review_receipt_rows = []
+    for _, row in non_arxiv_artifact_review_plan.iterrows():
+        candidate_id = str(row["candidate_id"])
+        required_artifact = str(row["required_artifact"])
+        safe_candidate = candidate_id.lower().replace("_", "-")
+        safe_artifact = (
+            required_artifact.lower()
+            .replace(".csv", "")
+            .replace(".md", "")
+            .replace("/", "-")
+            .replace("_", "-")
+        )
+        receipt_template_path = (
+            "outputs/tmp/non_arxiv_artifact_review_receipts/"
+            f"{safe_candidate}/{safe_artifact}.receipt.csv"
+        )
+        receipt_parent = Path(receipt_template_path).parent.as_posix()
+        receipt_row = (
+            f"{candidate_id},{required_artifact},{row['primary_source_url']},"
+            "PENDING_SOURCE_PAGE_SHA256,not_reviewed,PENDING_LOCATOR,"
+            "pending,false,pending reviewer note"
+        )
+        non_arxiv_artifact_review_receipt_rows.append(
+            {
+                "route_rank": int(row["route_rank"]),
+                "candidate_id": candidate_id,
+                "study": row["study"],
+                "required_artifact": required_artifact,
+                "receipt_template_status": "template_ready",
+                "receipt_template_path": receipt_template_path,
+                "required_receipt_columns": non_arxiv_artifact_review_receipt_columns,
+                "receipt_fill_command": (
+                    f"mkdir -p {receipt_parent} && "
+                    f"printf '{non_arxiv_artifact_review_receipt_header}\\n"
+                    f"{receipt_row}\\n' > {receipt_template_path}"
+                ),
+                "review_gate": (
+                    "source_page_sha256 must be non-placeholder; reviewed_artifact_status "
+                    "must identify the artifact or reviewed absence; "
+                    "acceptance_decision=accepted; closure_eligible=true"
+                ),
+                "closure_boundary": row["overclaim_boundary"],
+            }
+        )
+    non_arxiv_artifact_review_receipt_templates = pd.DataFrame(
+        non_arxiv_artifact_review_receipt_rows,
+        columns=[
+            "route_rank",
+            "candidate_id",
+            "study",
+            "required_artifact",
+            "receipt_template_status",
+            "receipt_template_path",
+            "required_receipt_columns",
+            "receipt_fill_command",
+            "review_gate",
+            "closure_boundary",
+        ],
+    )
+    non_arxiv_artifact_review_receipt_templates.to_csv(
+        output_dir
+        / "public_g11_closure_evidence_non_arxiv_artifact_review_receipt_templates.csv",
+        index=False,
+    )
     for _, row in source_package_inventory.iterrows():
         candidate_id = str(row["candidate_id"])
         intake_row = (
@@ -13324,6 +13426,17 @@ def make_public_g11_exhaustion_audit_outputs(
         not non_arxiv_artifact_review_plan.empty
         and non_arxiv_artifact_review_plan["closure_credit_allowed"].map(_truthy).all()
     )
+    non_arxiv_artifact_review_receipt_template_status = (
+        "template_ready"
+        if not non_arxiv_artifact_review_receipt_templates.empty
+        and set(
+            non_arxiv_artifact_review_receipt_templates[
+                "receipt_template_status"
+            ].astype(str)
+        )
+        == {"template_ready"}
+        else "mixed_or_empty"
+    )
     package_acceptance_manifest_status = (
         "not_checked"
         if not package_acceptance_manifest.empty
@@ -13468,6 +13581,11 @@ def make_public_g11_exhaustion_audit_outputs(
     top_non_arxiv_artifact_review_candidate = (
         str(non_arxiv_artifact_review_plan.iloc[0]["candidate_id"])
         if not non_arxiv_artifact_review_plan.empty
+        else "not available"
+    )
+    top_non_arxiv_artifact_review_receipt_candidate = (
+        str(non_arxiv_artifact_review_receipt_templates.iloc[0]["candidate_id"])
+        if not non_arxiv_artifact_review_receipt_templates.empty
         else "not available"
     )
     top_package_acceptance_candidate = (
@@ -13837,6 +13955,11 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_non_arxiv_artifact_review_plan_status": non_arxiv_artifact_review_plan_status,
                 "closure_evidence_top_non_arxiv_artifact_review_candidate_id": top_non_arxiv_artifact_review_candidate,
                 "closure_evidence_non_arxiv_artifact_review_closure_credit_allowed": non_arxiv_artifact_review_closure_credit_allowed,
+                "closure_evidence_non_arxiv_artifact_review_receipt_template_rows": int(
+                    len(non_arxiv_artifact_review_receipt_templates)
+                ),
+                "closure_evidence_non_arxiv_artifact_review_receipt_template_status": non_arxiv_artifact_review_receipt_template_status,
+                "closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id": top_non_arxiv_artifact_review_receipt_candidate,
                 "closure_evidence_arxiv_source_package_inventory_rows": int(
                     len(source_package_inventory)
                 ),
@@ -14387,6 +14510,27 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "closure_evidence_non_arxiv_artifact_review_closure_credit_allowed",
                 False,
             )
+        )
+    )
+    g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_non_arxiv_artifact_review_receipt_template_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_non_arxiv_artifact_review_receipt_template_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id",
+            "not available",
         )
     )
     g11_closure_evidence_arxiv_source_package_inventory_rows = int(
@@ -15019,6 +15163,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"non-arXiv artifact review status={g11_closure_evidence_non_arxiv_artifact_review_plan_status}; "
                         f"top non-arXiv artifact review candidate={g11_closure_evidence_top_non_arxiv_artifact_review_candidate_id}; "
                         f"non-arXiv artifact review closure credit allowed={g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed}; "
+                        f"non-arXiv artifact review receipt templates={g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows}; "
+                        f"non-arXiv artifact review receipt template status={g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status}; "
+                        f"top non-arXiv artifact review receipt candidate={g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id}; "
                         f"arXiv source package inventory={g11_closure_evidence_arxiv_source_package_inventory_rows}; "
                         f"arXiv source package status={g11_closure_evidence_arxiv_source_package_inventory_status}; "
                         f"top arXiv source package candidate={g11_closure_evidence_top_arxiv_source_package_candidate_id}; "
@@ -15192,6 +15339,9 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_non_arxiv_artifact_review_plan_status": g11_closure_evidence_non_arxiv_artifact_review_plan_status,
                 "g11_closure_evidence_top_non_arxiv_artifact_review_candidate_id": g11_closure_evidence_top_non_arxiv_artifact_review_candidate_id,
                 "g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed": g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed,
+                "g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows": g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows,
+                "g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status": g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status,
+                "g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id": g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id,
                 "g11_closure_evidence_arxiv_source_package_inventory_rows": g11_closure_evidence_arxiv_source_package_inventory_rows,
                 "g11_closure_evidence_arxiv_source_package_inventory_status": g11_closure_evidence_arxiv_source_package_inventory_status,
                 "g11_closure_evidence_top_arxiv_source_package_candidate_id": g11_closure_evidence_top_arxiv_source_package_candidate_id,
@@ -15327,6 +15477,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence non-arXiv artifact review plan rows: {g11_closure_evidence_non_arxiv_artifact_review_plan_rows}
 - G11 closure evidence non-arXiv artifact review plan status: {g11_closure_evidence_non_arxiv_artifact_review_plan_status}
 - G11 closure evidence non-arXiv artifact review closure credit allowed: {g11_closure_evidence_non_arxiv_artifact_review_closure_credit_allowed}
+- G11 closure evidence non-ArXiv artifact review receipt template rows: {g11_closure_evidence_non_arxiv_artifact_review_receipt_template_rows}
+- G11 closure evidence non-ArXiv artifact review receipt template status: {g11_closure_evidence_non_arxiv_artifact_review_receipt_template_status}
+- G11 closure evidence top non-ArXiv artifact review receipt candidate: {g11_closure_evidence_top_non_arxiv_artifact_review_receipt_candidate_id}
 - G11 closure evidence arXiv source package inventory rows: {g11_closure_evidence_arxiv_source_package_inventory_rows}
 - G11 closure evidence arXiv source package inventory status: {g11_closure_evidence_arxiv_source_package_inventory_status}
 - G11 closure evidence top arXiv source package candidate: {g11_closure_evidence_top_arxiv_source_package_candidate_id}
