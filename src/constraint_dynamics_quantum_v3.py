@@ -8257,6 +8257,36 @@ def make_current_goal_completion_audit_outputs(
             "not available",
         )
     )
+    g11_closure_evidence_non_arxiv_source_route_rows = int(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_non_arxiv_source_route_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_non_arxiv_source_route_status = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_non_arxiv_source_route_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_non_arxiv_source_route_candidate_id = str(
+        _first_value(
+            public_g11_exhaustion,
+            "closure_evidence_top_non_arxiv_source_route_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed = bool(
+        _truthy(
+            _first_value(
+                public_g11_exhaustion,
+                "closure_evidence_non_arxiv_source_route_closure_credit_allowed",
+                False,
+            )
+        )
+    )
     g11_closure_evidence_arxiv_source_package_inventory_rows = int(
         _first_value(
             public_g11_exhaustion,
@@ -9043,6 +9073,10 @@ def make_current_goal_completion_audit_outputs(
                 f"closure_source_access_plan={g11_closure_evidence_source_access_plan_rows}; "
                 f"closure_source_access_arxiv_eprint_candidates={g11_closure_evidence_source_access_arxiv_eprint_candidates}; "
                 f"closure_top_source_access_class={g11_closure_evidence_top_source_access_class}; "
+                f"closure_non_arxiv_source_routes={g11_closure_evidence_non_arxiv_source_route_rows}; "
+                f"closure_non_arxiv_source_route_status={g11_closure_evidence_non_arxiv_source_route_status}; "
+                f"closure_top_non_arxiv_source_route_candidate={g11_closure_evidence_top_non_arxiv_source_route_candidate_id}; "
+                f"closure_non_arxiv_source_route_closure_credit_allowed={g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed}; "
                 f"closure_arxiv_source_package_inventory={g11_closure_evidence_arxiv_source_package_inventory_rows}; "
                 f"closure_arxiv_source_package_status={g11_closure_evidence_arxiv_source_package_inventory_status}; "
                 f"closure_top_arxiv_source_package_candidate={g11_closure_evidence_top_arxiv_source_package_candidate_id}; "
@@ -9216,6 +9250,10 @@ def make_current_goal_completion_audit_outputs(
                 "g11_closure_evidence_source_access_plan_rows": g11_closure_evidence_source_access_plan_rows,
                 "g11_closure_evidence_source_access_arxiv_eprint_candidates": g11_closure_evidence_source_access_arxiv_eprint_candidates,
                 "g11_closure_evidence_top_source_access_class": g11_closure_evidence_top_source_access_class,
+                "g11_closure_evidence_non_arxiv_source_route_rows": g11_closure_evidence_non_arxiv_source_route_rows,
+                "g11_closure_evidence_non_arxiv_source_route_status": g11_closure_evidence_non_arxiv_source_route_status,
+                "g11_closure_evidence_top_non_arxiv_source_route_candidate_id": g11_closure_evidence_top_non_arxiv_source_route_candidate_id,
+                "g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed": g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed,
                 "g11_closure_evidence_arxiv_source_package_inventory_rows": g11_closure_evidence_arxiv_source_package_inventory_rows,
                 "g11_closure_evidence_arxiv_source_package_inventory_status": g11_closure_evidence_arxiv_source_package_inventory_status,
                 "g11_closure_evidence_top_arxiv_source_package_candidate_id": g11_closure_evidence_top_arxiv_source_package_candidate_id,
@@ -9371,6 +9409,9 @@ Keep the public repo clean and green, continue provenance-rich analyses, and dri
 - G11 closure evidence source route checklist status: {g11_closure_evidence_source_route_checklist_status}
 - G11 closure evidence source access plan rows: {g11_closure_evidence_source_access_plan_rows}
 - G11 closure evidence arXiv e-print access candidates: {g11_closure_evidence_source_access_arxiv_eprint_candidates}
+- G11 closure evidence non-arXiv source route rows: {g11_closure_evidence_non_arxiv_source_route_rows}
+- G11 closure evidence non-arXiv source route status: {g11_closure_evidence_non_arxiv_source_route_status}
+- G11 closure evidence non-arXiv source route closure credit allowed: {g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed}
 - G11 closure evidence arXiv source package inventory rows: {g11_closure_evidence_arxiv_source_package_inventory_rows}
 - G11 closure evidence arXiv source package inventory status: {g11_closure_evidence_arxiv_source_package_inventory_status}
 - G11 closure evidence top arXiv source package candidate: {g11_closure_evidence_top_arxiv_source_package_candidate_id}
@@ -12146,6 +12187,76 @@ def make_public_g11_exhaustion_audit_outputs(
         if not source_access_plan.empty
         else "not available"
     )
+    if not source_access_plan.empty and "source_access_class" in source_access_plan.columns:
+        non_arxiv_access = source_access_plan[
+            source_access_plan["source_access_class"].astype(str)
+            != "arxiv_eprint_route"
+        ].copy()
+    else:
+        non_arxiv_access = pd.DataFrame(columns=source_access_plan.columns)
+    non_arxiv_route_rows = []
+    non_arxiv_review_focus_by_class = {
+        "pmc_open_article_route": (
+            "review open article tables, supplementary links, and data availability "
+            "statements before crediting any measured record-to-visibility artifact"
+        ),
+        "institutional_landing_route": (
+            "review institutional landing-page attachments and linked source records "
+            "before crediting any measured record-to-visibility artifact"
+        ),
+        "doi_landing_route": (
+            "resolve the DOI landing page, then review data availability and publisher "
+            "supplements before crediting any measured record-to-visibility artifact"
+        ),
+        "publisher_article_route": (
+            "review publisher article supplements and data availability statements "
+            "before crediting any measured record-to-visibility artifact"
+        ),
+    }
+    for _, row in non_arxiv_access.iterrows():
+        source_access_class = str(row["source_access_class"])
+        non_arxiv_route_rows.append(
+            {
+                "route_rank": int(len(non_arxiv_route_rows) + 1),
+                "candidate_id": row["candidate_id"],
+                "study": row["study"],
+                "evidence_class": row["evidence_class"],
+                "source_access_class": source_access_class,
+                "primary_source_url": row["primary_source_url"],
+                "doi": row["doi"],
+                "artifact_focuses": row["artifact_focuses"],
+                "source_route_status": "not_checked",
+                "route_check_action": row["first_check_action"],
+                "required_review_focus": non_arxiv_review_focus_by_class.get(
+                    source_access_class,
+                    "review source landing page, supplements, and data availability statements before crediting any measured artifact",
+                ),
+                "closure_credit_allowed": False,
+                "overclaim_boundary": row["overclaim_boundary"],
+            }
+        )
+    non_arxiv_source_routes = pd.DataFrame(
+        non_arxiv_route_rows,
+        columns=[
+            "route_rank",
+            "candidate_id",
+            "study",
+            "evidence_class",
+            "source_access_class",
+            "primary_source_url",
+            "doi",
+            "artifact_focuses",
+            "source_route_status",
+            "route_check_action",
+            "required_review_focus",
+            "closure_credit_allowed",
+            "overclaim_boundary",
+        ],
+    )
+    non_arxiv_source_routes.to_csv(
+        output_dir / "public_g11_closure_evidence_non_arxiv_source_routes.csv",
+        index=False,
+    )
     package_gate_by_class = {
         "raw_calibration_tables": (
             "require raw beam-deflection/broadening calibration tables or an explicit absence record before treating the package as closure evidence"
@@ -13089,6 +13200,17 @@ def make_public_g11_exhaustion_audit_outputs(
         == {"not_checked"}
         else "mixed_or_empty"
     )
+    non_arxiv_source_route_status = (
+        "not_checked"
+        if not non_arxiv_source_routes.empty
+        and set(non_arxiv_source_routes["source_route_status"].astype(str))
+        == {"not_checked"}
+        else "mixed_or_empty"
+    )
+    non_arxiv_source_route_closure_credit_allowed = bool(
+        not non_arxiv_source_routes.empty
+        and non_arxiv_source_routes["closure_credit_allowed"].map(_truthy).all()
+    )
     package_acceptance_manifest_status = (
         "not_checked"
         if not package_acceptance_manifest.empty
@@ -13223,6 +13345,11 @@ def make_public_g11_exhaustion_audit_outputs(
     top_source_package_url = (
         str(source_package_inventory.iloc[0]["source_eprint_url"])
         if not source_package_inventory.empty
+        else "not available"
+    )
+    top_non_arxiv_source_route_candidate = (
+        str(non_arxiv_source_routes.iloc[0]["candidate_id"])
+        if not non_arxiv_source_routes.empty
         else "not available"
     )
     top_package_acceptance_candidate = (
@@ -13580,6 +13707,12 @@ def make_public_g11_exhaustion_audit_outputs(
                 "closure_evidence_source_access_plan_rows": int(len(source_access_plan)),
                 "closure_evidence_source_access_arxiv_eprint_candidates": arxiv_eprint_candidates,
                 "closure_evidence_top_source_access_class": top_source_access_class,
+                "closure_evidence_non_arxiv_source_route_rows": int(
+                    len(non_arxiv_source_routes)
+                ),
+                "closure_evidence_non_arxiv_source_route_status": non_arxiv_source_route_status,
+                "closure_evidence_top_non_arxiv_source_route_candidate_id": top_non_arxiv_source_route_candidate,
+                "closure_evidence_non_arxiv_source_route_closure_credit_allowed": non_arxiv_source_route_closure_credit_allowed,
                 "closure_evidence_arxiv_source_package_inventory_rows": int(
                     len(source_package_inventory)
                 ),
@@ -14070,6 +14203,36 @@ def make_breakthrough_path_exhaustion_audit_outputs(
             public_g11,
             "closure_evidence_top_source_access_class",
             "not available",
+        )
+    )
+    g11_closure_evidence_non_arxiv_source_route_rows = int(
+        _first_value(
+            public_g11,
+            "closure_evidence_non_arxiv_source_route_rows",
+            0,
+        )
+    )
+    g11_closure_evidence_non_arxiv_source_route_status = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_non_arxiv_source_route_status",
+            "not available",
+        )
+    )
+    g11_closure_evidence_top_non_arxiv_source_route_candidate_id = str(
+        _first_value(
+            public_g11,
+            "closure_evidence_top_non_arxiv_source_route_candidate_id",
+            "not available",
+        )
+    )
+    g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed = bool(
+        _truthy(
+            _first_value(
+                public_g11,
+                "closure_evidence_non_arxiv_source_route_closure_credit_allowed",
+                False,
+            )
         )
     )
     g11_closure_evidence_arxiv_source_package_inventory_rows = int(
@@ -14694,6 +14857,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                         f"source access plan={g11_closure_evidence_source_access_plan_rows}; "
                         f"source access arXiv e-print candidates={g11_closure_evidence_source_access_arxiv_eprint_candidates}; "
                         f"top source access class={g11_closure_evidence_top_source_access_class}; "
+                        f"non-arXiv source routes={g11_closure_evidence_non_arxiv_source_route_rows}; "
+                        f"non-arXiv source route status={g11_closure_evidence_non_arxiv_source_route_status}; "
+                        f"top non-arXiv source route candidate={g11_closure_evidence_top_non_arxiv_source_route_candidate_id}; "
+                        f"non-arXiv source route closure credit allowed={g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed}; "
                         f"arXiv source package inventory={g11_closure_evidence_arxiv_source_package_inventory_rows}; "
                         f"arXiv source package status={g11_closure_evidence_arxiv_source_package_inventory_status}; "
                         f"top arXiv source package candidate={g11_closure_evidence_top_arxiv_source_package_candidate_id}; "
@@ -14859,6 +15026,10 @@ def make_breakthrough_path_exhaustion_audit_outputs(
                 "g11_closure_evidence_source_access_plan_rows": g11_closure_evidence_source_access_plan_rows,
                 "g11_closure_evidence_source_access_arxiv_eprint_candidates": g11_closure_evidence_source_access_arxiv_eprint_candidates,
                 "g11_closure_evidence_top_source_access_class": g11_closure_evidence_top_source_access_class,
+                "g11_closure_evidence_non_arxiv_source_route_rows": g11_closure_evidence_non_arxiv_source_route_rows,
+                "g11_closure_evidence_non_arxiv_source_route_status": g11_closure_evidence_non_arxiv_source_route_status,
+                "g11_closure_evidence_top_non_arxiv_source_route_candidate_id": g11_closure_evidence_top_non_arxiv_source_route_candidate_id,
+                "g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed": g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed,
                 "g11_closure_evidence_arxiv_source_package_inventory_rows": g11_closure_evidence_arxiv_source_package_inventory_rows,
                 "g11_closure_evidence_arxiv_source_package_inventory_status": g11_closure_evidence_arxiv_source_package_inventory_status,
                 "g11_closure_evidence_top_arxiv_source_package_candidate_id": g11_closure_evidence_top_arxiv_source_package_candidate_id,
@@ -14988,6 +15159,9 @@ This audit cross-links the active breakthrough blockers and asks whether the cur
 - G11 closure evidence source route checklist status: {g11_closure_evidence_source_route_checklist_status}
 - G11 closure evidence source access plan rows: {g11_closure_evidence_source_access_plan_rows}
 - G11 closure evidence arXiv e-print access candidates: {g11_closure_evidence_source_access_arxiv_eprint_candidates}
+- G11 closure evidence non-arXiv source route rows: {g11_closure_evidence_non_arxiv_source_route_rows}
+- G11 closure evidence non-arXiv source route status: {g11_closure_evidence_non_arxiv_source_route_status}
+- G11 closure evidence non-arXiv source route closure credit allowed: {g11_closure_evidence_non_arxiv_source_route_closure_credit_allowed}
 - G11 closure evidence arXiv source package inventory rows: {g11_closure_evidence_arxiv_source_package_inventory_rows}
 - G11 closure evidence arXiv source package inventory status: {g11_closure_evidence_arxiv_source_package_inventory_status}
 - G11 closure evidence top arXiv source package candidate: {g11_closure_evidence_top_arxiv_source_package_candidate_id}

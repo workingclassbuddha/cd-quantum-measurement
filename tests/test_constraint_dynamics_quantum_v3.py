@@ -1019,6 +1019,10 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_access_plan_rows": 14,
                 "closure_evidence_source_access_arxiv_eprint_candidates": 7,
                 "closure_evidence_top_source_access_class": "arxiv_eprint_route",
+                "closure_evidence_non_arxiv_source_route_rows": 7,
+                "closure_evidence_non_arxiv_source_route_status": "not_checked",
+                "closure_evidence_top_non_arxiv_source_route_candidate_id": "YOON_2021_QUANTITATIVE_COMPLEMENTARITY",
+                "closure_evidence_non_arxiv_source_route_closure_credit_allowed": False,
                 "closure_evidence_arxiv_source_package_inventory_rows": 7,
                 "closure_evidence_arxiv_source_package_inventory_status": "not_checked",
                 "closure_evidence_top_arxiv_source_package_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
@@ -3356,6 +3360,52 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert int(
         (source_access_plan["source_access_class"] == "arxiv_eprint_route").sum()
     ) == 7
+    non_arxiv_source_routes = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_non_arxiv_source_routes.csv"
+    )
+    assert {
+        "route_rank",
+        "candidate_id",
+        "study",
+        "evidence_class",
+        "source_access_class",
+        "primary_source_url",
+        "doi",
+        "artifact_focuses",
+        "source_route_status",
+        "route_check_action",
+        "required_review_focus",
+        "closure_credit_allowed",
+        "overclaim_boundary",
+    }.issubset(non_arxiv_source_routes.columns)
+    assert len(non_arxiv_source_routes) == 7
+    assert set(non_arxiv_source_routes["source_route_status"]) == {"not_checked"}
+    assert not non_arxiv_source_routes["closure_credit_allowed"].map(bool).any()
+    assert set(non_arxiv_source_routes["source_access_class"]) == {
+        "doi_landing_route",
+        "institutional_landing_route",
+        "pmc_open_article_route",
+        "publisher_article_route",
+    }
+    top_non_arxiv_route = non_arxiv_source_routes.iloc[0]
+    assert top_non_arxiv_route["candidate_id"] == (
+        "YOON_2021_QUANTITATIVE_COMPLEMENTARITY"
+    )
+    assert top_non_arxiv_route["source_access_class"] == "pmc_open_article_route"
+    assert "open article" in top_non_arxiv_route["route_check_action"]
+    assert "data availability" in top_non_arxiv_route["required_review_focus"]
+    assert int(summary["closure_evidence_non_arxiv_source_route_rows"].iloc[0]) == 7
+    assert summary["closure_evidence_non_arxiv_source_route_status"].iloc[0] == (
+        "not_checked"
+    )
+    assert summary[
+        "closure_evidence_top_non_arxiv_source_route_candidate_id"
+    ].iloc[0] == "YOON_2021_QUANTITATIVE_COMPLEMENTARITY"
+    assert bool(
+        summary[
+            "closure_evidence_non_arxiv_source_route_closure_credit_allowed"
+        ].iloc[0]
+    ) is False
     source_package_inventory = pd.read_csv(
         output_dir / "public_g11_closure_evidence_arxiv_source_package_inventory.csv"
     )
@@ -4250,6 +4300,10 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_access_plan_rows": 14,
                 "closure_evidence_source_access_arxiv_eprint_candidates": 7,
                 "closure_evidence_top_source_access_class": "arxiv_eprint_route",
+                "closure_evidence_non_arxiv_source_route_rows": 7,
+                "closure_evidence_non_arxiv_source_route_status": "not_checked",
+                "closure_evidence_top_non_arxiv_source_route_candidate_id": "YOON_2021_QUANTITATIVE_COMPLEMENTARITY",
+                "closure_evidence_non_arxiv_source_route_closure_credit_allowed": False,
                 "closure_evidence_arxiv_source_package_inventory_rows": 7,
                 "closure_evidence_arxiv_source_package_inventory_status": "not_checked",
                 "closure_evidence_top_arxiv_source_package_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
