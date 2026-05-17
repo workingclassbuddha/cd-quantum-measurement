@@ -1016,6 +1016,9 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_route_checklist_rows": 14,
                 "closure_evidence_source_route_checklist_status": "not_checked",
                 "closure_evidence_top_source_route_check_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_source_access_plan_rows": 14,
+                "closure_evidence_source_access_arxiv_eprint_candidates": 7,
+                "closure_evidence_top_source_access_class": "arxiv_eprint_route",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -1257,6 +1260,14 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert summary["g11_closure_evidence_top_source_route_check_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    assert int(summary["g11_closure_evidence_source_access_plan_rows"].iloc[0]) == 14
+    assert (
+        int(summary["g11_closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0])
+        == 7
+    )
+    assert summary["g11_closure_evidence_top_source_access_class"].iloc[0] == (
+        "arxiv_eprint_route"
+    )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
@@ -1330,6 +1341,8 @@ def test_current_goal_completion_audit_outputs_and_cli(tmp_path):
     assert "closure_source_route_status=route_known_not_checked" in g11_row["note"]
     assert "closure_source_route_checklist=14" in g11_row["note"]
     assert "closure_source_route_checklist_status=not_checked" in g11_row["note"]
+    assert "closure_source_access_plan=14" in g11_row["note"]
+    assert "closure_source_access_arxiv_eprint_candidates=7" in g11_row["note"]
     assert (
         "closure_evidence_classes=independent_record_distribution;paired_visibility_curve;raw_calibration_tables"
         in g11_row["note"]
@@ -2843,6 +2856,44 @@ def test_public_g11_exhaustion_audit_outputs_and_cli(tmp_path):
     assert summary["closure_evidence_top_source_route_check_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
     )
+    source_access_plan = pd.read_csv(
+        output_dir / "public_g11_closure_evidence_source_access_plan.csv"
+    )
+    assert {
+        "access_rank",
+        "candidate_id",
+        "study",
+        "evidence_class",
+        "source_access_class",
+        "primary_source_url",
+        "source_eprint_url",
+        "doi",
+        "artifact_focuses",
+        "access_check_status",
+        "first_check_action",
+        "overclaim_boundary",
+    }.issubset(source_access_plan.columns)
+    assert len(source_access_plan) == 14
+    assert set(source_access_plan["access_check_status"]) == {"not_checked"}
+    top_access = source_access_plan.iloc[0]
+    assert top_access["candidate_id"] == "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    assert top_access["source_access_class"] == "arxiv_eprint_route"
+    assert top_access["source_eprint_url"] == "https://arxiv.org/e-print/quant-ph/0009044"
+    assert "source package" in top_access["first_check_action"]
+    mir_access = source_access_plan[
+        source_access_plan["candidate_id"] == "MIR_2007_WEAK_VALUE_MOMENTUM_TRANSFER"
+    ].iloc[0]
+    assert mir_access["source_eprint_url"] == "https://arxiv.org/e-print/0706.3966"
+    assert int(
+        (source_access_plan["source_access_class"] == "arxiv_eprint_route").sum()
+    ) == 7
+    assert int(summary["closure_evidence_source_access_plan_rows"].iloc[0]) == 14
+    assert int(
+        summary["closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0]
+    ) == 7
+    assert summary["closure_evidence_top_source_access_class"].iloc[0] == (
+        "arxiv_eprint_route"
+    )
     evidence_queue = pd.read_csv(output_dir / "public_g11_closure_evidence_queue.csv")
     assert {
         "candidate_id",
@@ -3007,6 +3058,9 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
                 "closure_evidence_source_route_checklist_rows": 14,
                 "closure_evidence_source_route_checklist_status": "not_checked",
                 "closure_evidence_top_source_route_check_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
+                "closure_evidence_source_access_plan_rows": 14,
+                "closure_evidence_source_access_arxiv_eprint_candidates": 7,
+                "closure_evidence_top_source_access_class": "arxiv_eprint_route",
                 "top_closure_intake_priority_candidate_id": "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING",
                 "top_closure_intake_priority_class": "raw_calibration_tables",
                 "top_closure_intake_acceptance_gate_count": 3,
@@ -3189,6 +3243,14 @@ def test_breakthrough_path_exhaustion_audit_outputs_and_cli(tmp_path):
     )
     assert summary["g11_closure_evidence_top_source_route_check_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
+    )
+    assert int(summary["g11_closure_evidence_source_access_plan_rows"].iloc[0]) == 14
+    assert (
+        int(summary["g11_closure_evidence_source_access_arxiv_eprint_candidates"].iloc[0])
+        == 7
+    )
+    assert summary["g11_closure_evidence_top_source_access_class"].iloc[0] == (
+        "arxiv_eprint_route"
     )
     assert summary["top_g11_closure_intake_priority_candidate_id"].iloc[0] == (
         "KOKOROWSKI_2001_MULTIPHOTON_SCATTERING"
